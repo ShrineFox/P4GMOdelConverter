@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Security;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -17,20 +18,86 @@ namespace P4GModelConverter
     public partial class MainForm : Form
     {
         List<string> newLines = new List<string>();
-        List<List<string>> bones = new List<List<string>>();
-        List<List<string>> meshes = new List<List<string>>();
-        List<List<string>> drawArrays = new List<List<string>>();
-
-        List<string> materialNames = new List<string>();
-        List<string> mapNames = new List<string>();
-
-        List<List<string>> animations = new List<List<string>>();
+        List<Bone> bones = new List<Bone>();
+        List<Part> parts = new List<Part>();
+        List<Material> materials = new List<Material>();
+        List<Tuple<string, string>> boneDrawPartPairs = new List<Tuple<string, string>>();
         string[] lines;
         bool addLine;
 
         public MainForm()
         {
             InitializeComponent();
+        }
+
+        public class Bone
+        {
+            public Bone() { }
+            public Bone(string name, string translate, string rotate, string scale, List<string> drawParts, string blindData, string blendBones, string blendOffsets, string parent, string boundingBox)
+            {
+                Name = name;
+                ParentBone = parent;
+                Translate = translate;
+                RotateZYX = rotate;
+                Scale = scale;
+                DrawParts = drawParts;
+                BlindData = blindData;
+                BlendBones = blendBones;
+                BlendOffsets = blendOffsets;
+                BoundingBox = boundingBox;
+            }
+            public string Name { get; set; }
+            public string ParentBone { get; set; }
+            public string Translate { get; set; }
+            public string RotateZYX { get; set; }
+            public string Scale { get; set; }
+            public List<string> DrawParts { get; set; } = new List<string>();
+            public string BlindData { get; set; }
+            public string BlendBones { get; set; }
+            public string BlendOffsets { get; set; }
+            public string BoundingBox { get; set; }
+        }
+
+        public class Part
+        {
+            public Part() { }
+            public Part(string name, string boundingBox, List<string> meshes, List<string> arrays)
+            {
+                Name = name;
+                BoundingBox = boundingBox;
+                Meshes = meshes;
+                Arrays = arrays;
+            }
+            public string Name { get; set; }
+            public string BoundingBox { get; set; }
+            public List<string> Meshes { get; set; } = new List<string>();
+            public List<string> Arrays { get; set; } = new List<string>();
+        }
+
+        public class Material
+        {
+            public Material() { }
+            public Material(string name, string diffuse, string ambient, string reflection, string refraction, string bump, string blindData, string setTexture, string blendFunc)
+            {
+                Name = name;
+                Diffuse = diffuse;
+                Ambient = ambient;
+                Reflection = reflection;
+                Refraction = refraction;
+                Bump = bump;
+                BlindData = blindData;
+                SetTexture = setTexture;
+                BlendFunc = blendFunc;
+            }
+            public string Name { get; set; }
+            public string Diffuse { get; set; }
+            public string Ambient { get; set; }
+            public string Reflection { get; set; }
+            public string Refraction { get; set; }
+            public string Bump { get; set; }
+            public string BlindData { get; set; }
+            public string SetTexture { get; set; }
+            public string BlendFunc { get; set; }
         }
 
         //Extract GMO or FBX model as MDS
@@ -45,6 +112,7 @@ namespace P4GModelConverter
                 string mdsPath = $"{Path.GetDirectoryName(path)}\\{Path.GetFileNameWithoutExtension(path)}.mds";
                 while (!File.Exists(mdsPath)) { }
                 FixMDS(mdsPath);
+                newLines = newLines.Where(m => !string.IsNullOrEmpty(m)).ToList();
                 ReorderAnimations();
                 string newMDSPath = $"{Path.GetDirectoryName(path)}\\{Path.GetFileNameWithoutExtension(path)}_p4g.mds";
                 if (File.Exists(newMDSPath))
@@ -136,13 +204,6 @@ namespace P4GModelConverter
 
         private void FixMDS(string path)
         {
-            //Initialize Old Lists
-            bones = new List<List<string>>();
-            meshes = new List<List<string>>();
-            drawArrays = new List<List<string>>();
-            materialNames = new List<string>();
-            mapNames = new List<string>();
-            animations = new List<List<string>>();
             //Lines from the original file and new collection
             lines = File.ReadAllLines(path);
             newLines = new List<string>();
@@ -161,71 +222,126 @@ namespace P4GModelConverter
                 {
                     if (lines[i].StartsWith("\tBone"))
                     {
-                        List<string> bone = new List<string>();
-                        bone.Add(lines[i]);
-                        int x = i + 1;
-                        while (x < lines.Count())
+                        int x = i;
+                        //Add bone data to bone list
+                        Bone bone = new Bone();
+                        bone.Name = lines[x].Replace("\tBone \"", "").Replace("\" {", "");
+                        x++;
+                        while (!lines[x].StartsWith("\t}"))
                         {
-                            if (lines[x].Contains("\tBone") || lines[x].Contains("\t\tMesh") || lines[x].Contains("\tPart"))
+                            if (lines[x].StartsWith("\t\tBoundingBox"))
+                                bone.BoundingBox = lines[x];
+                            if (lines[x].StartsWith("\t\tTranslate"))
+                                bone.Translate = lines[x];
+                            if (lines[x].StartsWith("\t\tRotateZYX"))
+                                bone.RotateZYX = lines[x];
+                            if (lines[x].StartsWith("\t\tParentBone"))
+                                bone.ParentBone = lines[x];
+                            if (lines[x].StartsWith("\t\tScale"))
+                                bone.Scale = lines[x];
+                            if (lines[x].StartsWith("\t\tBlindData"))
+                                bone.BlindData = lines[x];
+                            if (lines[x].StartsWith("\t\tBlendBones"))
+                                bone.BlendBones = lines[x];
+                            if (lines[x].StartsWith("\t\tDrawPart"))
+                                bone.DrawParts.Add(lines[x]);
+                            if (lines[x].StartsWith("\t\tBlendOffsets"))
                             {
-                                bones.Add(bone);
-                                break;
+                                string blendOffsets = lines[x];
+                                x++;
+                                while (lines[x].StartsWith("\t\t\t"))
+                                {
+                                    blendOffsets += "\n" + lines[x];
+                                    x++;
+                                }
+                                bone.BlendOffsets = blendOffsets;
                             }
-                            bone.Add(lines[x]);
-                            x++;
+                            else
+                                x++;
                         }
+                        bones.Add(bone);
                     }
-                    else if (lines[i].Contains("\t\tMesh"))
+                    else if (lines[i].Contains("\tPart"))
                     {
-                        List<string> mesh = new List<string>();
-                        mesh.Add(lines[i]);
-                        int x = i + 1;
-                        while (x < lines.Count())
+                        int x = i;
+                        //Add part data to part list
+                        Part part = new Part();
+                        part.Name = lines[x].Replace("\tPart \"", "").Replace("\" {", "");
+                        x++;
+                        while (!lines[x].StartsWith("\t}"))
                         {
-                            if (lines[x].Contains("\t\tMesh") || lines[x].Contains("\t\tArrays"))
+                            Console.WriteLine(lines[x]);
+                            if (lines[x].Contains("\t\tMesh"))
                             {
-                                meshes.Add(mesh);
-                                break;
+                                string mesh = lines[x];
+                                x++;
+                                while (!lines[x].Contains("}"))
+                                {
+                                    mesh += "\n" + lines[x];
+                                    x++;
+                                }
+                                mesh += "\n\t\t}";
+                                part.Meshes.Add(mesh);
                             }
-                            mesh.Add(lines[x]);
-                            x++;
-                        }
-                    }
-                    else if (lines[i].StartsWith("\t\tArrays"))
-                    {
-                        List<string> array = new List<string>();
-                        array.Add(lines[i]);
-                        int x = i + 1;
-                        while (x < lines.Count())
-                        {
-                            if (lines[x].Contains("\t\tArrays") || lines[x].Contains("\tMaterial") || lines[x].Contains("\t}"))
+                            else if (lines[x].StartsWith("\t\tArrays"))
                             {
-                                drawArrays.Add(array);
-                                break;
+                                string array = lines[x];
+                                x++;
+                                while (!lines[x].Contains("}"))
+                                {
+                                    array += "\n" + lines[x];
+                                    x++;
+                                }
+                                array += "\n\t\t}";
+                                part.Arrays.Add(array);
                             }
-                            array.Add(lines[x]);
-                            x++;
+                            else if (lines[x].StartsWith("\t\tBoundingBox"))
+                            {
+                                part.BoundingBox = lines[x];
+                                x++;
+                            }
+                            else
+                                x++;
                         }
+                        parts.Add(part);
                     }
                     else if (lines[i].StartsWith("\tMaterial"))
                     {
-                        //Add material name to material name list
-                        materialNames.Add(GetSubstringByString("\tMaterial \"", "\" {", lines[i]));
-                    }
-                    else if (lines[i].StartsWith("\t\t\tSetTexture"))
-                    {
-                        //Add map name to map name list
-                        string remainingLines = String.Concat(lines.Skip(i).ToArray());
-                        string mapString = GetSubstringByString("\t\t\tSetTexture \"", "\"\t", remainingLines);
-                        mapNames.Add(mapString);
+                        int x = i;
+                        //Add material data to material list
+                        Material mat = new Material();
+                        mat.Name = lines[x].Replace("\tMaterial \"","").Replace("\" {","");
+                        x++;
+                        while (!lines[x].StartsWith("\t}"))
+                        {
+                            if (lines[x].StartsWith("\t\tDiffuse"))
+                                mat.Diffuse = lines[x];
+                            if (lines[x].StartsWith("\t\tAmbient"))
+                                mat.Ambient = lines[x];
+                            if (lines[x].StartsWith("\t\tReflection"))
+                                mat.Reflection = lines[x];
+                            if (lines[x].StartsWith("\t\tRefraction"))
+                                mat.Refraction = lines[x];
+                            if (lines[x].StartsWith("\t\tBump"))
+                                mat.Bump = lines[x];
+                            if (lines[x].StartsWith("\t\tBlindData"))
+                                mat.BlindData = lines[x];
+                            if (lines[x].StartsWith("\t\t\tSetTexture"))
+                                mat.SetTexture = lines[x];
+                            if (lines[x].StartsWith("\t\t\tBlendFunc"))
+                                mat.BlendFunc = lines[x];
+                            x++;
+                        }
+                        materials.Add(mat);
                     }
                     else if (lines[i].StartsWith("\tTexture"))
                     {
-                        //Write bones/meshes/arrays/materials in correct order
+                        //Write new bones/meshes/arrays/materials to file
+                        MatchBonesAndDrawParts();
                         RewriteBones();
                         RewriteParts();
                         RewriteMaterials();
-                        //Write the rest of the file normally (textures, anims...)
+                        //Write the rest of the file normally from source (textures, anims...)
                         cutoff = int.MaxValue;
                     }
                 }
@@ -236,42 +352,87 @@ namespace P4GModelConverter
             }
         }
 
+        private void MatchBonesAndDrawParts()
+        {
+            for (int w = 0; w < parts.Count; w++)
+            {
+                for (int z = 0; z < parts[w].Meshes.Count; z++)
+                {
+                    //Add (newly named) part and corresponding bone to list
+                    string splitName = $"{parts[w].Name}_{z}";
+                    string firstBone = bones.First(b => b.DrawParts.Any(a => a.Contains(parts[w].Name))).Name;
+                    Tuple<string, string> boneDrawPartPair = new Tuple<string, string>(firstBone, splitName);
+                    boneDrawPartPairs.Add(boneDrawPartPair);
+                }
+            }
+        }
+
         private void RewriteBones()
         {
-            if (bones.Count <= 0)
+            for (int w = 0; w < bones.Count; w++)
             {
-                return;
+                newLines.Add($"\tBone \"{bones[w].Name}\" {{");
+                newLines.Add(bones[w].BoundingBox);
+                newLines.Add(bones[w].ParentBone);
+                newLines.Add(bones[w].BlendBones);
+                newLines.Add(bones[w].BlendOffsets);
+                newLines.Add(bones[w].Translate);
+                newLines.Add(bones[w].RotateZYX);
+                newLines.Add(bones[w].Scale);
+                newLines.Add(bones[w].BlindData);
+                foreach (var drawPartPair in boneDrawPartPairs.Where(p => p.Item1.Equals(bones[w].Name)))
+                    newLines.Add($"\t\tDrawPart \"{drawPartPair.Item2}\"");
+                newLines.Add("\t}");
             }
-            //Add drawPart to body bone (usually the third, or user can manually move it to appropriate bone)
-            for (int i = 0; i < bones.Count(); i++)
+        }
+
+        private void RewriteParts()
+        {
+            //Format text so that there's only one mesh/array pair per "part"
+            for (int w = 0; w < parts.Count; w++)
             {
-                if (i != 2)
+                for (int z = 0; z < parts[w].Meshes.Count; z++)
                 {
-                    foreach (var line in bones[i])
-                    {
-                        if (!line.Contains("DrawPart"))
-                            newLines.Add(line);
-                    }
-                }
-                else
-                {
-                    foreach (var line in bones[2])
-                    {
-                        if (line != "\t}" && !line.Contains("DrawPart"))
-                            newLines.Add(line);
-                    }
-                    for (int x = 0; x < meshes.Count(); x++)
-                    {
-                        newLines.Add($"\t\tDrawPart \"mesh{x}\"");
-                    }
+                    newLines.Add($"\tPart \"{parts[w].Name}_{z}\" {{");
+                    newLines.Add(parts[w].BoundingBox);
+                    newLines.Add(parts[w].Meshes[z]);
+                    newLines.Add(parts[w].Arrays[z]);
                     newLines.Add("\t}");
                 }
+            }
+            
+        }
+
+        private void RewriteMaterials()
+        {
+            //Format materials so that they all use one layer and map/blend type
+            for (int w = 0; w < materials.Count(); w++)
+            {
+                newLines.Add($"\tMaterial \"{materials[w].Name}\" {{");
+
+                newLines.Add(materials[w].Diffuse);
+                newLines.Add(materials[w].Ambient);
+                newLines.Add(materials[w].Reflection);
+                newLines.Add(materials[w].Refraction);
+                newLines.Add(materials[w].Bump);
+                newLines.Add($"\t\tLayer \"layer - 1\" {{");
+
+                newLines.Add(materials[w].SetTexture);
+                newLines.Add("\t\t\tMapType Diffuse");
+                newLines.Add("\t\t\tMapFactor 1.000000");
+                newLines.Add(materials[w].BlendFunc);
+                if (materials[w].BlendFunc.Contains("ADD SRC_ALPHA ONE"))
+                    newLines.Add("\t\t\tTexWrap CLAMP CLAMP\n\t\t\tTexGen NORMAL\n\t\t\tTexMatrix \\\n\t\t\t1.000000 0.000000 0.000000 0.000000 \\\n\t\t\t0.000000 1.000000 0.000000 0.000000 \\\n\t\t\t0.000000 0.000000 1.000000 0.000000 \\\n\t\t\t0.000000 0.000000 0.000000 1.000000");
+
+                newLines.Add("\t\t}");
+                newLines.Add("\t}");
             }
         }
 
         //If listbox order has changed, reorder animations to match
         private void ReorderAnimations()
         {
+            List<List<string>> animations = new List<List<string>>();
             //Keep track of which line animations start at
             int animLine = 0;
             //Make a list of animations and strings per animation
@@ -297,7 +458,7 @@ namespace P4GModelConverter
                         motion.Add(newLines[x]);
                         x++;
                     }
-                    
+
                 }
             }
 
@@ -323,54 +484,6 @@ namespace P4GModelConverter
                         newLines.Add(line);
                 }
                 newLines.Add("}");
-            }
-        }
-
-        private void RewriteParts()
-        {
-            for (int i = 0; i < meshes.Count(); i++)
-            {
-                //Use Part Name
-                //newLines.Add($"\tPart \"{GetSubstringByString("\"", "_Mesh", meshes[i][0])}\" {{");
-
-                //Part
-                newLines.Add($"\tPart \"mesh{i}\" {{");
-
-                //Mesh and drawArray for part
-                foreach (var line in meshes[i])
-                    newLines.Add(line);
-                foreach (var line in drawArrays[i])
-                    newLines.Add(line);
-
-                //End part
-                newLines.Add("\t\t}");
-                newLines.Add("\t}");
-
-            }
-            
-        }
-
-        private void RewriteMaterials()
-        {
-            for (int i = 0; i < materialNames.Count(); i++)
-            {
-                newLines.Add($"\tMaterial \"{materialNames[i]}\" {{");
-
-                newLines.Add("\t\tDiffuse 0.705882 0.705882 0.705882 1.000000");
-                newLines.Add("\t\tAmbient 0.705882 0.705882 0.705882 1.000000");
-                newLines.Add("\t\tReflection 0.000000");
-                newLines.Add("\t\tRefraction 1.000000");
-                newLines.Add("\t\tBump 0.000000");
-                newLines.Add("\t\tBump 0.000000");
-                newLines.Add($"\t\tLayer \"layer - {i}\" {{");
-
-                newLines.Add($"\t\t\tSetTexture \"{mapNames[i]}\"");
-                newLines.Add("\t\t\tMapType Diffuse");
-                newLines.Add("\t\t\tMapFactor 1.000000");
-                newLines.Add("\t\t\tBlendFunc ADD SRC_ALPHA INV_SRC_ALPHA");
-
-                newLines.Add("\t\t}");
-                newLines.Add("\t}");
             }
         }
 
