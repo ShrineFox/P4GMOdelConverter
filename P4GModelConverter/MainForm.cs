@@ -409,7 +409,8 @@ namespace P4GModelConverter
             for (int w = 0; w < materials.Count(); w++)
             {
                 newLines.Add($"\tMaterial \"{materials[w].Name}\" {{");
-
+                if (materials[w].BlendFunc.Contains("ADD SRC_ALPHA ONE"))
+                    newLines.Add("\t\tRenderState CULL_FACE 0");
                 newLines.Add(materials[w].Diffuse);
                 newLines.Add(materials[w].Ambient);
                 newLines.Add(materials[w].Reflection);
@@ -422,7 +423,7 @@ namespace P4GModelConverter
                 newLines.Add("\t\t\tMapFactor 1.000000");
                 newLines.Add(materials[w].BlendFunc);
                 if (materials[w].BlendFunc.Contains("ADD SRC_ALPHA ONE"))
-                    newLines.Add("\t\t\tTexWrap CLAMP CLAMP\n\t\t\tTexGen NORMAL\n\t\t\tTexMatrix \\\n\t\t\t1.000000 0.000000 0.000000 0.000000 \\\n\t\t\t0.000000 1.000000 0.000000 0.000000 \\\n\t\t\t0.000000 0.000000 1.000000 0.000000 \\\n\t\t\t0.000000 0.000000 0.000000 1.000000");
+                    newLines.Add("\t\t\tTexWrap CLAMP CLAMP\n\t\t\tTexGen NORMAL\n\t\t\tTexMatrix \\\n\t\t\t\t1.000000 0.000000 0.000000 0.000000 \\\n\t\t\t\t0.000000 1.000000 0.000000 0.000000 \\\n\t\t\t\t0.000000 0.000000 1.000000 0.000000 \\\n\t\t\t\t0.000000 0.000000 0.000000 1.000000");
 
                 newLines.Add("\t\t}");
                 newLines.Add("\t}");
