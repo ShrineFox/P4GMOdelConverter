@@ -12,6 +12,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using TGE.IO;
+using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace P4GModelConverter
 {
@@ -22,7 +23,8 @@ namespace P4GModelConverter
         List<Part> parts = new List<Part>();
         List<Material> materials = new List<Material>();
         List<Tuple<string, string>> boneDrawPartPairs = new List<Tuple<string, string>>();
-        string[] lines;
+        List<List<string>> animations = new List<List<string>>();
+        string extensionlessPath;
         bool addLine;
 
         public MainForm()
@@ -38,7 +40,7 @@ namespace P4GModelConverter
                 Name = name;
                 ParentBone = parent;
                 Translate = translate;
-                RotateZYX = rotate;
+                Rotate = rotate;
                 Scale = scale;
                 DrawParts = drawParts;
                 BlindData = blindData;
@@ -49,7 +51,7 @@ namespace P4GModelConverter
             public string Name { get; set; }
             public string ParentBone { get; set; }
             public string Translate { get; set; }
-            public string RotateZYX { get; set; }
+            public string Rotate { get; set; }
             public string Scale { get; set; }
             public List<string> DrawParts { get; set; } = new List<string>();
             public string BlindData { get; set; }
@@ -104,22 +106,56 @@ namespace P4GModelConverter
         private void btn_Extract_DragDrop(object sender, DragEventArgs e)
         {
             string path = ((string[])e.Data.GetData(DataFormats.FileDrop, false))[0];
+            CreateMDS(path);
+        }
+
+        private void CreateMDS(string path)
+        {
+            //Re-initialize variables
+            newLines = new List<string>();
+            bones = new List<Bone>();
+            parts = new List<Part>();
+            materials = new List<Material>();
+            boneDrawPartPairs = new List<Tuple<string, string>>();
+            //Extract if file exists
+            extensionlessPath = Path.Combine(Path.GetDirectoryName(path), Path.GetFileNameWithoutExtension(path));
+            if (File.Exists(path) && Path.GetExtension(path).ToUpper() == ".PAC")
+            {
+                //todo: extract AMD
+                path = extensionlessPath + ".AMD";
+            }
+            if (File.Exists(path) && Path.GetExtension(path).ToUpper() == ".AMD")
+            {
+                //todo: extract GMO
+                path = extensionlessPath + ".GMO";
+            }
             if (File.Exists(path) && (Path.GetExtension(path).ToUpper() == ".GMO" || Path.GetExtension(path).ToUpper() == ".FBX"))
             {
-                if (chkBox_Extract.Checked)
+                if (chkBox_Extract.Checked && Path.GetExtension(path).ToUpper() == ".GMO")
                     ExtractTextures(path);
                 GMOTool(path, true);
-                string mdsPath = $"{Path.GetDirectoryName(path)}\\{Path.GetFileNameWithoutExtension(path)}.mds";
+                string mdsPath = extensionlessPath + ".mds";
                 while (!File.Exists(mdsPath)) { }
                 FixMDS(mdsPath);
                 newLines = newLines.Where(m => !string.IsNullOrEmpty(m)).ToList();
+                if (Path.GetExtension(path).ToUpper() == ".FBX" && chkBox_Animations.Checked)
+                {
+                    newLines.RemoveAt(newLines.Count - 1);
+                    foreach (var animation in animations)
+                        foreach (var line in animation)
+                            newLines.Add(line);
+                    newLines.Add("}");
+                }
                 ReorderAnimations();
-                string newMDSPath = $"{Path.GetDirectoryName(path)}\\{Path.GetFileNameWithoutExtension(path)}_p4g.mds";
+                string newMDSPath = $"{extensionlessPath}_p4g.mds";
                 if (File.Exists(newMDSPath))
                     File.Delete(newMDSPath);
                 File.AppendAllLines(newMDSPath, newLines);
+
+                lbl_AnimationsLoaded.Text = $"{animations.Count} Animations Loaded";
+                if (animations.Count > 0)
+                    btn_ExportAnim.Enabled = true;
             }
-                
         }
 
         //Extract textures from GMO
@@ -183,11 +219,28 @@ namespace P4GModelConverter
         private void btn_Create_DragDrop(object sender, DragEventArgs e)
         {
             string path = ((string[])e.Data.GetData(DataFormats.FileDrop, false))[0];
+            CreateGMO(path); 
+        }
+
+        private void CreateGMO(string path)
+        {
             if (File.Exists(path) && Path.GetExtension(path).ToUpper() == ".MDS")
             {
-                GMOTool(path, false);
+                //Make sure MDS isn't just exported animation data
+                if (File.ReadAllLines(path)[0] == ".MDS 0.95")
+                {
+                    GMOTool(path, false);
+
+                    if (File.Exists(extensionlessPath + ".AMD"))
+                    {
+                        //Todo: REPLACE GMO DATA IN AMD
+                    }
+                    if (File.Exists(extensionlessPath + ".PAC"))
+                    {
+                        //Todo: AUTO REPACK AMD INTO PAC
+                    }
+                }
             }
-                
         }
 
         private void GMOTool(string path, bool extract)
@@ -205,7 +258,7 @@ namespace P4GModelConverter
         private void FixMDS(string path)
         {
             //Lines from the original file and new collection
-            lines = File.ReadAllLines(path);
+            string[] lines = File.ReadAllLines(path);
             newLines = new List<string>();
             //Used to disable adding lines even while addLine is true
             int cutoff = int.MaxValue;
@@ -225,7 +278,7 @@ namespace P4GModelConverter
                         int x = i;
                         //Add bone data to bone list
                         Bone bone = new Bone();
-                        bone.Name = lines[x].Replace("\tBone \"", "").Replace("\" {", "");
+                        bone.Name = lines[x].Replace("\tBone \"", "").Replace("\" {", "").Replace("_", " ").Replace(" Bone", "_Bone");
                         x++;
                         while (!lines[x].StartsWith("\t}"))
                         {
@@ -233,16 +286,16 @@ namespace P4GModelConverter
                                 bone.BoundingBox = lines[x];
                             if (lines[x].StartsWith("\t\tTranslate"))
                                 bone.Translate = lines[x];
-                            if (lines[x].StartsWith("\t\tRotateZYX"))
-                                bone.RotateZYX = lines[x];
+                            if (lines[x].StartsWith("\t\tRotate"))
+                                bone.Rotate = lines[x];
                             if (lines[x].StartsWith("\t\tParentBone"))
-                                bone.ParentBone = lines[x];
+                                bone.ParentBone = lines[x].Replace("_", " ").Replace(" Bone", "_Bone");
                             if (lines[x].StartsWith("\t\tScale"))
                                 bone.Scale = lines[x];
                             if (lines[x].StartsWith("\t\tBlindData"))
                                 bone.BlindData = lines[x];
                             if (lines[x].StartsWith("\t\tBlendBones"))
-                                bone.BlendBones = lines[x];
+                                bone.BlendBones = lines[x].Replace("_", " ").Replace(" Bone", "_Bone"); ;
                             if (lines[x].StartsWith("\t\tDrawPart"))
                                 bone.DrawParts.Add(lines[x]);
                             if (lines[x].StartsWith("\t\tBlendOffsets"))
@@ -270,7 +323,6 @@ namespace P4GModelConverter
                         x++;
                         while (!lines[x].StartsWith("\t}"))
                         {
-                            Console.WriteLine(lines[x]);
                             if (lines[x].Contains("\t\tMesh"))
                             {
                                 string mesh = lines[x];
@@ -377,8 +429,11 @@ namespace P4GModelConverter
                 newLines.Add(bones[w].BlendBones);
                 newLines.Add(bones[w].BlendOffsets);
                 newLines.Add(bones[w].Translate);
-                newLines.Add(bones[w].RotateZYX);
-                newLines.Add(bones[w].Scale);
+                newLines.Add(bones[w].Rotate);
+                if (bones[w].Scale != null)
+                    newLines.Add(bones[w].Scale);
+                else
+                    newLines.Add("\t\tScale 1.000000 1.000000 1.000000");
                 newLines.Add(bones[w].BlindData);
                 foreach (var drawPartPair in boneDrawPartPairs.Where(p => p.Item1.Equals(bones[w].Name)))
                     newLines.Add($"\t\tDrawPart \"{drawPartPair.Item2}\"");
@@ -409,20 +464,38 @@ namespace P4GModelConverter
             for (int w = 0; w < materials.Count(); w++)
             {
                 newLines.Add($"\tMaterial \"{materials[w].Name}\" {{");
-                if (materials[w].BlendFunc.Contains("ADD SRC_ALPHA ONE"))
+                if (materials[w].BlendFunc != null && materials[w].BlendFunc.Contains("ADD SRC_ALPHA ONE"))
                     newLines.Add("\t\tRenderState CULL_FACE 0");
                 newLines.Add(materials[w].Diffuse);
+                if (materials[w].Diffuse == null)
+                    newLines.Add("\t\tDiffuse 0.800000 0.800000 0.800000 1.000000");
                 newLines.Add(materials[w].Ambient);
+                if (materials[w].Ambient == null)
+                    newLines.Add("\t\tAmbient 0.800000 0.800000 0.800000 1.000000");
                 newLines.Add(materials[w].Reflection);
+                if (materials[w].Reflection == null)
+                    newLines.Add("\t\tReflection 0.000000");
                 newLines.Add(materials[w].Refraction);
+                if (materials[w].Refraction == null)
+                    newLines.Add("\t\tRefraction 1.000000");
                 newLines.Add(materials[w].Bump);
+                if (materials[w].Bump == null)
+                    newLines.Add("\t\tBump 0.000000");
+                if (materials[w].BlendFunc != null && materials[w].BlendFunc.Contains("ADD SRC_ALPHA ONE"))
+                    newLines.Add("\t\tBlindData \"transAlgo\" 1");
+                else
+                    newLines.Add("\t\tBlindData \"transAlgo\" 4");
+
                 newLines.Add($"\t\tLayer \"layer - 1\" {{");
 
                 newLines.Add(materials[w].SetTexture);
                 newLines.Add("\t\t\tMapType Diffuse");
                 newLines.Add("\t\t\tMapFactor 1.000000");
-                newLines.Add(materials[w].BlendFunc);
-                if (materials[w].BlendFunc.Contains("ADD SRC_ALPHA ONE"))
+                if (materials[w].BlendFunc != null)
+                    newLines.Add(materials[w].BlendFunc);
+                else
+                    newLines.Add("\t\t\tBlendFunc ADD SRC_ALPHA INV_SRC_ALPHA");
+                if (materials[w].BlendFunc != null && materials[w].BlendFunc.Contains("ADD SRC_ALPHA ONE"))
                     newLines.Add("\t\t\tTexWrap CLAMP CLAMP\n\t\t\tTexGen NORMAL\n\t\t\tTexMatrix \\\n\t\t\t\t1.000000 0.000000 0.000000 0.000000 \\\n\t\t\t\t0.000000 1.000000 0.000000 0.000000 \\\n\t\t\t\t0.000000 0.000000 1.000000 0.000000 \\\n\t\t\t\t0.000000 0.000000 0.000000 1.000000");
 
                 newLines.Add("\t\t}");
@@ -433,7 +506,7 @@ namespace P4GModelConverter
         //If listbox order has changed, reorder animations to match
         private void ReorderAnimations()
         {
-            List<List<string>> animations = new List<List<string>>();
+            animations = new List<List<string>>();
             //Keep track of which line animations start at
             int animLine = 0;
             //Make a list of animations and strings per animation
@@ -467,7 +540,6 @@ namespace P4GModelConverter
             if (animLine > 0)
             {
                 newLines = newLines.Take(animLine).ToList();
-
                 List<List<string>> newAnims = new List<List<string>>();
                 if (chkBox_Animations.Checked)
                 {
@@ -539,16 +611,6 @@ namespace P4GModelConverter
             return c.Substring((c.IndexOf(a) + a.Length), (c.IndexOf(b) - c.IndexOf(a) - a.Length));
         }
 
-        private void btn_Create_DragEnter(object sender, DragEventArgs e)
-        {
-            e.Effect = DragDropEffects.Move;
-        }
-
-        private void btn_Extract_DragEnter(object sender, DragEventArgs e)
-        {
-            e.Effect = DragDropEffects.Move;
-        }
-
         public void MoveItem(int direction)
         {
             // Checking selected item
@@ -580,6 +642,73 @@ namespace P4GModelConverter
         private void Down_Click(object sender, EventArgs e)
         {
             MoveItem(1);
+        }
+
+        private void btn_Create_DragEnter(object sender, DragEventArgs e)
+        {
+            e.Effect = DragDropEffects.Move;
+        }
+
+        private void btn_Extract_DragEnter(object sender, DragEventArgs e)
+        {
+            e.Effect = DragDropEffects.Move;
+        }
+
+        private void btn_Extract_Click(object sender, EventArgs e)
+        {
+            CommonOpenFileDialog dialog = new CommonOpenFileDialog();
+            dialog.Filters.Add(new CommonFileDialogFilter("GMO Model", "*.gmo"));
+            dialog.Filters.Add(new CommonFileDialogFilter("FBX Model", "*.fbx"));
+            dialog.Title = "Load Model...";
+            if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
+            {
+                CreateMDS(dialog.FileName);
+            }
+        }
+
+        private void btn_Create_Click(object sender, EventArgs e)
+        {
+            CommonOpenFileDialog dialog = new CommonOpenFileDialog();
+            dialog.Filters.Add(new CommonFileDialogFilter("MDS File", "*.mds"));
+            dialog.Title = "Load MDS File...";
+            if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
+            {
+                CreateGMO(dialog.FileName);
+            }
+        }
+
+        private void btn_ExportAnim_Click(object sender, EventArgs e)
+        {
+            if (animations.Count > 0)
+            {
+                CommonSaveFileDialog dialog = new CommonSaveFileDialog();
+                dialog.Filters.Add(new CommonFileDialogFilter("MDS File", "*.mds"));
+                dialog.Title = "Save Animation Set...";
+                if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
+                {
+                    if (File.Exists(dialog.FileName))
+                        File.Delete(dialog.FileName);
+                    foreach(var animation in animations)
+                        File.AppendAllLines(dialog.FileName, animation);
+                    File.AppendAllText(dialog.FileName, "\n}");
+                }
+            }
+        }
+
+        private void btn_ImportAnim_Click(object sender, EventArgs e)
+        {
+            CommonOpenFileDialog dialog = new CommonOpenFileDialog();
+            dialog.Filters.Add(new CommonFileDialogFilter("MDS File", "*.mds"));
+            dialog.Title = "Load Animation Set...";
+            if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
+            {
+                newLines = File.ReadAllLines(dialog.FileName).ToList();
+                ReorderAnimations();
+                lbl_AnimationsLoaded.Text = $"{animations.Count()} Animations Loaded";
+                if (animations.Count > 0)
+                    btn_ExportAnim.Enabled = true;
+            }
+            
         }
     }
 }
