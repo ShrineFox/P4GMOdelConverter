@@ -40,6 +40,9 @@
             this.lbl_AnimationsLoaded = new System.Windows.Forms.Label();
             this.btn_ExportAnim = new System.Windows.Forms.Button();
             this.btn_ImportAnim = new System.Windows.Forms.Button();
+            this.chkBox_Dummy = new System.Windows.Forms.CheckBox();
+            this.lbl_WpnBone = new System.Windows.Forms.Label();
+            this.txt_WpnBone = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // btn_Extract
@@ -218,7 +221,7 @@
             // chkBox_Extract
             // 
             this.chkBox_Extract.AutoSize = true;
-            this.chkBox_Extract.Location = new System.Drawing.Point(13, 195);
+            this.chkBox_Extract.Location = new System.Drawing.Point(16, 180);
             this.chkBox_Extract.Margin = new System.Windows.Forms.Padding(4);
             this.chkBox_Extract.Name = "chkBox_Extract";
             this.chkBox_Extract.Size = new System.Drawing.Size(169, 21);
@@ -231,7 +234,7 @@
             this.chkBox_Animations.AutoSize = true;
             this.chkBox_Animations.Checked = true;
             this.chkBox_Animations.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkBox_Animations.Location = new System.Drawing.Point(13, 219);
+            this.chkBox_Animations.Location = new System.Drawing.Point(16, 204);
             this.chkBox_Animations.Margin = new System.Windows.Forms.Padding(4);
             this.chkBox_Animations.Name = "chkBox_Animations";
             this.chkBox_Animations.Size = new System.Drawing.Size(172, 21);
@@ -274,12 +277,46 @@
             this.btn_ImportAnim.UseVisualStyleBackColor = true;
             this.btn_ImportAnim.Click += new System.EventHandler(this.btn_ImportAnim_Click);
             // 
+            // chkBox_Dummy
+            // 
+            this.chkBox_Dummy.AutoSize = true;
+            this.chkBox_Dummy.Checked = true;
+            this.chkBox_Dummy.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkBox_Dummy.Location = new System.Drawing.Point(16, 226);
+            this.chkBox_Dummy.Margin = new System.Windows.Forms.Padding(4);
+            this.chkBox_Dummy.Name = "chkBox_Dummy";
+            this.chkBox_Dummy.Size = new System.Drawing.Size(138, 21);
+            this.chkBox_Dummy.TabIndex = 12;
+            this.chkBox_Dummy.Text = "Dummy Materials";
+            this.chkBox_Dummy.UseVisualStyleBackColor = true;
+            // 
+            // lbl_WpnBone
+            // 
+            this.lbl_WpnBone.AutoSize = true;
+            this.lbl_WpnBone.Location = new System.Drawing.Point(224, 202);
+            this.lbl_WpnBone.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lbl_WpnBone.Name = "lbl_WpnBone";
+            this.lbl_WpnBone.Size = new System.Drawing.Size(143, 17);
+            this.lbl_WpnBone.TabIndex = 13;
+            this.lbl_WpnBone.Text = "Weapon Bone Name:";
+            // 
+            // txt_WpnBone
+            // 
+            this.txt_WpnBone.Location = new System.Drawing.Point(227, 222);
+            this.txt_WpnBone.Name = "txt_WpnBone";
+            this.txt_WpnBone.Size = new System.Drawing.Size(200, 22);
+            this.txt_WpnBone.TabIndex = 14;
+            this.txt_WpnBone.Text = "Bip01 L Hand_Bone";
+            // 
             // MainForm
             // 
             this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(592, 253);
+            this.Controls.Add(this.txt_WpnBone);
+            this.Controls.Add(this.lbl_WpnBone);
+            this.Controls.Add(this.chkBox_Dummy);
             this.Controls.Add(this.btn_ImportAnim);
             this.Controls.Add(this.btn_ExportAnim);
             this.Controls.Add(this.lbl_AnimationsLoaded);
@@ -315,6 +352,9 @@
         private System.Windows.Forms.Label lbl_AnimationsLoaded;
         private System.Windows.Forms.Button btn_ExportAnim;
         private System.Windows.Forms.Button btn_ImportAnim;
+        private System.Windows.Forms.CheckBox chkBox_Dummy;
+        private System.Windows.Forms.Label lbl_WpnBone;
+        private System.Windows.Forms.TextBox txt_WpnBone;
     }
 }
 

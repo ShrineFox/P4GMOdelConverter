@@ -251,6 +251,8 @@ namespace P4GModelConverter
             cmd.StartInfo.Arguments = $"\"{path}\"";
             if (extract)
                 cmd.StartInfo.Arguments += " -E";
+            else
+                cmd.StartInfo.Arguments += " -PSV";
             cmd.Start();
             cmd.WaitForExit();
         }
@@ -278,7 +280,10 @@ namespace P4GModelConverter
                         int x = i;
                         //Add bone data to bone list
                         Bone bone = new Bone();
-                        bone.Name = lines[x].Replace("\tBone \"", "").Replace("\" {", "").Replace("_", " ").Replace(" Bone", "_Bone");
+                        if (lines[x].Contains("player root_Bone"))
+                            bone.Name = "player_root_Bone";
+                        else
+                            bone.Name = lines[x].Replace("\tBone \"", "").Replace("\" {", "").Replace("_", " ").Replace(" Bone", "_Bone");
                         x++;
                         while (!lines[x].StartsWith("\t}"))
                         {
@@ -289,13 +294,13 @@ namespace P4GModelConverter
                             if (lines[x].StartsWith("\t\tRotate"))
                                 bone.Rotate = lines[x];
                             if (lines[x].StartsWith("\t\tParentBone"))
-                                bone.ParentBone = lines[x].Replace("_", " ").Replace(" Bone", "_Bone");
+                                bone.ParentBone = lines[x].Replace("_", " ").Replace(" Bone", "_Bone").Replace("player root_Bone","player_root_Bone");
                             if (lines[x].StartsWith("\t\tScale"))
                                 bone.Scale = lines[x];
                             if (lines[x].StartsWith("\t\tBlindData"))
                                 bone.BlindData = lines[x];
                             if (lines[x].StartsWith("\t\tBlendBones"))
-                                bone.BlendBones = lines[x].Replace("_", " ").Replace(" Bone", "_Bone"); ;
+                                bone.BlendBones = lines[x].Replace("_", " ").Replace(" Bone", "_Bone").Replace("player root_Bone", "player_root_Bone");
                             if (lines[x].StartsWith("\t\tDrawPart"))
                                 bone.DrawParts.Add(lines[x]);
                             if (lines[x].StartsWith("\t\tBlendOffsets"))
@@ -392,7 +397,10 @@ namespace P4GModelConverter
                         MatchBonesAndDrawParts();
                         RewriteBones();
                         RewriteParts();
-                        RewriteMaterials();
+                        if (!chkBox_Dummy.Checked)
+                            RewriteMaterials();
+                        else
+                            newLines.Add("\tMaterial \"Dummy\" {\n\t\tDiffuse 1.000000 1.000000 1.000000 1.000000\n\t\tAmbient 1.000000 1.000000 1.000000 1.000000\n\t\tReflection 0.000000\n\t\tRefraction 1.000000\n\t\tBump 0.000000\n\t\tBlindData \"transAlgo\" 4\n\t\tLayer \"dummy_layer\" {\n\t\t\tBlendFunc ADD SRC_ALPHA INV_SRC_ALPHA\n\t\t}\n\t}");
                         //Write the rest of the file normally from source (textures, anims...)
                         cutoff = int.MaxValue;
                     }
@@ -400,7 +408,10 @@ namespace P4GModelConverter
 
                 //Add line to new collection if it doesn't need to be replaced
                 if (addLine && i < cutoff)
+                {
                     newLines.Add(lines[i]);
+                }
+                    
             }
         }
 
@@ -434,6 +445,8 @@ namespace P4GModelConverter
                     newLines.Add(bones[w].Scale);
                 else
                     newLines.Add("\t\tScale 1.000000 1.000000 1.000000");
+                if (bones[w].Name == txt_WpnBone.Text)
+                    bones[w].BlindData = "\t\tBlindData \"per3Helper\" 500 1092542719 1085565955 1065731131 -1082972548 1048875842 -1104161467 1024833421 0 0";
                 newLines.Add(bones[w].BlindData);
                 foreach (var drawPartPair in boneDrawPartPairs.Where(p => p.Item1.Equals(bones[w].Name)))
                     newLines.Add($"\t\tDrawPart \"{drawPartPair.Item2}\"");
@@ -450,7 +463,10 @@ namespace P4GModelConverter
                 {
                     newLines.Add($"\tPart \"{parts[w].Name}_{z}\" {{");
                     newLines.Add(parts[w].BoundingBox);
-                    newLines.Add(parts[w].Meshes[z]);
+                    if (!chkBox_Dummy.Checked)
+                        newLines.Add(parts[w].Meshes[z]);
+                    else
+                        newLines.Add(Regex.Replace(parts[w].Meshes[z], "SetMaterial \".*\"", "SetMaterial \"Dummy\""));
                     newLines.Add(parts[w].Arrays[z]);
                     newLines.Add("\t}");
                 }
