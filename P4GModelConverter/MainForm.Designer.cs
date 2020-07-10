@@ -333,7 +333,7 @@
             this.MaximumSize = new System.Drawing.Size(610, 300);
             this.MinimumSize = new System.Drawing.Size(610, 300);
             this.Name = "MainForm";
-            this.Text = "P4GMOdel Converter 1.2";
+            this.Text = "P4GMOdel Converter 1.3";
             this.ResumeLayout(false);
             this.PerformLayout();
 
