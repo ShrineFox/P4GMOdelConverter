@@ -230,6 +230,7 @@ namespace P4GModelConverter
                 if (File.ReadAllLines(path)[0] == ".MDS 0.95")
                 {
                     GMOTool(path, false);
+                    GMOFixTool(Path.Combine(Path.GetDirectoryName(path), Path.GetFileNameWithoutExtension(path)) + ".gmo");
 
                     if (File.Exists(extensionlessPath + ".AMD"))
                     {
@@ -253,6 +254,16 @@ namespace P4GModelConverter
                 cmd.StartInfo.Arguments += " -E";
             else
                 cmd.StartInfo.Arguments += " -PSV";
+            cmd.Start();
+            cmd.WaitForExit();
+        }
+
+        private void GMOFixTool(string path)
+        {
+            Process cmd = new Process();
+            cmd.StartInfo.FileName = "p4gpc-gmofix.exe";
+            //cmd.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+            cmd.StartInfo.Arguments = $"\"{path}\"";
             cmd.Start();
             cmd.WaitForExit();
         }
