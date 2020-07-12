@@ -1,7 +1,7 @@
 # P4GMOdelConverter
 A tool for creating working P4G custom models
 
-![](https://i.imgur.com/dNwktg8.png)
+![](https://i.imgur.com/yvqOOBH.png)
 
 Converts FBX and GMO models to MDS (an editable text format) and back.
 
