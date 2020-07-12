@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using TGE.IO;
 using Microsoft.WindowsAPICodePack.Dialogs;
+using System.Reflection;
 
 namespace P4GModelConverter
 {
@@ -196,7 +197,7 @@ namespace P4GModelConverter
         private void GMOConv(string model)
         {
             Process cmd = new Process();
-            cmd.StartInfo.FileName = "GMO\\GmoConv.exe";
+            cmd.StartInfo.FileName = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\GMO\\GmoConv.exe";
             //cmd.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             cmd.StartInfo.Arguments = $"\"{model}\"";
             cmd.Start();
@@ -206,7 +207,7 @@ namespace P4GModelConverter
         private void GIMConv(string texture)
         {
             Process cmd = new Process();
-            cmd.StartInfo.FileName = "GIM\\GimConv.exe";
+            cmd.StartInfo.FileName = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\GIM\\GimConv.exe";
             //cmd.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             cmd.StartInfo.Arguments = $"\"{texture}\" -o \"{texture}.tm2\"";
             cmd.Start();
@@ -216,7 +217,7 @@ namespace P4GModelConverter
         private void GMOView(string model)
         {
             Process cmd = new Process();
-            cmd.StartInfo.FileName = "GMO\\GmoView.exe";
+            cmd.StartInfo.FileName = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\GMO\\GmoView.exe";
             //cmd.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             cmd.StartInfo.Arguments = $"\"{model}\"";
             cmd.Start();
@@ -320,7 +321,7 @@ namespace P4GModelConverter
         private void GMOTool(string path, bool extract)
         {
             Process cmd = new Process();
-            cmd.StartInfo.FileName = "GMOTool.exe";
+            cmd.StartInfo.FileName = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\GMOTool.exe";
             //cmd.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             cmd.StartInfo.Arguments = $"\"{path}\"";
             if (extract)
@@ -334,7 +335,7 @@ namespace P4GModelConverter
         private void GMOFixTool(string path)
         {
             Process cmd = new Process();
-            cmd.StartInfo.FileName = "p4gpc-gmofix.exe";
+            cmd.StartInfo.FileName = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\p4gpc-gmofix.exe";
             //cmd.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             cmd.StartInfo.Arguments = $"\"{path}\"";
             cmd.Start();
