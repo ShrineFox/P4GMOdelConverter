@@ -1,5 +1,6 @@
 # P4GMOdelConverter
 A tool for creating working P4G custom models
+
 ![](https://i.imgur.com/FX2zuV2.png)
 
 ## How to Use
@@ -8,6 +9,7 @@ A tool for creating working P4G custom models
 3. Open the .GMO with P4GMOdelConverter and it'll generate 2 .mds files (hopefully)
    Note: Animations from the GMO will be included in the .mds files if the box is checked.
 4. Open the generated ``_p4g.mds`` to create a new .GMO that should work in P4G.
+
 
 For more use cases, see [this guide on importing custom models](https://shrinefox.com/guides/2020/06/18/wip-importing-custom-models-in-p3p-p4g/).
 
