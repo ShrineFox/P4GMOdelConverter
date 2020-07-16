@@ -19,18 +19,14 @@ For more use cases, see [this guide on importing custom models](https://shrinefo
  - (Optional) Convert FBX directly to GMO before MDS (may improve compatibility)
  - (Optional) Exlude animations or textures/materials from P4G MDS (for testing geometry)
  - (Optional) Loads animations from GMO
- - (Optional) Renames underscores to spaces in bone names (except "_Bone")
- 
- Improves compatibility with GMO animations when converting from FBX 
+ - (Optional) Renames underscores to spaces in bone names (except "_Bone") Improves compatibility with GMO animations when converting from FBX 
  - (Optional) Rename the bone weapons attach to for battle models
  - (Optional) Extract TM2 textures from GMO (for the MDS to reference when converting back to GMO)
  ## Convert MDS text file to GMO model
  - Outputs GMO rebuilt from input MDS
  - Updates MDS file before converting with new animation order
  - (Optional) Run generated GMO through TGE's tool to fix compatibility with P4G PC
- - (Optional) Automatically view generated GMO in new GMOView window
- 
- Might not work with P4G PC "fixed" models
+ - (Optional) Automatically view generated GMO in new GMOView window (_Might not work with P4G PC "fixed" models_)
 ## Re-order MDS animations on the fly
  - Move animations up and down by name in animation list
  - Update last generated/opened MDS files with new animation order
