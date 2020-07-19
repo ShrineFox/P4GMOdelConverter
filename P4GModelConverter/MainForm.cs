@@ -897,7 +897,10 @@ namespace P4GModelConverter
             // Restore selection
             dataGridView_AnimationOrder.Rows[newIndex].Selected = true;
             //Scroll to selection
-            dataGridView_AnimationOrder.FirstDisplayedScrollingRowIndex = dataGridView_AnimationOrder.SelectedRows[0].Index;
+            if (newIndex > 1)
+                dataGridView_AnimationOrder.FirstDisplayedScrollingRowIndex = newIndex - 2;
+            else
+                dataGridView_AnimationOrder.FirstDisplayedScrollingRowIndex = 0;
 
             // Redo row numbering
             for (int i = 0; i < dataGridView_AnimationOrder.Rows.Count; i++)
