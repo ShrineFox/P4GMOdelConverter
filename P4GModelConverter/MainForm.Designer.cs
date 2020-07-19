@@ -47,8 +47,11 @@
             this.chkBox_ViewGMO = new System.Windows.Forms.CheckBox();
             this.chkBox_RenameBones = new System.Windows.Forms.CheckBox();
             this.panel_FBX_GMO = new System.Windows.Forms.Panel();
+            this.chkBox_AutoConvertTex = new System.Windows.Forms.CheckBox();
             this.panel_MDS = new System.Windows.Forms.Panel();
             this.btn_Update = new System.Windows.Forms.Button();
+            this.lbl_AnimPreset = new System.Windows.Forms.Label();
+            this.comboBox_Preset = new System.Windows.Forms.ComboBox();
             this.panel_FBX_GMO.SuspendLayout();
             this.panel_MDS.SuspendLayout();
             this.SuspendLayout();
@@ -191,7 +194,7 @@
             // lbl_WpnBone
             // 
             this.lbl_WpnBone.AutoSize = true;
-            this.lbl_WpnBone.Location = new System.Drawing.Point(9, 108);
+            this.lbl_WpnBone.Location = new System.Drawing.Point(9, 146);
             this.lbl_WpnBone.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lbl_WpnBone.Name = "lbl_WpnBone";
             this.lbl_WpnBone.Size = new System.Drawing.Size(143, 17);
@@ -200,7 +203,7 @@
             // 
             // txt_WpnBone
             // 
-            this.txt_WpnBone.Location = new System.Drawing.Point(12, 128);
+            this.txt_WpnBone.Location = new System.Drawing.Point(12, 166);
             this.txt_WpnBone.Name = "txt_WpnBone";
             this.txt_WpnBone.Size = new System.Drawing.Size(149, 22);
             this.txt_WpnBone.TabIndex = 15;
@@ -257,6 +260,7 @@
             // panel_FBX_GMO
             // 
             this.panel_FBX_GMO.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panel_FBX_GMO.Controls.Add(this.chkBox_AutoConvertTex);
             this.panel_FBX_GMO.Controls.Add(this.chkBox_GMOtoFBX);
             this.panel_FBX_GMO.Controls.Add(this.chkBox_RenameBones);
             this.panel_FBX_GMO.Controls.Add(this.txt_WpnBone);
@@ -266,8 +270,21 @@
             this.panel_FBX_GMO.Controls.Add(this.chkBox_Animations);
             this.panel_FBX_GMO.Location = new System.Drawing.Point(16, 186);
             this.panel_FBX_GMO.Name = "panel_FBX_GMO";
-            this.panel_FBX_GMO.Size = new System.Drawing.Size(200, 155);
+            this.panel_FBX_GMO.Size = new System.Drawing.Size(200, 205);
             this.panel_FBX_GMO.TabIndex = 17;
+            // 
+            // chkBox_AutoConvertTex
+            // 
+            this.chkBox_AutoConvertTex.AutoSize = true;
+            this.chkBox_AutoConvertTex.Checked = true;
+            this.chkBox_AutoConvertTex.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkBox_AutoConvertTex.Location = new System.Drawing.Point(12, 108);
+            this.chkBox_AutoConvertTex.Margin = new System.Windows.Forms.Padding(4);
+            this.chkBox_AutoConvertTex.Name = "chkBox_AutoConvertTex";
+            this.chkBox_AutoConvertTex.Size = new System.Drawing.Size(172, 21);
+            this.chkBox_AutoConvertTex.TabIndex = 17;
+            this.chkBox_AutoConvertTex.Text = "Auto-Convert Textures";
+            this.chkBox_AutoConvertTex.UseVisualStyleBackColor = true;
             // 
             // panel_MDS
             // 
@@ -276,7 +293,7 @@
             this.panel_MDS.Controls.Add(this.chkBox_PCFix);
             this.panel_MDS.Location = new System.Drawing.Point(229, 186);
             this.panel_MDS.Name = "panel_MDS";
-            this.panel_MDS.Size = new System.Drawing.Size(198, 155);
+            this.panel_MDS.Size = new System.Drawing.Size(198, 205);
             this.panel_MDS.TabIndex = 18;
             // 
             // btn_Update
@@ -292,12 +309,40 @@
             this.btn_Update.UseVisualStyleBackColor = true;
             this.btn_Update.Click += new System.EventHandler(this.btn_Reset_Click);
             // 
+            // lbl_AnimPreset
+            // 
+            this.lbl_AnimPreset.AutoSize = true;
+            this.lbl_AnimPreset.Location = new System.Drawing.Point(488, 379);
+            this.lbl_AnimPreset.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lbl_AnimPreset.Name = "lbl_AnimPreset";
+            this.lbl_AnimPreset.Size = new System.Drawing.Size(129, 17);
+            this.lbl_AnimPreset.TabIndex = 21;
+            this.lbl_AnimPreset.Text = "Anim Name Preset:";
+            // 
+            // comboBox_Preset
+            // 
+            this.comboBox_Preset.FormattingEnabled = true;
+            this.comboBox_Preset.Items.AddRange(new object[] {
+            "None",
+            "P4G Protag",
+            "P4G Party Member",
+            "P4G Culprit",
+            "P3P Protag/Protag",
+            "P3P Strega"});
+            this.comboBox_Preset.Location = new System.Drawing.Point(625, 376);
+            this.comboBox_Preset.Name = "comboBox_Preset";
+            this.comboBox_Preset.Size = new System.Drawing.Size(151, 24);
+            this.comboBox_Preset.TabIndex = 22;
+            this.comboBox_Preset.SelectedIndexChanged += new System.EventHandler(this.comboBox_Preset_SelectedIndexChanged);
+            // 
             // MainForm
             // 
             this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(782, 353);
+            this.ClientSize = new System.Drawing.Size(782, 403);
+            this.Controls.Add(this.comboBox_Preset);
+            this.Controls.Add(this.lbl_AnimPreset);
             this.Controls.Add(this.btn_Update);
             this.Controls.Add(this.panel_MDS);
             this.Controls.Add(this.panel_FBX_GMO);
@@ -311,10 +356,10 @@
             this.Controls.Add(this.btn_Extract);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(4);
-            this.MaximumSize = new System.Drawing.Size(800, 400);
-            this.MinimumSize = new System.Drawing.Size(800, 400);
+            this.MaximumSize = new System.Drawing.Size(800, 450);
+            this.MinimumSize = new System.Drawing.Size(800, 450);
             this.Name = "MainForm";
-            this.Text = "P4GMOdel Converter 1.5";
+            this.Text = "P4GMOdel Converter 1.5.1";
             this.panel_FBX_GMO.ResumeLayout(false);
             this.panel_FBX_GMO.PerformLayout();
             this.panel_MDS.ResumeLayout(false);
@@ -346,6 +391,9 @@
         private System.Windows.Forms.Panel panel_FBX_GMO;
         private System.Windows.Forms.Panel panel_MDS;
         private System.Windows.Forms.Button btn_Update;
+        private System.Windows.Forms.CheckBox chkBox_AutoConvertTex;
+        private System.Windows.Forms.Label lbl_AnimPreset;
+        private System.Windows.Forms.ComboBox comboBox_Preset;
     }
 }
 

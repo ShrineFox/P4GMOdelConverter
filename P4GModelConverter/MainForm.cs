@@ -27,6 +27,15 @@ namespace P4GModelConverter
         List<Animation> animations = new List<Animation>();
         List<Texture> textures = new List<Texture>();
         string extensionlessPath;
+        List<List<string>> animationPresets = new List<List<string>>() { //null, p4g protag, p4g party, p4g culprit, p3p protag, p3p party, p3p strega
+            new List<string>{ "" }, 
+            new List<string> { "Idle", "Idle 2", "Run", "Attack", "Attack Critical", "Placeholder 4", "Persona Change", "Persona Summon 1", "Persona Summon 2", "Persona Summon 3", "Persona Summon 4", "Guard", "Dodge", "Low HP", "Damaged", "Miss Attack", "Knocked Down", "Down", "Get Back Up", "Killed", "Revived", "Use Item", "Victory", "Pushed Out of the Way", "Placeholder 23", "Helped Up", "Placeholder 25", "Idle (Duplicate)" },
+            new List<string>{ "Idle (Active)", "Idle 2", "Run", "Attack", "Attack Critical", "Special Attack 1", "Special Attack 2", "Persona Summon 1", "Persona Summon 2", "Persona Summon 3", "Persona Summon 4", "Guard", "Dodge", "Low HP", "Damaged", "Miss Attack", "Knocked Down", "Down", "Get Back Up", "Killed", "Revived", "Use Item", "Victory", "Knock Out of the Way", "Help Up Party Member", "Helped Up", "Yell At Party Member", "Idle (Still)", "Group Summon 1", "Group Summon 2", "Group Summon 3", "Group Summon 4" },
+            new List<string>{ "Idle", "Low HP", "Damaged", "Run", "Attack", "Placeholder 4", "Dialog Animation", "Miss Attack", "Knocked Down", "Down", "Get Back Up", "Killed", "Persona Summon 1", "Persona Summon 2", "Persona Summon 3", "Persona Summon 4", "Dodge", "Idle 2" },
+            new List<string>{ "Idle", "Low HP", "Damaged", "Run", "Attack", "Attack 2 Critical", "Attack 3 Critical", "Miss Attack", "Knocked Down", "Down", "Get Back Up", "Persona Summon 1", "Persona Summon 2", "Persona Summon 3", "Persona Summon 4", "Idle 2", "Use Item", "Dodge", "Revived", "Victory", "Killed", "Fusion Attack", "Guard", "Knock Out of the Way" },
+            new List<string>{ "Idle", "Low HP", "Damaged", "Run", "Attack", "Placeholder 4", "Killed", "Miss Attack", "Knocked Down", "Down", "Get Back Up", "Persona Summon 1", "Persona Summon 2", "Persona Summon 3", "Persona Summon 4", "Idle 2", "Placeholder 15", "Low HP (Duplicate)", "Dodge" }
+        };
+        bool presetChanged;
 
         public MainForm()
         {
@@ -307,6 +316,8 @@ namespace P4GModelConverter
                             bone.Name = lines[x].Replace("\tBone \"", "").Replace("\" {", "").Replace("_", " ").Replace(" Bone", "_Bone");
                             if (bone.Name == "player root_Bone")
                                 bone.Name = "player_root_Bone";
+                            if (bone.Name == "player body_Bone")
+                                bone.Name = "player_body_Bone";
                         }
                         else
                             bone.Name = lines[x].Replace("\tBone \"", "").Replace("\" {", "");
@@ -322,7 +333,7 @@ namespace P4GModelConverter
                             if (lines[x].StartsWith("\t\tParentBone"))
                             {
                                 if (chkBox_RenameBones.Checked)
-                                    bone.ParentBone = lines[x].Replace("_", " ").Replace(" Bone", "_Bone").Replace("player root_Bone", "player_root_Bone");
+                                    bone.ParentBone = lines[x].Replace("_", " ").Replace(" Bone", "_Bone").Replace("player root_Bone", "player_root_Bone").Replace("player body_Bone", "player_body_Bone");
                                 else
                                     bone.ParentBone = lines[x];
                             }
@@ -333,7 +344,7 @@ namespace P4GModelConverter
                             if (lines[x].StartsWith("\t\tBlendBones"))
                             {
                                 if (chkBox_RenameBones.Checked)
-                                    bone.BlendBones = lines[x].Replace("_", " ").Replace(" Bone", "_Bone").Replace("player root_Bone", "player_root_Bone");
+                                    bone.BlendBones = lines[x].Replace("_", " ").Replace(" Bone", "_Bone").Replace("player root_Bone", "player_root_Bone").Replace("player body_Bone", "player_body_Bone");
                                 else
                                     bone.BlendBones = lines[x];
                             }
@@ -539,7 +550,6 @@ namespace P4GModelConverter
                     newLines.Add("\t}");
                 }
             }
-            
         }
 
         private void RewriteMaterials()
@@ -592,7 +602,7 @@ namespace P4GModelConverter
             foreach (var texture in textures)
             {
                 newLines.Add($"\tTexture \"{texture.Name}\" {{");
-                if (!texture.FileName.ToLower().Contains(".tm2"))
+                if (!texture.FileName.ToLower().Contains(".tm2") && chkBox_AutoConvertTex.Checked)
                 {
                     GIMConv(texture.FileName);
                     newLines.Add($"\t\tFileName \"{texture.FileName}.tm2\"");
@@ -611,12 +621,30 @@ namespace P4GModelConverter
             {
                 //Reorder animations by name in listbox order
                 var newAnims = new List<Animation>();
+                //Re-order animations based on order in listbox
                 foreach (string animName in listBox_AnimationOrder.Items)
                 {
-                    newAnims.Add(animations.First(x => x.Name == animName));
+                    newAnims.Add(animations.FirstOrDefault(x => x.Name == animName));
                 }
-                animations = newAnims;
-
+                animations = newAnims.Where(x => x != null).ToList();
+                //Use preset bone names if option is selected
+                if (presetChanged)
+                {
+                    for (int i = 0; i < animations.Count; i++)
+                    {
+                        if (comboBox_Preset.SelectedIndex > 0 && animationPresets[comboBox_Preset.SelectedIndex].Count > i)
+                        {
+                            animations[i].Name = animationPresets[comboBox_Preset.SelectedIndex][i];
+                            listBox_AnimationOrder.Items[i] = animationPresets[comboBox_Preset.SelectedIndex][i];
+                        }
+                        if (animations[i] == null)
+                        {
+                            var nullAnim = new Animation() { };
+                            nullAnim.Name = $"NULL {i}";
+                            animations[i] = nullAnim;
+                        }
+                    }
+                }
                 //For each mds file matching the latest input, rewrite with new animation order
                 string filePath = extensionlessPath;
                 if (filePath == null)
@@ -629,7 +657,6 @@ namespace P4GModelConverter
                 }
                 foreach (var file in Directory.GetFiles(Path.GetDirectoryName(filePath)).Where(x => x.ToLower().Equals($"{extensionlessPath.ToLower()}.mds") || x.ToLower().Equals($"{extensionlessPath.ToLower()}_p4g.mds")))
                 {
-                    bool exceptionCaught = false;
                     var mdsLines = File.ReadAllLines(file).ToList(); //Get all lines up to first animation
                     mdsLines.Remove("}");
                     int index = mdsLines.FindIndex(x => x.StartsWith("\tMotion \""));
@@ -948,6 +975,13 @@ namespace P4GModelConverter
                     btn_ExportAnim.Enabled = true;
                 UpdateListBox();
             }
+        }
+
+        private void comboBox_Preset_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            presetChanged = true;
+            UpdateListBox();
+            presetChanged = false;
         }
     }
 }
