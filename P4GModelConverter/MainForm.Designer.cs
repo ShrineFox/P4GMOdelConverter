@@ -28,10 +28,10 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.btn_Extract = new System.Windows.Forms.Button();
             this.btn_Create = new System.Windows.Forms.Button();
-            this.listBox_AnimationOrder = new System.Windows.Forms.ListBox();
             this.btn_Up = new System.Windows.Forms.Button();
             this.btn_Down = new System.Windows.Forms.Button();
             this.chkBox_Extract = new System.Windows.Forms.CheckBox();
@@ -52,8 +52,12 @@
             this.btn_Update = new System.Windows.Forms.Button();
             this.lbl_AnimPreset = new System.Windows.Forms.Label();
             this.comboBox_Preset = new System.Windows.Forms.ComboBox();
+            this.dataGridView_AnimationOrder = new System.Windows.Forms.DataGridView();
+            this.Number = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.AnimationName = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.panel_FBX_GMO.SuspendLayout();
             this.panel_MDS.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridView_AnimationOrder)).BeginInit();
             this.SuspendLayout();
             // 
             // btn_Extract
@@ -83,19 +87,6 @@
             this.btn_Create.Click += new System.EventHandler(this.btn_Create_Click);
             this.btn_Create.DragDrop += new System.Windows.Forms.DragEventHandler(this.btn_Create_DragDrop);
             this.btn_Create.DragEnter += new System.Windows.Forms.DragEventHandler(this.btn_Create_DragEnter);
-            // 
-            // listBox_AnimationOrder
-            // 
-            this.listBox_AnimationOrder.Enabled = false;
-            this.listBox_AnimationOrder.FormattingEnabled = true;
-            this.listBox_AnimationOrder.ItemHeight = 16;
-            this.listBox_AnimationOrder.Items.AddRange(new object[] {
-            "No Animations Loaded"});
-            this.listBox_AnimationOrder.Location = new System.Drawing.Point(435, 7);
-            this.listBox_AnimationOrder.Margin = new System.Windows.Forms.Padding(4);
-            this.listBox_AnimationOrder.Name = "listBox_AnimationOrder";
-            this.listBox_AnimationOrder.Size = new System.Drawing.Size(295, 276);
-            this.listBox_AnimationOrder.TabIndex = 3;
             // 
             // btn_Up
             // 
@@ -335,12 +326,64 @@
             this.comboBox_Preset.TabIndex = 22;
             this.comboBox_Preset.SelectedIndexChanged += new System.EventHandler(this.comboBox_Preset_SelectedIndexChanged);
             // 
+            // dataGridView_AnimationOrder
+            // 
+            this.dataGridView_AnimationOrder.AllowUserToAddRows = false;
+            this.dataGridView_AnimationOrder.AllowUserToDeleteRows = false;
+            this.dataGridView_AnimationOrder.AllowUserToResizeColumns = false;
+            this.dataGridView_AnimationOrder.AllowUserToResizeRows = false;
+            this.dataGridView_AnimationOrder.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.dataGridView_AnimationOrder.ColumnHeadersHeight = 29;
+            this.dataGridView_AnimationOrder.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+            this.dataGridView_AnimationOrder.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.Number,
+            this.AnimationName});
+            this.dataGridView_AnimationOrder.Location = new System.Drawing.Point(435, 7);
+            this.dataGridView_AnimationOrder.MultiSelect = false;
+            this.dataGridView_AnimationOrder.Name = "dataGridView_AnimationOrder";
+            this.dataGridView_AnimationOrder.ReadOnly = true;
+            this.dataGridView_AnimationOrder.RowHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.Single;
+            this.dataGridView_AnimationOrder.RowHeadersVisible = false;
+            this.dataGridView_AnimationOrder.RowHeadersWidth = 25;
+            this.dataGridView_AnimationOrder.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.DisableResizing;
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dataGridView_AnimationOrder.RowsDefaultCellStyle = dataGridViewCellStyle1;
+            this.dataGridView_AnimationOrder.RowTemplate.Height = 24;
+            this.dataGridView_AnimationOrder.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.dataGridView_AnimationOrder.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.dataGridView_AnimationOrder.ShowCellErrors = false;
+            this.dataGridView_AnimationOrder.ShowCellToolTips = false;
+            this.dataGridView_AnimationOrder.ShowEditingIcon = false;
+            this.dataGridView_AnimationOrder.ShowRowErrors = false;
+            this.dataGridView_AnimationOrder.Size = new System.Drawing.Size(294, 276);
+            this.dataGridView_AnimationOrder.TabIndex = 23;
+            // 
+            // Number
+            // 
+            this.Number.HeaderText = "#";
+            this.Number.MinimumWidth = 6;
+            this.Number.Name = "Number";
+            this.Number.ReadOnly = true;
+            this.Number.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            this.Number.Width = 25;
+            // 
+            // AnimationName
+            // 
+            this.AnimationName.HeaderText = "Animation Name";
+            this.AnimationName.MinimumWidth = 265;
+            this.AnimationName.Name = "AnimationName";
+            this.AnimationName.ReadOnly = true;
+            this.AnimationName.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.AnimationName.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            this.AnimationName.Width = 265;
+            // 
             // MainForm
             // 
             this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(782, 403);
+            this.Controls.Add(this.dataGridView_AnimationOrder);
             this.Controls.Add(this.comboBox_Preset);
             this.Controls.Add(this.lbl_AnimPreset);
             this.Controls.Add(this.btn_Update);
@@ -351,7 +394,6 @@
             this.Controls.Add(this.lbl_AnimationsLoaded);
             this.Controls.Add(this.btn_Down);
             this.Controls.Add(this.btn_Up);
-            this.Controls.Add(this.listBox_AnimationOrder);
             this.Controls.Add(this.btn_Create);
             this.Controls.Add(this.btn_Extract);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -364,6 +406,7 @@
             this.panel_FBX_GMO.PerformLayout();
             this.panel_MDS.ResumeLayout(false);
             this.panel_MDS.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridView_AnimationOrder)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -373,7 +416,6 @@
 
         private System.Windows.Forms.Button btn_Extract;
         private System.Windows.Forms.Button btn_Create;
-        private System.Windows.Forms.ListBox listBox_AnimationOrder;
         private System.Windows.Forms.Button btn_Up;
         private System.Windows.Forms.Button btn_Down;
         private System.Windows.Forms.CheckBox chkBox_Extract;
@@ -394,6 +436,9 @@
         private System.Windows.Forms.CheckBox chkBox_AutoConvertTex;
         private System.Windows.Forms.Label lbl_AnimPreset;
         private System.Windows.Forms.ComboBox comboBox_Preset;
+        private System.Windows.Forms.DataGridView dataGridView_AnimationOrder;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Number;
+        private System.Windows.Forms.DataGridViewTextBoxColumn AnimationName;
     }
 }
 

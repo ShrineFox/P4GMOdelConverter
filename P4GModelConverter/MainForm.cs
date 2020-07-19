@@ -168,8 +168,8 @@ namespace P4GModelConverter
             if (chkBox_Animations.Checked && Path.GetExtension(path).ToUpper() == ".GMO")
             {
                 animations = new List<Animation>();
-                listBox_AnimationOrder.Enabled = false;
-                listBox_AnimationOrder.Items.Clear();
+                dataGridView_AnimationOrder.Enabled = false;
+                dataGridView_AnimationOrder.Rows.Clear();
             }
             boneDrawPartPairs = new List<Tuple<string, string>>();
             extensionlessPath = Path.Combine(Path.GetDirectoryName(path), Path.GetFileNameWithoutExtension(path));
@@ -221,11 +221,11 @@ namespace P4GModelConverter
                 {
                     lbl_AnimationsLoaded.Text = $"{animations.Count} Animations Loaded";
                     btn_ExportAnim.Enabled = true;
-                    listBox_AnimationOrder.Enabled = true;
+                    dataGridView_AnimationOrder.Enabled = true;
                 }
                 else
                 {
-                    listBox_AnimationOrder.Enabled = false;
+                    dataGridView_AnimationOrder.Enabled = false;
                     btn_ExportAnim.Enabled = false;
                 }
             }
@@ -292,8 +292,8 @@ namespace P4GModelConverter
             if (!useCutoff)
             {
                 animations = new List<Animation>();
-                listBox_AnimationOrder.Enabled = false;
-                listBox_AnimationOrder.Items.Clear();
+                dataGridView_AnimationOrder.Enabled = false;
+                dataGridView_AnimationOrder.Rows.Clear();
                 cutoff = -1;
             }
 
@@ -617,14 +617,14 @@ namespace P4GModelConverter
         private void ReorderAnimations()
         {
             //If there's animations, animations checkbox is checked, and animations already loaded...
-            if (animations.Count > 0 && chkBox_Animations.Checked && listBox_AnimationOrder.Enabled)
+            if (animations.Count > 0 && chkBox_Animations.Checked && dataGridView_AnimationOrder.Enabled)
             {
                 //Reorder animations by name in listbox order
                 var newAnims = new List<Animation>();
                 //Re-order animations based on order in listbox
-                foreach (string animName in listBox_AnimationOrder.Items)
+                for (int i = 0; i < dataGridView_AnimationOrder.Rows.Count; i++)
                 {
-                    newAnims.Add(animations.FirstOrDefault(x => x.Name == animName));
+                    newAnims.Add(animations.FirstOrDefault(x => x.Name == dataGridView_AnimationOrder.Rows[i].Cells[1].Value.ToString()));
                 }
                 animations = newAnims.Where(x => x != null).ToList();
                 //Use preset bone names if option is selected
@@ -634,8 +634,9 @@ namespace P4GModelConverter
                     {
                         if (comboBox_Preset.SelectedIndex > 0 && animationPresets[comboBox_Preset.SelectedIndex].Count > i)
                         {
-                            animations[i].Name = animationPresets[comboBox_Preset.SelectedIndex][i];
-                            listBox_AnimationOrder.Items[i] = animationPresets[comboBox_Preset.SelectedIndex][i];
+                            animations[i].Name = animationPresets[comboBox_Preset.SelectedIndex][i]; 
+                            dataGridView_AnimationOrder.Rows[i].Cells[0].Value = i + 1;
+                            dataGridView_AnimationOrder.Rows[i].Cells[1].Value = animations[i].Name;
                         }
                         if (animations[i] == null)
                         {
@@ -707,12 +708,15 @@ namespace P4GModelConverter
             ReorderAnimations();
             if (animations.Count > 0)
             {
-                listBox_AnimationOrder.Items.Clear();
+                dataGridView_AnimationOrder.Rows.Clear();
                 for (int i = 0; i < animations.Count; i++)
                 {
-                    listBox_AnimationOrder.Items.Add(animations[i].Name);
+                    int newRowIndex = dataGridView_AnimationOrder.Rows.Add();
+                    DataGridViewRow row = dataGridView_AnimationOrder.Rows[newRowIndex];
+                    row.Cells[0].Value = $"{newRowIndex + 1}";
+                    row.Cells[1].Value = animations[i].Name;
                 }
-                listBox_AnimationOrder.Enabled = true;
+                dataGridView_AnimationOrder.Enabled = true;
                 btn_Update.Enabled = true;
             }
         }
@@ -874,24 +878,32 @@ namespace P4GModelConverter
         public void MoveItem(int direction)
         {
             // Checking selected item
-            if (listBox_AnimationOrder.SelectedItem == null || listBox_AnimationOrder.SelectedIndex < 0)
+            if (dataGridView_AnimationOrder.SelectedRows == null || dataGridView_AnimationOrder.SelectedRows.Count <= 0)
                 return; // No selected item - nothing to do
 
             // Calculate new index using move direction
-            int newIndex = listBox_AnimationOrder.SelectedIndex + direction;
+            int newIndex = dataGridView_AnimationOrder.SelectedRows[0].Index + direction;
 
             // Checking bounds of the range
-            if (newIndex < 0 || newIndex >= listBox_AnimationOrder.Items.Count)
+            if (newIndex < 0 || newIndex >= dataGridView_AnimationOrder.Rows.Count)
                 return; // Index out of range - nothing to do
 
-            object selected = listBox_AnimationOrder.Items[listBox_AnimationOrder.SelectedIndex];
+            object selected = dataGridView_AnimationOrder.SelectedRows[0];
 
             // Removing removable element
-            listBox_AnimationOrder.Items.Remove(selected);
+            dataGridView_AnimationOrder.Rows.Remove((DataGridViewRow)selected);
             // Insert it in new position
-            listBox_AnimationOrder.Items.Insert(newIndex, selected);
+            dataGridView_AnimationOrder.Rows.Insert(newIndex, (DataGridViewRow)selected);
             // Restore selection
-            listBox_AnimationOrder.SetSelected(newIndex, true);
+            dataGridView_AnimationOrder.Rows[newIndex].Selected = true;
+            //Scroll to selection
+            dataGridView_AnimationOrder.FirstDisplayedScrollingRowIndex = dataGridView_AnimationOrder.SelectedRows[0].Index;
+
+            // Redo row numbering
+            for (int i = 0; i < dataGridView_AnimationOrder.Rows.Count; i++)
+            {
+                dataGridView_AnimationOrder.Rows[i].Cells[0].Value = i + 1;
+            }
         }
 
         private void Up_Click(object sender, EventArgs e)
