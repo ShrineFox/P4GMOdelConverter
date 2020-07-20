@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.btn_Extract = new System.Windows.Forms.Button();
@@ -50,14 +51,19 @@
             this.chkBox_AutoConvertTex = new System.Windows.Forms.CheckBox();
             this.panel_MDS = new System.Windows.Forms.Panel();
             this.btn_Update = new System.Windows.Forms.Button();
-            this.lbl_AnimPreset = new System.Windows.Forms.Label();
             this.comboBox_Preset = new System.Windows.Forms.ComboBox();
             this.dataGridView_AnimationOrder = new System.Windows.Forms.DataGridView();
+            this.contextMenuStrip_Animations = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.toolStripMenuItem_Add = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem_Remove = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem_Rename = new System.Windows.Forms.ToolStripMenuItem();
             this.Number = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.AnimationName = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.chkBox_AutoUpdate = new System.Windows.Forms.CheckBox();
             this.panel_FBX_GMO.SuspendLayout();
             this.panel_MDS.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView_AnimationOrder)).BeginInit();
+            this.contextMenuStrip_Animations.SuspendLayout();
             this.SuspendLayout();
             // 
             // btn_Extract
@@ -126,15 +132,14 @@
             // chkBox_Animations
             // 
             this.chkBox_Animations.AutoSize = true;
-            this.chkBox_Animations.Checked = true;
-            this.chkBox_Animations.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chkBox_Animations.Location = new System.Drawing.Point(12, 88);
             this.chkBox_Animations.Margin = new System.Windows.Forms.Padding(4);
             this.chkBox_Animations.Name = "chkBox_Animations";
-            this.chkBox_Animations.Size = new System.Drawing.Size(165, 21);
+            this.chkBox_Animations.Size = new System.Drawing.Size(172, 21);
             this.chkBox_Animations.TabIndex = 8;
-            this.chkBox_Animations.Text = "Use GMO Animations";
+            this.chkBox_Animations.Text = "Load GMO Animations";
             this.chkBox_Animations.UseVisualStyleBackColor = true;
+            this.chkBox_Animations.CheckedChanged += new System.EventHandler(this.chkBox_Animations_CheckedChanged);
             // 
             // lbl_AnimationsLoaded
             // 
@@ -162,6 +167,7 @@
             // btn_ImportAnim
             // 
             this.btn_ImportAnim.AllowDrop = true;
+            this.btn_ImportAnim.Enabled = false;
             this.btn_ImportAnim.Location = new System.Drawing.Point(703, 287);
             this.btn_ImportAnim.Margin = new System.Windows.Forms.Padding(4);
             this.btn_ImportAnim.Name = "btn_ImportAnim";
@@ -290,39 +296,29 @@
             // btn_Update
             // 
             this.btn_Update.AllowDrop = true;
-            this.btn_Update.Enabled = false;
             this.btn_Update.Location = new System.Drawing.Point(435, 287);
             this.btn_Update.Margin = new System.Windows.Forms.Padding(4);
             this.btn_Update.Name = "btn_Update";
             this.btn_Update.Size = new System.Drawing.Size(182, 53);
             this.btn_Update.TabIndex = 19;
-            this.btn_Update.Text = "Update MDS";
+            this.btn_Update.Text = "Update MDS Animations";
             this.btn_Update.UseVisualStyleBackColor = true;
             this.btn_Update.Click += new System.EventHandler(this.btn_Reset_Click);
             // 
-            // lbl_AnimPreset
-            // 
-            this.lbl_AnimPreset.AutoSize = true;
-            this.lbl_AnimPreset.Location = new System.Drawing.Point(488, 379);
-            this.lbl_AnimPreset.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lbl_AnimPreset.Name = "lbl_AnimPreset";
-            this.lbl_AnimPreset.Size = new System.Drawing.Size(129, 17);
-            this.lbl_AnimPreset.TabIndex = 21;
-            this.lbl_AnimPreset.Text = "Anim Name Preset:";
-            // 
             // comboBox_Preset
             // 
+            this.comboBox_Preset.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBox_Preset.FormattingEnabled = true;
             this.comboBox_Preset.Items.AddRange(new object[] {
-            "None",
+            "Animation Preset",
             "P4G Protag",
             "P4G Party Member",
             "P4G Culprit",
             "P3P Protag/Protag",
             "P3P Strega"});
-            this.comboBox_Preset.Location = new System.Drawing.Point(625, 376);
+            this.comboBox_Preset.Location = new System.Drawing.Point(435, 347);
             this.comboBox_Preset.Name = "comboBox_Preset";
-            this.comboBox_Preset.Size = new System.Drawing.Size(151, 24);
+            this.comboBox_Preset.Size = new System.Drawing.Size(182, 24);
             this.comboBox_Preset.TabIndex = 22;
             this.comboBox_Preset.SelectedIndexChanged += new System.EventHandler(this.comboBox_Preset_SelectedIndexChanged);
             // 
@@ -357,6 +353,36 @@
             this.dataGridView_AnimationOrder.ShowRowErrors = false;
             this.dataGridView_AnimationOrder.Size = new System.Drawing.Size(294, 276);
             this.dataGridView_AnimationOrder.TabIndex = 23;
+            this.dataGridView_AnimationOrder.CellMouseDown += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.dataGridView_AnimationOrder_CellMouseDown);
+            // 
+            // contextMenuStrip_Animations
+            // 
+            this.contextMenuStrip_Animations.ImageScalingSize = new System.Drawing.Size(20, 20);
+            this.contextMenuStrip_Animations.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripMenuItem_Add,
+            this.toolStripMenuItem_Remove,
+            this.toolStripMenuItem_Rename});
+            this.contextMenuStrip_Animations.Name = "contextMenuStrip_Animations";
+            this.contextMenuStrip_Animations.Size = new System.Drawing.Size(133, 76);
+            this.contextMenuStrip_Animations.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.menuStrip_ItemClicked);
+            // 
+            // toolStripMenuItem_Add
+            // 
+            this.toolStripMenuItem_Add.Name = "toolStripMenuItem_Add";
+            this.toolStripMenuItem_Add.Size = new System.Drawing.Size(132, 24);
+            this.toolStripMenuItem_Add.Text = "Add";
+            // 
+            // toolStripMenuItem_Remove
+            // 
+            this.toolStripMenuItem_Remove.Name = "toolStripMenuItem_Remove";
+            this.toolStripMenuItem_Remove.Size = new System.Drawing.Size(132, 24);
+            this.toolStripMenuItem_Remove.Text = "Remove";
+            // 
+            // toolStripMenuItem_Rename
+            // 
+            this.toolStripMenuItem_Rename.Name = "toolStripMenuItem_Rename";
+            this.toolStripMenuItem_Rename.Size = new System.Drawing.Size(132, 24);
+            this.toolStripMenuItem_Rename.Text = "Rename";
             // 
             // Number
             // 
@@ -370,12 +396,23 @@
             // AnimationName
             // 
             this.AnimationName.HeaderText = "Animation Name";
-            this.AnimationName.MinimumWidth = 265;
+            this.AnimationName.MinimumWidth = 177;
             this.AnimationName.Name = "AnimationName";
             this.AnimationName.ReadOnly = true;
             this.AnimationName.Resizable = System.Windows.Forms.DataGridViewTriState.False;
             this.AnimationName.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            this.AnimationName.Width = 265;
+            this.AnimationName.Width = 177;
+            // 
+            // chkBox_AutoUpdate
+            // 
+            this.chkBox_AutoUpdate.AutoSize = true;
+            this.chkBox_AutoUpdate.Location = new System.Drawing.Point(435, 378);
+            this.chkBox_AutoUpdate.Margin = new System.Windows.Forms.Padding(4);
+            this.chkBox_AutoUpdate.Name = "chkBox_AutoUpdate";
+            this.chkBox_AutoUpdate.Size = new System.Drawing.Size(110, 21);
+            this.chkBox_AutoUpdate.TabIndex = 18;
+            this.chkBox_AutoUpdate.Text = "Auto-Update";
+            this.chkBox_AutoUpdate.UseVisualStyleBackColor = true;
             // 
             // MainForm
             // 
@@ -383,9 +420,9 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(782, 403);
+            this.Controls.Add(this.chkBox_AutoUpdate);
             this.Controls.Add(this.dataGridView_AnimationOrder);
             this.Controls.Add(this.comboBox_Preset);
-            this.Controls.Add(this.lbl_AnimPreset);
             this.Controls.Add(this.btn_Update);
             this.Controls.Add(this.panel_MDS);
             this.Controls.Add(this.panel_FBX_GMO);
@@ -401,12 +438,13 @@
             this.MaximumSize = new System.Drawing.Size(800, 450);
             this.MinimumSize = new System.Drawing.Size(800, 450);
             this.Name = "MainForm";
-            this.Text = "P4GMOdel Converter 1.5.1";
+            this.Text = "P4GMOdelConverter 1.5.2";
             this.panel_FBX_GMO.ResumeLayout(false);
             this.panel_FBX_GMO.PerformLayout();
             this.panel_MDS.ResumeLayout(false);
             this.panel_MDS.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView_AnimationOrder)).EndInit();
+            this.contextMenuStrip_Animations.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -434,11 +472,15 @@
         private System.Windows.Forms.Panel panel_MDS;
         private System.Windows.Forms.Button btn_Update;
         private System.Windows.Forms.CheckBox chkBox_AutoConvertTex;
-        private System.Windows.Forms.Label lbl_AnimPreset;
         private System.Windows.Forms.ComboBox comboBox_Preset;
         private System.Windows.Forms.DataGridView dataGridView_AnimationOrder;
+        private System.Windows.Forms.ContextMenuStrip contextMenuStrip_Animations;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_Add;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_Remove;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_Rename;
         private System.Windows.Forms.DataGridViewTextBoxColumn Number;
         private System.Windows.Forms.DataGridViewTextBoxColumn AnimationName;
+        private System.Windows.Forms.CheckBox chkBox_AutoUpdate;
     }
 }
 

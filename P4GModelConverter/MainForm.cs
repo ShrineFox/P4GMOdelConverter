@@ -14,6 +14,7 @@ using System.Windows.Forms;
 using TGE.IO;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using System.Reflection;
+using System.Runtime.Remoting.Contexts;
 
 namespace P4GModelConverter
 {
@@ -36,10 +37,13 @@ namespace P4GModelConverter
             new List<string>{ "Idle", "Low HP", "Damaged", "Run", "Attack", "Placeholder 4", "Killed", "Miss Attack", "Knocked Down", "Down", "Get Back Up", "Persona Summon 1", "Persona Summon 2", "Persona Summon 3", "Persona Summon 4", "Idle 2", "Placeholder 15", "Low HP (Duplicate)", "Dodge" }
         };
         bool presetChanged;
+        bool updateMDS;
+        int selectedRow;
 
         public MainForm()
         {
             InitializeComponent();
+            comboBox_Preset.SelectedIndex = 0;
         }
 
         public class Bone
@@ -165,10 +169,10 @@ namespace P4GModelConverter
             parts = new List<Part>();
             materials = new List<Material>();
             textures = new List<Texture>();
-            if (chkBox_Animations.Checked && Path.GetExtension(path).ToUpper() == ".GMO")
+            if (!chkBox_Animations.Checked)
             {
                 animations = new List<Animation>();
-                dataGridView_AnimationOrder.Enabled = false;
+                lbl_AnimationsLoaded.Text = "No Animations Loaded";
                 dataGridView_AnimationOrder.Rows.Clear();
             }
             boneDrawPartPairs = new List<Tuple<string, string>>();
@@ -216,18 +220,6 @@ namespace P4GModelConverter
                 if (File.Exists(newMDSPath))
                     File.Delete(newMDSPath);
                 File.AppendAllLines(newMDSPath, newLines);
-
-                if (animations.Count > 0)
-                {
-                    lbl_AnimationsLoaded.Text = $"{animations.Count} Animations Loaded";
-                    btn_ExportAnim.Enabled = true;
-                    dataGridView_AnimationOrder.Enabled = true;
-                }
-                else
-                {
-                    dataGridView_AnimationOrder.Enabled = false;
-                    btn_ExportAnim.Enabled = false;
-                }
             }
         }
 
@@ -273,11 +265,9 @@ namespace P4GModelConverter
             }
             else
                 newLines.Add("\tMaterial \"Dummy\" {\n\t\tDiffuse 1.000000 1.000000 1.000000 1.000000\n\t\tAmbient 1.000000 1.000000 1.000000 1.000000\n\t\tReflection 0.000000\n\t\tRefraction 1.000000\n\t\tBump 0.000000\n\t\tBlindData \"transAlgo\" 4\n\t\tLayer \"dummy_layer\" {\n\t\t\tBlendFunc ADD SRC_ALPHA INV_SRC_ALPHA\n\t\t}\n\t}");
-            if (chkBox_Animations.Checked)
-            {
-                UpdateListBox();
-                newLines.AddRange(WriteAnimations());
-            }
+            CreateAnimationRows();
+            UpdateListBox();
+            newLines.AddRange(WriteAnimations());
             newLines = newLines.Where(m => !string.IsNullOrEmpty(m)).ToList();
         }
 
@@ -292,7 +282,6 @@ namespace P4GModelConverter
             if (!useCutoff)
             {
                 animations = new List<Animation>();
-                dataGridView_AnimationOrder.Enabled = false;
                 dataGridView_AnimationOrder.Rows.Clear();
                 cutoff = -1;
             }
@@ -616,8 +605,8 @@ namespace P4GModelConverter
         //Reorder animations to match listbox order
         private void ReorderAnimations()
         {
-            //If there's animations, animations checkbox is checked, and animations already loaded...
-            if (animations.Count > 0 && chkBox_Animations.Checked && dataGridView_AnimationOrder.Enabled)
+            //If there's animations and animations checkbox is checked
+            if (animations.Count > 0 && chkBox_Animations.Checked)
             {
                 //Reorder animations by name in listbox order
                 var newAnims = new List<Animation>();
@@ -628,47 +617,46 @@ namespace P4GModelConverter
                 }
                 animations = newAnims.Where(x => x != null).ToList();
                 //Use preset bone names if option is selected
-                if (presetChanged)
+                if (presetChanged && comboBox_Preset.SelectedIndex > 0)
                 {
                     for (int i = 0; i < animations.Count; i++)
                     {
-                        if (comboBox_Preset.SelectedIndex > 0 && animationPresets[comboBox_Preset.SelectedIndex].Count > i)
+                        if (animations[i] != null && animationPresets[comboBox_Preset.SelectedIndex].Count > i)
                         {
-                            animations[i].Name = animationPresets[comboBox_Preset.SelectedIndex][i]; 
+                            animations[i].Name = animationPresets[comboBox_Preset.SelectedIndex][i];
+                            if (animations[i].FCurve == null || animations[i].FCurve.Count == 0)
+                                animations[i].Name += " (EMPTY)";
                             dataGridView_AnimationOrder.Rows[i].Cells[0].Value = i + 1;
                             dataGridView_AnimationOrder.Rows[i].Cells[1].Value = animations[i].Name;
-                        }
-                        if (animations[i] == null)
-                        {
-                            var nullAnim = new Animation() { };
-                            nullAnim.Name = $"NULL {i}";
-                            animations[i] = nullAnim;
                         }
                     }
                 }
                 //For each mds file matching the latest input, rewrite with new animation order
-                string filePath = extensionlessPath;
-                if (filePath == null)
+                if (updateMDS || chkBox_AutoUpdate.Checked)
                 {
-                    CommonOpenFileDialog dialog = new CommonOpenFileDialog();
-                    dialog.Filters.Add(new CommonFileDialogFilter("MDS File", "*.mds"));
-                    dialog.Title = "Choose MDS to add animations to...";
-                    if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
-                        filePath = dialog.FileName;
-                }
-                foreach (var file in Directory.GetFiles(Path.GetDirectoryName(filePath)).Where(x => x.ToLower().Equals($"{extensionlessPath.ToLower()}.mds") || x.ToLower().Equals($"{extensionlessPath.ToLower()}_p4g.mds")))
-                {
-                    var mdsLines = File.ReadAllLines(file).ToList(); //Get all lines up to first animation
-                    mdsLines.Remove("}");
-                    int index = mdsLines.FindIndex(x => x.StartsWith("\tMotion \""));
+                    string filePath = extensionlessPath;
+                    if (filePath == null)
+                    {
+                        CommonOpenFileDialog dialog = new CommonOpenFileDialog();
+                        dialog.Filters.Add(new CommonFileDialogFilter("MDS File", "*.mds"));
+                        dialog.Title = "Choose MDS to add animations to...";
+                        if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
+                            filePath = dialog.FileName;
+                    }
+                    foreach (var file in Directory.GetFiles(Path.GetDirectoryName(filePath)).Where(x => x.ToLower().Equals($"{extensionlessPath.ToLower()}_p4g.mds")))
+                    {
+                        var mdsLines = File.ReadAllLines(file).ToList(); //Get all lines up to first animation
+                        mdsLines.Remove("}");
+                        int index = mdsLines.FindIndex(x => x.StartsWith("\tMotion \""));
 
-                    if (index == -1)
-                        index = mdsLines.Count;
+                        if (index == -1)
+                            index = mdsLines.Count;
 
-                    mdsLines = mdsLines.Take(index).ToList();
-                    File.Delete(file);
-                    mdsLines.AddRange(WriteAnimations());
-                    File.WriteAllLines(file, mdsLines.ToArray());
+                        mdsLines = mdsLines.Take(index).ToList();
+                        File.Delete(file);
+                        mdsLines.AddRange(WriteAnimations());
+                        File.WriteAllLines(file, mdsLines.ToArray());
+                    }
                 }
             }
         }
@@ -684,12 +672,12 @@ namespace P4GModelConverter
                     animationStrings.Add(animation.FrameLoop);
                 if (animation.FrameRate != null)
                     animationStrings.Add(animation.FrameRate);
-                if (animation.Animate.Count > 0)
+                if (animation.FrameRate != null && animation.Animate.Count > 0)
                 {
                     foreach (var line in animation.Animate)
                         animationStrings.Add(line);
                 }
-                if (animation.FCurve.Count > 0)
+                if (animation.FCurve != null && animation.FCurve.Count > 0)
                 {
                     foreach (var fcurve in animation.FCurve)
                         foreach (var line in fcurve)
@@ -705,19 +693,16 @@ namespace P4GModelConverter
         //Refresh listbox with latest animations (after reordering them)
         private void UpdateListBox()
         {
-            ReorderAnimations();
             if (animations.Count > 0)
             {
-                dataGridView_AnimationOrder.Rows.Clear();
-                for (int i = 0; i < animations.Count; i++)
-                {
-                    int newRowIndex = dataGridView_AnimationOrder.Rows.Add();
-                    DataGridViewRow row = dataGridView_AnimationOrder.Rows[newRowIndex];
-                    row.Cells[0].Value = $"{newRowIndex + 1}";
-                    row.Cells[1].Value = animations[i].Name;
-                }
-                dataGridView_AnimationOrder.Enabled = true;
-                btn_Update.Enabled = true;
+                ReorderAnimations();
+                btn_ExportAnim.Enabled = true;
+                lbl_AnimationsLoaded.Text = $"{animations.Count} Animations Loaded";
+            }
+            else
+            {
+                btn_ExportAnim.Enabled = false;
+                lbl_AnimationsLoaded.Text = $"No Animations Loaded";
             }
         }
 
@@ -842,7 +827,9 @@ namespace P4GModelConverter
         //Refresh listbox
         private void btn_Reset_Click(object sender, EventArgs e)
         {
+            updateMDS = true;
             UpdateListBox();
+            updateMDS = false;
         }
 
         private static int FindSequence(byte[] array, int start, byte[] sequence)
@@ -902,7 +889,27 @@ namespace P4GModelConverter
             else
                 dataGridView_AnimationOrder.FirstDisplayedScrollingRowIndex = 0;
 
-            // Redo row numbering
+            //Make sure row numbers are in order
+            RefreshRowNumbers();
+            if (chkBox_AutoUpdate.Checked)
+                UpdateListBox(); //Optionally rewrite MDS with changes
+        }
+
+        private void CreateAnimationRows()
+        {
+            dataGridView_AnimationOrder.Rows.Clear();
+            for (int i = 0; i < animations.Count; i++)
+            {
+                int newRowIndex = dataGridView_AnimationOrder.Rows.Add();
+                DataGridViewRow row = dataGridView_AnimationOrder.Rows[newRowIndex];
+                row.Cells[0].Value = $"{newRowIndex + 1}";
+                row.Cells[1].Value = animations[i].Name;
+            }
+        }
+
+        private void RefreshRowNumbers()
+        {
+            // Redo animation row numbering
             for (int i = 0; i < dataGridView_AnimationOrder.Rows.Count; i++)
             {
                 dataGridView_AnimationOrder.Rows[i].Cells[0].Value = i + 1;
@@ -985,9 +992,7 @@ namespace P4GModelConverter
             if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
             {
                 ReadMDS(dialog.FileName, false);
-                lbl_AnimationsLoaded.Text = $"{animations.Count()} Animations Loaded";
-                if (animations.Count > 0)
-                    btn_ExportAnim.Enabled = true;
+                FixMDS();
                 UpdateListBox();
             }
         }
@@ -997,6 +1002,54 @@ namespace P4GModelConverter
             presetChanged = true;
             UpdateListBox();
             presetChanged = false;
+        }
+
+        private void dataGridView_AnimationOrder_CellMouseDown(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            // Ignore if a column or row header is clicked
+            if (e.RowIndex != -1 && e.ColumnIndex != -1)
+            {
+                if (e.Button == MouseButtons.Right)
+                {
+                    DataGridViewCell clickedCell = (sender as DataGridView).Rows[e.RowIndex].Cells[e.ColumnIndex];
+
+                    // Here you can do whatever you want with the cell
+                    dataGridView_AnimationOrder.CurrentCell = clickedCell;  // Select the clicked cell, for instance
+
+                    // Get mouse position relative to the vehicles grid
+                    var relativeMousePosition = dataGridView_AnimationOrder.PointToClient(Cursor.Position);
+
+                    // Show the context menu
+                    this.contextMenuStrip_Animations.Show(dataGridView_AnimationOrder, relativeMousePosition);
+
+                    //Set the row number
+                    selectedRow = e.RowIndex;
+                }
+            }
+        }
+
+        private void menuStrip_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
+        {
+            if (e.ClickedItem.Text == "Add")
+            {
+                //TODO: Add single animation importing
+            }
+            else if (e.ClickedItem.Text == "Remove")
+            {
+                //TODO: Add removal
+            }
+            else if (e.ClickedItem.Text == "Rename")
+            {
+                //TODO: Add renaming
+            }
+        }
+
+        private void chkBox_Animations_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chkBox_Animations.Checked)
+                btn_ImportAnim.Enabled = true;
+            else
+                btn_ImportAnim.Enabled = false;
         }
     }
 }
