@@ -15,6 +15,7 @@ using TGE.IO;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using System.Reflection;
 using System.Runtime.Remoting.Contexts;
+using System.Threading;
 
 namespace P4GModelConverter
 {
@@ -28,6 +29,7 @@ namespace P4GModelConverter
         List<Animation> animations = new List<Animation>();
         List<Texture> textures = new List<Texture>();
         string extensionlessPath;
+        string p4gMDSpath;
         List<List<string>> animationPresets = new List<List<string>>() { //null, p4g protag, p4g party, p4g culprit, p3p protag, p3p party, p3p strega
             new List<string>{ "" }, 
             new List<string> { "Idle", "Idle 2", "Run", "Attack", "Attack Critical", "Placeholder 4", "Persona Change", "Persona Summon 1", "Persona Summon 2", "Persona Summon 3", "Persona Summon 4", "Guard", "Dodge", "Low HP", "Damaged", "Miss Attack", "Knocked Down", "Down", "Get Back Up", "Killed", "Revived", "Use Item", "Victory", "Pushed Out of the Way", "Placeholder 23", "Helped Up", "Placeholder 25", "Idle (Duplicate)" },
@@ -44,7 +46,12 @@ namespace P4GModelConverter
         {
             InitializeComponent();
             comboBox_Preset.SelectedIndex = 0;
+            comboBox_Preview.SelectedIndex = 0;
         }
+
+        /*
+         * Type collections
+         */
 
         public class Bone
         {
@@ -73,7 +80,6 @@ namespace P4GModelConverter
             public string BlendOffsets { get; set; }
             public string BoundingBox { get; set; }
         }
-
         public class Part
         {
             public Part() { }
@@ -89,7 +95,6 @@ namespace P4GModelConverter
             public List<string> Meshes { get; set; } = new List<string>();
             public List<string> Arrays { get; set; } = new List<string>();
         }
-
         public class Material
         {
             public Material() { }
@@ -115,7 +120,6 @@ namespace P4GModelConverter
             public string SetTexture { get; set; }
             public string BlendFunc { get; set; }
         }
-
         public class Texture
         {
             public Texture() { }
@@ -127,7 +131,6 @@ namespace P4GModelConverter
             public string Name { get; set; }
             public string FileName { get; set; }
         }
-
         public class Animation
         {
             public Animation() { }
@@ -146,6 +149,10 @@ namespace P4GModelConverter
             public List<List<string>> FCurve { get; set; }
         }
 
+        /*
+         * FBX/GMO/MDS Conversion
+         */
+
         //Load GMO or FBX via drag and drop
         private void btn_Extract_DragDrop(object sender, DragEventArgs e)
         {
@@ -153,7 +160,14 @@ namespace P4GModelConverter
             CreateMDS(path);
         }
 
-        //Load MDS via drag and drop
+        //Load MDS via drag and drop for applying fixes
+        private void btn_Fix_DragDrop(object sender, DragEventArgs e)
+        {
+            string path = ((string[])e.Data.GetData(DataFormats.FileDrop, false))[0];
+            FixMDS(path); //Rewrite MDS with working materials/drawparts
+        }
+
+        //Load MDS via drag and drop for GMO creation
         private void btn_Create_DragDrop(object sender, DragEventArgs e)
         {
             string path = ((string[])e.Data.GetData(DataFormats.FileDrop, false))[0];
@@ -193,6 +207,20 @@ namespace P4GModelConverter
                 }
                 if (Path.GetExtension(path).ToUpper() == ".FBX")
                 {
+                    if (chkBox_FBXOptimize.Checked)
+                    {
+                        string args = "";
+                        if (chkBox_fbxoldexport.Checked)
+                            args += "-fbxoldexport ";
+                        if (chkBox_fbxnewexport.Checked)
+                            args += "-fbxnewexport ";
+                        if (chkBox_fbxnooptimize.Checked)
+                            args += "-fbxnooptimize ";
+                        if (chkBox_fbxascii.Checked)
+                            args += "-fbxascii ";
+                        NoesisOptimize(path, args);
+                        path = $"{extensionlessPath}_optimized.fbx";
+                    }
                     string mdsPath = extensionlessPath + ".mds";
                     if (chkBox_GMOtoFBX.Checked)
                     {
@@ -201,9 +229,6 @@ namespace P4GModelConverter
                     }
                     else
                         GMOTool(path, true); //Create MDS from FBX
-                    while (!File.Exists(mdsPath)) { } //Wait for mds to be created before continuing
-                    ReadMDS(mdsPath, true);
-                    FixMDS(); //Rewrite MDS with working materials/drawparts
                 }
                 else if (Path.GetExtension(path).ToUpper() == ".GMO")
                 {
@@ -211,15 +236,7 @@ namespace P4GModelConverter
                         ExtractTextures(path); //Extract TM2 textures (optional)
                     GMOTool(path, true); //Create MDS from GMO
                     string mdsPath = extensionlessPath + ".mds";
-                    while (!File.Exists(mdsPath)) { } //Wait for mds to be created before continuing
-                    ReadMDS(mdsPath, true);
-                    FixMDS(); //Rewrite MDS with working materials/drawparts
-                    newLines = newLines.Where(m => !string.IsNullOrEmpty(m)).ToList(); //Remove empty strings from MDS
                 }
-                string newMDSPath = $"{extensionlessPath}_p4g.mds";
-                if (File.Exists(newMDSPath))
-                    File.Delete(newMDSPath);
-                File.AppendAllLines(newMDSPath, newLines);
             }
         }
 
@@ -228,261 +245,258 @@ namespace P4GModelConverter
         {
             if (File.Exists(path) && Path.GetExtension(path).ToUpper() == ".MDS")
             {
-                //Make sure MDS isn't just exported animation data
-                if (File.ReadAllLines(path)[0] == ".MDS 0.95")
+                extensionlessPath = Path.Combine(Path.GetDirectoryName(path), Path.GetFileNameWithoutExtension(path));
+                UpdateAnimationDataGridView();
+                GMOTool(path, false);
+                if (chkBox_PCFix.Checked)
+                    GMOFixTool(extensionlessPath + ".gmo");
+
+                if (File.Exists(extensionlessPath + ".AMD"))
                 {
-                    extensionlessPath = Path.Combine(Path.GetDirectoryName(path), Path.GetFileNameWithoutExtension(path));
-                    UpdateListBox();
-                    GMOTool(path, false);
-                    if (chkBox_PCFix.Checked)
-                        GMOFixTool(extensionlessPath + ".gmo");
-
-                    if (File.Exists(extensionlessPath + ".AMD"))
-                    {
-                        //Todo: REPLACE GMO DATA IN AMD
-                    }
-                    if (File.Exists(extensionlessPath + ".PAC"))
-                    {
-                        //Todo: AUTO REPACK AMD INTO PAC
-                    }
+                    //Todo: REPLACE GMO DATA IN AMD
                 }
+                if (File.Exists(extensionlessPath + ".PAC"))
+                {
+                    //Todo: AUTO REPACK AMD INTO PAC
+                }
+            }
 
-                if (chkBox_ViewGMO.Checked)
+            if (chkBox_ViewGMO.Checked)
+            {
+                if (comboBox_Preview.SelectedIndex == 0)
+                    Noesis($"\"{extensionlessPath + ".gmo"}\"");
+                else if (comboBox_Preview.SelectedIndex == 1)
                     GMOView(extensionlessPath + ".gmo");
+            }
+                
+        }
+
+        //Save data from MDS to objects for bones/parts/materials/motion etc.
+        private void ReadMDS(string path)
+        {
+            //Lines from the original file and new collection
+            string[] lines = File.ReadAllLines(path);
+            newLines = new List<string>();
+
+            newLines.Add(".MDS 0.95");
+            if (extensionlessPath != null)
+                newLines.Add($"Model \"{extensionlessPath.Split('\\').Last()}\" {{");
+            else
+                newLines.Add("Model \"Model\" {");
+            newLines.Add("BoundingBox -64.149666 -42.046124 -11.595747 81.043938 181.061172 18.696728");
+
+            for (int i = 0; i < lines.Count(); i++)
+            {
+                //Organize lines in objects for rewriting later
+                if (lines[i].StartsWith("\tBone"))
+                {
+                    int x = i;
+                    //Add bone data to bone list
+                    Bone bone = new Bone();
+                    if (chkBox_RenameBones.Checked)
+                    {
+                        bone.Name = lines[x].Replace("\tBone \"", "").Replace("\" {", "").Replace("_", " ").Replace(" Bone", "_Bone");
+                        if (bone.Name == "player root_Bone")
+                            bone.Name = "player_root_Bone";
+                        if (bone.Name == "player body_Bone")
+                            bone.Name = "player_body_Bone";
+                    }
+                    else
+                        bone.Name = lines[x].Replace("\tBone \"", "").Replace("\" {", "");
+                    x++;
+                    while (!lines[x].StartsWith("\t}"))
+                    {
+                        if (lines[x].StartsWith("\t\tBoundingBox"))
+                            bone.BoundingBox = lines[x];
+                        if (lines[x].StartsWith("\t\tTranslate"))
+                            bone.Translate = lines[x];
+                        if (lines[x].StartsWith("\t\tRotate"))
+                            bone.Rotate = lines[x];
+                        if (lines[x].StartsWith("\t\tParentBone"))
+                        {
+                            if (chkBox_RenameBones.Checked)
+                                bone.ParentBone = lines[x].Replace("_", " ").Replace(" Bone", "_Bone").Replace("player root_Bone", "player_root_Bone").Replace("player body_Bone", "player_body_Bone");
+                            else
+                                bone.ParentBone = lines[x];
+                        }
+                        if (lines[x].StartsWith("\t\tScale"))
+                            bone.Scale = lines[x];
+                        if (lines[x].StartsWith("\t\tBlindData"))
+                            bone.BlindData = lines[x];
+                        if (lines[x].StartsWith("\t\tBlendBones"))
+                        {
+                            if (chkBox_RenameBones.Checked)
+                                bone.BlendBones = lines[x].Replace("_", " ").Replace(" Bone", "_Bone").Replace("player root_Bone", "player_root_Bone").Replace("player body_Bone", "player_body_Bone");
+                            else
+                                bone.BlendBones = lines[x];
+                        }
+                        if (lines[x].StartsWith("\t\tDrawPart"))
+                            bone.DrawParts.Add(lines[x]);
+                        if (lines[x].StartsWith("\t\tBlendOffsets"))
+                        {
+                            string blendOffsets = lines[x];
+                            x++;
+                            while (lines[x].StartsWith("\t\t\t"))
+                            {
+                                blendOffsets += "\n" + lines[x];
+                                x++;
+                            }
+                            bone.BlendOffsets = blendOffsets;
+                        }
+                        else
+                            x++;
+                    }
+                    bones.Add(bone);
+                }
+                else if (lines[i].Contains("\tPart"))
+                {
+                    int x = i;
+                    //Add part data to part list
+                    Part part = new Part();
+                    part.Name = lines[x].Replace("\tPart \"", "").Replace("\" {", "");
+                    x++;
+                    while (!lines[x].StartsWith("\t}"))
+                    {
+                        if (lines[x].Contains("\t\tMesh"))
+                        {
+                            string mesh = lines[x];
+                            x++;
+                            while (!lines[x].Contains("}"))
+                            {
+                                mesh += "\n" + lines[x];
+                                x++;
+                            }
+                            mesh += "\n\t\t}";
+                            part.Meshes.Add(mesh);
+                        }
+                        else if (lines[x].StartsWith("\t\tArrays"))
+                        {
+                            string array = lines[x];
+                            x++;
+                            while (!lines[x].Contains("}"))
+                            {
+                                array += "\n" + lines[x];
+                                x++;
+                            }
+                            array += "\n\t\t}";
+                            part.Arrays.Add(array);
+                        }
+                        else if (lines[x].StartsWith("\t\tBoundingBox"))
+                        {
+                            part.BoundingBox = lines[x];
+                            x++;
+                        }
+                        else
+                            x++;
+                    }
+                    parts.Add(part);
+                }
+                else if (lines[i].StartsWith("\tMaterial"))
+                {
+                    int x = i;
+                    //Add material data to material list
+                    Material mat = new Material();
+                    mat.Name = lines[x].Replace("\tMaterial \"", "").Replace("\" {", "");
+                    x++;
+                    while (!lines[x].StartsWith("\t}"))
+                    {
+                        if (lines[x].StartsWith("\t\tDiffuse"))
+                            mat.Diffuse = lines[x];
+                        if (lines[x].StartsWith("\t\tAmbient"))
+                            mat.Ambient = lines[x];
+                        if (lines[x].StartsWith("\t\tReflection"))
+                            mat.Reflection = lines[x];
+                        if (lines[x].StartsWith("\t\tRefraction"))
+                            mat.Refraction = lines[x];
+                        if (lines[x].StartsWith("\t\tBump"))
+                            mat.Bump = lines[x];
+                        if (lines[x].StartsWith("\t\tBlindData"))
+                            mat.BlindData = lines[x];
+                        if (lines[x].StartsWith("\t\t\tSetTexture"))
+                            mat.SetTexture = lines[x];
+                        if (lines[x].StartsWith("\t\t\tBlendFunc"))
+                            mat.BlendFunc = lines[x];
+                        x++;
+                    }
+                    materials.Add(mat);
+                }
+                else if (lines[i].StartsWith("\tTexture"))
+                {
+                    var tex = new Texture();
+                    tex.Name = lines[i].Replace("\tTexture \"", "").Replace("\" {", "");
+                    tex.FileName = lines[i + 1].Replace("\t\tFileName \"", "").Replace("\"", "");
+                    textures.Add(tex);
+                }
+                else if (lines[i].StartsWith("\tMotion") && chkBox_Animations.Checked)
+                {
+                    var anim = new Animation();
+                    var animateLines = new List<string>();
+                    var fcurves = new List<List<string>>();
+                    anim.Name = lines[i].Replace("\tMotion \"", "").Replace("\" {", "");
+
+                    int x = i + 1;
+                    while (x < lines.Count() && lines[x] != "\t}")
+                    {
+                        if (lines[x].StartsWith("\t\tFrameLoop"))
+                            anim.FrameLoop = lines[x];
+                        if (lines[x].StartsWith("\t\tFrameRate"))
+                            anim.FrameRate = lines[x];
+                        if (lines[x].StartsWith("\t\tAnimate"))
+                            animateLines.Add(lines[x]);
+                        if (lines[x].StartsWith("\t\tFCurve"))
+                        {
+                            var fcurveLines = new List<string>();
+                            for (int w = x; w < lines.Count(); w++)
+                            {
+                                fcurveLines.Add(lines[w]);
+                                if (lines[w].StartsWith("\t\t}"))
+                                    break;
+                            }
+                            fcurves.Add(fcurveLines);
+                        }
+                        x++;
+                    }
+                    anim.Animate = animateLines;
+                    anim.FCurve = fcurves;
+                    animations.Add(anim);
+                }
             }
         }
 
         //Reformat data for writing to new mds file
-        private void FixMDS()
+        private void FixMDS(string path)
         {
+            ReadMDS(path);
             MatchBonesAndDrawParts();
             RewriteBones();
             RewriteParts();
             if (!chkBox_Dummy.Checked)
             {
                 RewriteMaterials();
-                RewriteTextures();
+                RewriteTextures(path);
             }
             else
                 newLines.Add("\tMaterial \"Dummy\" {\n\t\tDiffuse 1.000000 1.000000 1.000000 1.000000\n\t\tAmbient 1.000000 1.000000 1.000000 1.000000\n\t\tReflection 0.000000\n\t\tRefraction 1.000000\n\t\tBump 0.000000\n\t\tBlindData \"transAlgo\" 4\n\t\tLayer \"dummy_layer\" {\n\t\t\tBlendFunc ADD SRC_ALPHA INV_SRC_ALPHA\n\t\t}\n\t}");
             CreateAnimationRows();
-            UpdateListBox();
+            UpdateAnimationDataGridView();
             newLines.AddRange(WriteAnimations());
-            newLines = newLines.Where(m => !string.IsNullOrEmpty(m)).ToList();
+            newLines = newLines.Where(m => !string.IsNullOrEmpty(m)).ToList(); //Remove empty strings from MDS
+            extensionlessPath = Path.Combine(Path.GetDirectoryName(path), Path.GetFileNameWithoutExtension(path));
+            p4gMDSpath = $"{extensionlessPath}_p4g.mds";
+            if (File.Exists(p4gMDSpath))
+                File.Delete(p4gMDSpath);
+            File.AppendAllLines(p4gMDSpath, newLines);
+            btn_Update.Enabled = true;
+            chkBox_AutoUpdate.Enabled = true;
         }
 
-        //Save data from MDS to objects for bones/parts/materials/motion etc.
-        private void ReadMDS(string path, bool useCutoff)
-        {
-            //Lines from the original file and new collection
-            string[] lines = File.ReadAllLines(path);
-            newLines = new List<string>();
-            //Used to disable adding lines even while addLine is true
-            int cutoff = lines.Count();
-            if (!useCutoff)
-            {
-                animations = new List<Animation>();
-                dataGridView_AnimationOrder.Rows.Clear();
-                cutoff = -1;
-            }
-
-            for (int i = 0; i < lines.Count(); i++)
-            {
-                //Don't add any lines past this automatically
-                if (lines[i].StartsWith("\tBone") || lines[i].Contains("\tPart"))
-                    cutoff = i;
-
-                if (cutoff <= i)
-                {
-                    //Organize lines in objects for rewriting later
-                    if (lines[i].StartsWith("\tBone"))
-                    {
-                        int x = i;
-                        //Add bone data to bone list
-                        Bone bone = new Bone();
-                        if (chkBox_RenameBones.Checked)
-                        {
-                            bone.Name = lines[x].Replace("\tBone \"", "").Replace("\" {", "").Replace("_", " ").Replace(" Bone", "_Bone");
-                            if (bone.Name == "player root_Bone")
-                                bone.Name = "player_root_Bone";
-                            if (bone.Name == "player body_Bone")
-                                bone.Name = "player_body_Bone";
-                        }
-                        else
-                            bone.Name = lines[x].Replace("\tBone \"", "").Replace("\" {", "");
-                        x++;
-                        while (!lines[x].StartsWith("\t}"))
-                        {
-                            if (lines[x].StartsWith("\t\tBoundingBox"))
-                                bone.BoundingBox = lines[x];
-                            if (lines[x].StartsWith("\t\tTranslate"))
-                                bone.Translate = lines[x];
-                            if (lines[x].StartsWith("\t\tRotate"))
-                                bone.Rotate = lines[x];
-                            if (lines[x].StartsWith("\t\tParentBone"))
-                            {
-                                if (chkBox_RenameBones.Checked)
-                                    bone.ParentBone = lines[x].Replace("_", " ").Replace(" Bone", "_Bone").Replace("player root_Bone", "player_root_Bone").Replace("player body_Bone", "player_body_Bone");
-                                else
-                                    bone.ParentBone = lines[x];
-                            }
-                            if (lines[x].StartsWith("\t\tScale"))
-                                bone.Scale = lines[x];
-                            if (lines[x].StartsWith("\t\tBlindData"))
-                                bone.BlindData = lines[x];
-                            if (lines[x].StartsWith("\t\tBlendBones"))
-                            {
-                                if (chkBox_RenameBones.Checked)
-                                    bone.BlendBones = lines[x].Replace("_", " ").Replace(" Bone", "_Bone").Replace("player root_Bone", "player_root_Bone").Replace("player body_Bone", "player_body_Bone");
-                                else
-                                    bone.BlendBones = lines[x];
-                            }
-                            if (lines[x].StartsWith("\t\tDrawPart"))
-                                bone.DrawParts.Add(lines[x]);
-                            if (lines[x].StartsWith("\t\tBlendOffsets"))
-                            {
-                                string blendOffsets = lines[x];
-                                x++;
-                                while (lines[x].StartsWith("\t\t\t"))
-                                {
-                                    blendOffsets += "\n" + lines[x];
-                                    x++;
-                                }
-                                bone.BlendOffsets = blendOffsets;
-                            }
-                            else
-                                x++;
-                        }
-                        bones.Add(bone);
-                    }
-                    else if (lines[i].Contains("\tPart"))
-                    {
-                        int x = i;
-                        //Add part data to part list
-                        Part part = new Part();
-                        part.Name = lines[x].Replace("\tPart \"", "").Replace("\" {", "");
-                        x++;
-                        while (!lines[x].StartsWith("\t}"))
-                        {
-                            if (lines[x].Contains("\t\tMesh"))
-                            {
-                                string mesh = lines[x];
-                                x++;
-                                while (!lines[x].Contains("}"))
-                                {
-                                    mesh += "\n" + lines[x];
-                                    x++;
-                                }
-                                mesh += "\n\t\t}";
-                                part.Meshes.Add(mesh);
-                            }
-                            else if (lines[x].StartsWith("\t\tArrays"))
-                            {
-                                string array = lines[x];
-                                x++;
-                                while (!lines[x].Contains("}"))
-                                {
-                                    array += "\n" + lines[x];
-                                    x++;
-                                }
-                                array += "\n\t\t}";
-                                part.Arrays.Add(array);
-                            }
-                            else if (lines[x].StartsWith("\t\tBoundingBox"))
-                            {
-                                part.BoundingBox = lines[x];
-                                x++;
-                            }
-                            else
-                                x++;
-                        }
-                        parts.Add(part);
-                    }
-                    else if (lines[i].StartsWith("\tMaterial"))
-                    {
-                        int x = i;
-                        //Add material data to material list
-                        Material mat = new Material();
-                        mat.Name = lines[x].Replace("\tMaterial \"", "").Replace("\" {", "");
-                        x++;
-                        while (!lines[x].StartsWith("\t}"))
-                        {
-                            if (lines[x].StartsWith("\t\tDiffuse"))
-                                mat.Diffuse = lines[x];
-                            if (lines[x].StartsWith("\t\tAmbient"))
-                                mat.Ambient = lines[x];
-                            if (lines[x].StartsWith("\t\tReflection"))
-                                mat.Reflection = lines[x];
-                            if (lines[x].StartsWith("\t\tRefraction"))
-                                mat.Refraction = lines[x];
-                            if (lines[x].StartsWith("\t\tBump"))
-                                mat.Bump = lines[x];
-                            if (lines[x].StartsWith("\t\tBlindData"))
-                                mat.BlindData = lines[x];
-                            if (lines[x].StartsWith("\t\t\tSetTexture"))
-                                mat.SetTexture = lines[x];
-                            if (lines[x].StartsWith("\t\t\tBlendFunc"))
-                                mat.BlendFunc = lines[x];
-                            x++;
-                        }
-                        materials.Add(mat);
-                    }
-                    else if (lines[i].StartsWith("\tTexture"))
-                    {
-                        var tex = new Texture();
-                        tex.Name = lines[i].Replace("\tTexture \"", "").Replace("\" {", "");
-                        tex.FileName = lines[i + 1].Replace("\t\tFileName \"", "").Replace("\"", "");
-                        textures.Add(tex);
-                    }
-                    else if (lines[i].StartsWith("\tMotion") && chkBox_Animations.Checked)
-                    {
-                        var anim = new Animation();
-                        var animateLines = new List<string>();
-                        var fcurves = new List<List<string>>();
-                        anim.Name = lines[i].Replace("\tMotion \"", "").Replace("\" {", "");
-
-                        int x = i + 1;
-                        while (x < lines.Count() && lines[x] != "\t}")
-                        {
-                            if (lines[x].StartsWith("\t\tFrameLoop"))
-                                anim.FrameLoop = lines[x];
-                            if (lines[x].StartsWith("\t\tFrameRate"))
-                                anim.FrameRate = lines[x];
-                            if (lines[x].StartsWith("\t\tAnimate"))
-                                animateLines.Add(lines[x]);
-                            if (lines[x].StartsWith("\t\tFCurve"))
-                            {
-                                var fcurveLines = new List<string>();
-                                for (int w = x; w < lines.Count(); w++)
-                                {
-                                    fcurveLines.Add(lines[w]);
-                                    if (lines[w].StartsWith("\t\t}"))
-                                        break;
-                                }
-                                fcurves.Add(fcurveLines);
-                            }
-                            x++;
-                        }
-                        anim.Animate = animateLines;
-                        anim.FCurve = fcurves;
-                        animations.Add(anim);
-                    }
-                }
-                else
-                {
-                    //Add line to new collection if it doesn't need to be replaced
-                    newLines.Add(lines[i]);
-                }
-            }
-        }
-
+        //Add (newly named) part and corresponding bone to list
         private void MatchBonesAndDrawParts()
         {
             for (int w = 0; w < parts.Count; w++)
             {
                 for (int z = 0; z < parts[w].Meshes.Count; z++)
                 {
-                    //Add (newly named) part and corresponding bone to list
                     string splitName = $"{parts[w].Name}_{z}";
                     string firstBone = bones.First(b => b.DrawParts.Any(a => a.Contains(parts[w].Name))).Name;
                     Tuple<string, string> boneDrawPartPair = new Tuple<string, string>(firstBone, splitName);
@@ -491,6 +505,7 @@ namespace P4GModelConverter
             }
         }
 
+        //Add bone data to text file lines when possible
         private void RewriteBones()
         {
             for (int w = 0; w < bones.Count; w++)
@@ -522,9 +537,9 @@ namespace P4GModelConverter
             }
         }
 
+        //Format text so that there's only one mesh/array pair per "part"
         private void RewriteParts()
         {
-            //Format text so that there's only one mesh/array pair per "part"
             for (int w = 0; w < parts.Count; w++)
             {
                 for (int z = 0; z < parts[w].Meshes.Count; z++)
@@ -541,9 +556,9 @@ namespace P4GModelConverter
             }
         }
 
+        //Format materials so that they all use one layer and map/blend type
         private void RewriteMaterials()
         {
-            //Format materials so that they all use one layer and map/blend type
             for (int w = 0; w < materials.Count(); w++)
             {
                 newLines.Add($"\tMaterial \"{materials[w].Name}\" {{");
@@ -586,21 +601,50 @@ namespace P4GModelConverter
             }
         }
 
-        private void RewriteTextures()
+        //Rename and convert textures depending on settings
+        private void RewriteTextures(string path)
         {
             foreach (var texture in textures)
             {
+                //Set up texture output path
+                string newTexPath = $"{Path.GetDirectoryName(path)}\\textures\\{texture.FileName}";
+                Directory.CreateDirectory($"{Path.GetDirectoryName(path)}\\textures");
+
                 newLines.Add($"\tTexture \"{texture.Name}\" {{");
+
+                //Convert, move and edit path of non-tm2 textures
                 if (!texture.FileName.ToLower().Contains(".tm2") && chkBox_AutoConvertTex.Checked)
                 {
-                    GIMConv(texture.FileName);
-                    newLines.Add($"\t\tFileName \"{texture.FileName}.tm2\"");
+                    
+                    if (!File.Exists(newTexPath + ".tm2"))
+                    {
+                        if (File.Exists(texture.FileName))
+                        {
+                            GIMConv(texture.FileName);
+                            File.Move(texture.FileName, $"{newTexPath}.tm2");
+                        }
+                    }
+                    newLines.Add($"\t\tFileName \"textures\\{texture.FileName}.tm2\"");
                 }
-                else
-                    newLines.Add($"\t\tFileName \"{texture.FileName}\"");
+                else //Move and edit path of tm2 textures
+                {
+                    if (!File.Exists($"{newTexPath}"))
+                    {
+                        if (File.Exists(texture.FileName))
+                        {
+                            File.Move(texture.FileName, newTexPath);
+                        }
+                    }
+                    newLines.Add($"\t\tFileName \"textures\\{texture.FileName}\"");
+                }
+                    
                 newLines.Add($"\t}}");
             }
         }
+
+        /*
+         * Animation Management
+         */
 
         //Reorder animations to match listbox order
         private void ReorderAnimations()
@@ -634,29 +678,26 @@ namespace P4GModelConverter
                 //For each mds file matching the latest input, rewrite with new animation order
                 if (updateMDS || chkBox_AutoUpdate.Checked)
                 {
-                    string filePath = extensionlessPath;
-                    if (filePath == null)
+                    if (p4gMDSpath == null)
                     {
                         CommonOpenFileDialog dialog = new CommonOpenFileDialog();
                         dialog.Filters.Add(new CommonFileDialogFilter("MDS File", "*.mds"));
                         dialog.Title = "Choose MDS to add animations to...";
                         if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
-                            filePath = dialog.FileName;
+                            p4gMDSpath = dialog.FileName;
                     }
-                    foreach (var file in Directory.GetFiles(Path.GetDirectoryName(filePath)).Where(x => x.ToLower().Equals($"{extensionlessPath.ToLower()}_p4g.mds")))
-                    {
-                        var mdsLines = File.ReadAllLines(file).ToList(); //Get all lines up to first animation
-                        mdsLines.Remove("}");
-                        int index = mdsLines.FindIndex(x => x.StartsWith("\tMotion \""));
+                    
+                    var mdsLines = File.ReadAllLines(p4gMDSpath).ToList(); //Get all lines up to first animation
+                    mdsLines.Remove("}");
+                    int index = mdsLines.FindIndex(x => x.StartsWith("\tMotion \""));
 
-                        if (index == -1)
-                            index = mdsLines.Count;
+                    if (index == -1)
+                        index = mdsLines.Count;
 
-                        mdsLines = mdsLines.Take(index).ToList();
-                        File.Delete(file);
-                        mdsLines.AddRange(WriteAnimations());
-                        File.WriteAllLines(file, mdsLines.ToArray());
-                    }
+                    mdsLines = mdsLines.Take(index).ToList();
+                    File.Delete(p4gMDSpath);
+                    mdsLines.AddRange(WriteAnimations());
+                    File.WriteAllLines(p4gMDSpath, mdsLines.ToArray());
                 }
             }
         }
@@ -691,11 +732,12 @@ namespace P4GModelConverter
         }
 
         //Refresh listbox with latest animations (after reordering them)
-        private void UpdateListBox()
+        private void UpdateAnimationDataGridView()
         {
             if (animations.Count > 0)
             {
-                ReorderAnimations();
+                if (dataGridView_AnimationOrder.Rows.Count > 0)
+                    ReorderAnimations();
                 btn_ExportAnim.Enabled = true;
                 lbl_AnimationsLoaded.Text = $"{animations.Count} Animations Loaded";
             }
@@ -704,6 +746,263 @@ namespace P4GModelConverter
                 btn_ExportAnim.Enabled = false;
                 lbl_AnimationsLoaded.Text = $"No Animations Loaded";
             }
+        }
+
+        //Refresh listbox
+        private void btn_Update_Click(object sender, EventArgs e)
+        {
+            updateMDS = true;
+            UpdateAnimationDataGridView();
+            updateMDS = false;
+        }
+
+        //Move animation up
+        private void Up_Click(object sender, EventArgs e)
+        {
+            MoveItem(-1);
+        }
+
+        //Move animation down
+        private void Down_Click(object sender, EventArgs e)
+        {
+            MoveItem(1);
+        }
+
+        //Move animation row up/down depending on button pressed
+        public void MoveItem(int direction)
+        {
+            // Checking selected item
+            if (dataGridView_AnimationOrder.SelectedRows == null || dataGridView_AnimationOrder.SelectedRows.Count <= 0)
+                return; // No selected item - nothing to do
+
+            // Calculate new index using move direction
+            int newIndex = dataGridView_AnimationOrder.SelectedRows[0].Index + direction;
+
+            // Checking bounds of the range
+            if (newIndex < 0 || newIndex >= dataGridView_AnimationOrder.Rows.Count)
+                return; // Index out of range - nothing to do
+
+            object selected = dataGridView_AnimationOrder.SelectedRows[0];
+
+            // Removing removable element
+            dataGridView_AnimationOrder.Rows.Remove((DataGridViewRow)selected);
+            // Insert it in new position
+            dataGridView_AnimationOrder.Rows.Insert(newIndex, (DataGridViewRow)selected);
+            // Restore selection
+            dataGridView_AnimationOrder.Rows[newIndex].Selected = true;
+            //Scroll to selection
+            if (newIndex > 1)
+                dataGridView_AnimationOrder.FirstDisplayedScrollingRowIndex = newIndex - 2;
+            else
+                dataGridView_AnimationOrder.FirstDisplayedScrollingRowIndex = 0;
+
+            //Make sure row numbers are in order
+            RefreshRowNumbers();
+            if (chkBox_AutoUpdate.Checked)
+                UpdateAnimationDataGridView(); //Optionally rewrite MDS with changes
+        }
+
+        //Clear Animations datagridview and repopulate with current animation collection
+        private void CreateAnimationRows()
+        {
+            dataGridView_AnimationOrder.Rows.Clear();
+            for (int i = 0; i < animations.Count; i++)
+            {
+                int newRowIndex = dataGridView_AnimationOrder.Rows.Add();
+                DataGridViewRow row = dataGridView_AnimationOrder.Rows[newRowIndex];
+                row.Cells[0].Value = $"{newRowIndex + 1}";
+                row.Cells[1].Value = animations[i].Name;
+            }
+        }
+
+        //Update Animation datagridview's row numbering after rows have been moved
+        private void RefreshRowNumbers()
+        {
+            // Redo animation row numbering
+            for (int i = 0; i < dataGridView_AnimationOrder.Rows.Count; i++)
+            {
+                dataGridView_AnimationOrder.Rows[i].Cells[0].Value = i + 1;
+            }
+        }
+
+        /*
+         * Buttons
+         */
+
+        private void btn_Create_DragEnter(object sender, DragEventArgs e)
+        {
+            e.Effect = DragDropEffects.Move;
+        }
+
+        private void btn_Fix_DragEnter(object sender, DragEventArgs e)
+        {
+            e.Effect = DragDropEffects.Move;
+        }
+
+        private void btn_Extract_DragEnter(object sender, DragEventArgs e)
+        {
+            e.Effect = DragDropEffects.Move;
+        }
+
+        //Create MDS from chosen GMO or FBX
+        private void btn_Extract_Click(object sender, EventArgs e)
+        {
+            CommonOpenFileDialog dialog = new CommonOpenFileDialog();
+            dialog.Filters.Add(new CommonFileDialogFilter("GMO Model", "*.gmo"));
+            dialog.Filters.Add(new CommonFileDialogFilter("FBX Model", "*.fbx"));
+            dialog.Filters.Add(new CommonFileDialogFilter("Atlus PAC", "*.pac,*.bin,*.amd"));
+            dialog.Title = "Load Model...";
+            if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
+                CreateMDS(dialog.FileName);
+        }
+
+        //Fix MDS for use with P4G
+        private void btn_Fix_Click(object sender, EventArgs e)
+        {
+            CommonOpenFileDialog dialog = new CommonOpenFileDialog();
+            dialog.Filters.Add(new CommonFileDialogFilter("MDS File", "*.mds"));
+            dialog.Title = "Load MDS File...";
+            if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
+                FixMDS(dialog.FileName); //Rewrite MDS with working materials/drawparts
+        }
+
+        //Create GMO from chosen MDS
+        private void btn_Create_Click(object sender, EventArgs e)
+        {
+            CommonOpenFileDialog dialog = new CommonOpenFileDialog();
+            dialog.Filters.Add(new CommonFileDialogFilter("MDS File", "*.mds"));
+            dialog.Title = "Load MDS File...";
+            if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
+                CreateGMO(dialog.FileName);
+        }
+
+        //Save animation set to MDS file
+        private void btn_ExportAnim_Click(object sender, EventArgs e)
+        {
+            UpdateAnimationDataGridView();
+            if (animations.Count > 0)
+            {
+                CommonSaveFileDialog dialog = new CommonSaveFileDialog();
+                dialog.Filters.Add(new CommonFileDialogFilter("MDS File", "*.mds"));
+                dialog.Title = "Save Animation Set...";
+                if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
+                {
+                    string fileName = dialog.FileName;
+                    if (!fileName.ToLower().EndsWith(".mds"))
+                        fileName = fileName + ".mds";
+
+                    if (File.Exists(fileName))
+                        File.Delete(fileName);
+                    File.AppendAllLines(fileName, WriteAnimations());
+                }
+            }
+        }
+
+        //Load animation set from MDS file
+        private void btn_ImportAnim_Click(object sender, EventArgs e)
+        {
+            CommonOpenFileDialog dialog = new CommonOpenFileDialog();
+            dialog.Filters.Add(new CommonFileDialogFilter("MDS File", "*.mds"));
+            dialog.Title = "Load Animation Set...";
+            if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
+            {
+                animations = new List<Animation>();
+                dataGridView_AnimationOrder.Rows.Clear();
+                ReadMDS(dialog.FileName);
+                CreateAnimationRows();
+                UpdateAnimationDataGridView();
+            }
+        }
+
+        //Update listbox with new animation names if preset is selected
+        private void comboBox_Preset_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            presetChanged = true;
+            UpdateAnimationDataGridView();
+            presetChanged = false;
+        }
+        //Add, remove, or rename selected animation
+        private void menuStrip_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
+        {
+            if (e.ClickedItem.Text == "Add")
+            {
+                //TODO: Add single animation importing
+            }
+            else if (e.ClickedItem.Text == "Remove")
+            {
+                //TODO: Add removal
+            }
+            else if (e.ClickedItem.Text == "Rename")
+            {
+                //TODO: Add renaming
+            }
+        }
+
+        //Enable/disable import button depending on if animations will be read
+        private void chkBox_Animations_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chkBox_Animations.Checked)
+                btn_ImportAnim.Enabled = true;
+            else
+                btn_ImportAnim.Enabled = false;
+        }
+
+        //Show the context menu if an animation cell is right clicked
+        private void dataGridView_AnimationOrder_CellMouseDown(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            // Ignore if a column or row header is clicked
+            if (e.RowIndex != -1 && e.ColumnIndex != -1)
+            {
+                if (e.Button == MouseButtons.Right)
+                {
+                    DataGridViewCell clickedCell = (sender as DataGridView).Rows[e.RowIndex].Cells[e.ColumnIndex];
+
+                    // Here you can do whatever you want with the cell
+                    dataGridView_AnimationOrder.CurrentCell = clickedCell;  // Select the clicked cell, for instance
+
+                    // Get mouse position relative to the vehicles grid
+                    var relativeMousePosition = dataGridView_AnimationOrder.PointToClient(Cursor.Position);
+
+                    // Show the context menu
+                    this.contextMenuStrip_Animations.Show(dataGridView_AnimationOrder, relativeMousePosition);
+
+                    //Set the row number
+                    selectedRow = e.RowIndex;
+                }
+            }
+        }
+
+        /*
+         * UTILITIES
+         */
+        private static int FindSequence(byte[] array, int start, byte[] sequence)
+        {
+            int end = array.Length - sequence.Length; // past here no match is possible
+            byte firstByte = sequence[0]; // cached to tell compiler there's no aliasing
+
+            while (start < end)
+            {
+                // scan for first byte only. compiler-friendly.
+                if (array[start] == firstByte)
+                {
+                    // scan for rest of sequence
+                    for (int offset = 1; offset < sequence.Length; ++offset)
+                    {
+                        if (array[start + offset] != sequence[offset])
+                        {
+                            break; // mismatch? continue scanning with next byte
+                        }
+                        else if (offset == sequence.Length - 1)
+                        {
+                            return start; // all bytes matched!
+                        }
+                    }
+                }
+                ++start;
+            }
+
+            // end of array reached without match
+            return -1;
         }
 
         //Extract TM2 textures from GMO
@@ -736,7 +1035,7 @@ namespace P4GModelConverter
 
             if (textureNames.Count > 0)
             {
-                if (File.Exists($"{Path.GetDirectoryName(path)}\\{textureNames[0]}"))
+                if (File.Exists($"{Path.GetDirectoryName(path)}\\textures\\{textureNames[0]}"))
                     return;
 
                 //Get textures and write files
@@ -746,7 +1045,8 @@ namespace P4GModelConverter
                     try
                     {
                         offset = FindSequence(File.ReadAllBytes(path), offset, Encoding.ASCII.GetBytes("TIM2"));
-                        string newFile = $"{Path.GetDirectoryName(path)}\\{textureNames[i]}";
+                        Directory.CreateDirectory($"{Path.GetDirectoryName(path)}\\textures");
+                        string newFile = $"{Path.GetDirectoryName(path)}\\textures\\{textureNames[i]}";
                         using (EndianBinaryReader reader = new EndianBinaryReader(File.OpenRead(path), Endianness.BigEndian))
                         {
                             reader.BaseStream.Position = offset;
@@ -766,11 +1066,15 @@ namespace P4GModelConverter
             }
         }
 
+        /*
+         * COMMANDLINE TOOLS
+         */
+
         //Run tool to convert between GMO and MDS
         private void GMOTool(string path, bool extract)
         {
             Process cmd = new Process();
-            cmd.StartInfo.FileName = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\GMOTool.exe";
+            cmd.StartInfo.FileName = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Tools\\GMOTool\\GMOTool.exe";
             //cmd.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             cmd.StartInfo.Arguments = $"\"{path}\"";
             if (extract)
@@ -785,7 +1089,7 @@ namespace P4GModelConverter
         private void GMOConv(string model)
         {
             Process cmd = new Process();
-            cmd.StartInfo.FileName = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\GMO\\GmoConv.exe";
+            cmd.StartInfo.FileName = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Tools\\GMO\\GmoConv.exe";
             //cmd.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             cmd.StartInfo.Arguments = $"\"{model}\"";
             cmd.Start();
@@ -796,7 +1100,7 @@ namespace P4GModelConverter
         private void GIMConv(string texture)
         {
             Process cmd = new Process();
-            cmd.StartInfo.FileName = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\GIM\\GimConv.exe";
+            cmd.StartInfo.FileName = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Tools\\GIM\\GimConv.exe";
             //cmd.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             cmd.StartInfo.Arguments = $"\"{texture}\" -o \"{texture}.tm2\"";
             cmd.Start();
@@ -807,249 +1111,92 @@ namespace P4GModelConverter
         private void GMOView(string model)
         {
             Process cmd = new Process();
-            cmd.StartInfo.FileName = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\GMO\\GmoView.exe";
+            cmd.StartInfo.FileName = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Tools\\GMO\\GmoView.exe";
             //cmd.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             cmd.StartInfo.Arguments = $"\"{model}\"";
             cmd.Start();
+        }
+
+        //Run model through Noesis for viewing
+        private void Noesis(string args)
+        {
+            Process process = new Process();
+            ProcessStartInfo startInfo = new ProcessStartInfo();
+            startInfo.WindowStyle = ProcessWindowStyle.Hidden;
+            startInfo.FileName = "cmd.exe";
+            startInfo.Arguments = $"\"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Tools\\Noesis\\Noesis.exe\" {args}";
+            process.StartInfo = startInfo;
+            process.Start();
+        }
+
+        //Run model through Noesis for optimizing
+        private void NoesisOptimize(string path, string args)
+        {
+            using (var cmdProcess = new Process())
+            {
+                cmdProcess.StartInfo.UseShellExecute = true;
+                cmdProcess.StartInfo.WorkingDirectory = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Tools\\Noesis";
+                cmdProcess.StartInfo.FileName = @"C:\Windows\System32\cmd.exe";
+                cmdProcess.StartInfo.Arguments = "/k " + $"Noesis.exe ?cmode \"{path}\" \"{extensionlessPath}_optimized.fbx\" {args}";
+                cmdProcess.StartInfo.WindowStyle = ProcessWindowStyle.Normal;
+                cmdProcess.Start();
+                int x = 0;
+                while (!File.Exists($"{extensionlessPath}_optimized.fbx")) { Thread.Sleep(1000); x++; if (x == 15) return; }
+                cmdProcess.Kill();
+            }
         }
 
         //Run TGE's tool to fix GMO files for PC
         private void GMOFixTool(string path)
         {
             Process cmd = new Process();
-            cmd.StartInfo.FileName = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\p4gpc-gmofix.exe";
+            cmd.StartInfo.FileName = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Tools\\p4gpc-gmofix\\p4gpc-gmofix.exe";
             //cmd.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             cmd.StartInfo.Arguments = $"\"{path}\"";
             cmd.Start();
             cmd.WaitForExit();
         }
 
-        //Refresh listbox
-        private void btn_Reset_Click(object sender, EventArgs e)
+        private void chkBox_ViewGMO_CheckedChanged(object sender, EventArgs e)
         {
-            updateMDS = true;
-            UpdateListBox();
-            updateMDS = false;
-        }
-
-        private static int FindSequence(byte[] array, int start, byte[] sequence)
-        {
-            int end = array.Length - sequence.Length; // past here no match is possible
-            byte firstByte = sequence[0]; // cached to tell compiler there's no aliasing
-
-            while (start < end)
-            {
-                // scan for first byte only. compiler-friendly.
-                if (array[start] == firstByte)
-                {
-                    // scan for rest of sequence
-                    for (int offset = 1; offset < sequence.Length; ++offset)
-                    {
-                        if (array[start + offset] != sequence[offset])
-                        {
-                            break; // mismatch? continue scanning with next byte
-                        }
-                        else if (offset == sequence.Length - 1)
-                        {
-                            return start; // all bytes matched!
-                        }
-                    }
-                }
-                ++start;
-            }
-
-            // end of array reached without match
-            return -1;
-        }
-
-        public void MoveItem(int direction)
-        {
-            // Checking selected item
-            if (dataGridView_AnimationOrder.SelectedRows == null || dataGridView_AnimationOrder.SelectedRows.Count <= 0)
-                return; // No selected item - nothing to do
-
-            // Calculate new index using move direction
-            int newIndex = dataGridView_AnimationOrder.SelectedRows[0].Index + direction;
-
-            // Checking bounds of the range
-            if (newIndex < 0 || newIndex >= dataGridView_AnimationOrder.Rows.Count)
-                return; // Index out of range - nothing to do
-
-            object selected = dataGridView_AnimationOrder.SelectedRows[0];
-
-            // Removing removable element
-            dataGridView_AnimationOrder.Rows.Remove((DataGridViewRow)selected);
-            // Insert it in new position
-            dataGridView_AnimationOrder.Rows.Insert(newIndex, (DataGridViewRow)selected);
-            // Restore selection
-            dataGridView_AnimationOrder.Rows[newIndex].Selected = true;
-            //Scroll to selection
-            if (newIndex > 1)
-                dataGridView_AnimationOrder.FirstDisplayedScrollingRowIndex = newIndex - 2;
+            if (chkBox_ViewGMO.Checked)
+                comboBox_Preview.Enabled = true;
             else
-                dataGridView_AnimationOrder.FirstDisplayedScrollingRowIndex = 0;
-
-            //Make sure row numbers are in order
-            RefreshRowNumbers();
-            if (chkBox_AutoUpdate.Checked)
-                UpdateListBox(); //Optionally rewrite MDS with changes
+                comboBox_Preview.Enabled = false;
         }
 
-        private void CreateAnimationRows()
+        private void chkBox_FBXOptimize_CheckedChanged(object sender, EventArgs e)
         {
-            dataGridView_AnimationOrder.Rows.Clear();
-            for (int i = 0; i < animations.Count; i++)
+            if (!chkBox_FBXOptimize.Checked)
             {
-                int newRowIndex = dataGridView_AnimationOrder.Rows.Add();
-                DataGridViewRow row = dataGridView_AnimationOrder.Rows[newRowIndex];
-                row.Cells[0].Value = $"{newRowIndex + 1}";
-                row.Cells[1].Value = animations[i].Name;
+                chkBox_fbxoldexport.Checked = false;
+                chkBox_fbxoldexport.Enabled = false;
+                chkBox_fbxnewexport.Checked = false;
+                chkBox_fbxnewexport.Enabled = false;
+                chkBox_fbxnooptimize.Checked = false;
+                chkBox_fbxnooptimize.Enabled = false;
+                chkBox_fbxascii.Checked = false;
+                chkBox_fbxascii.Enabled = false;
             }
-        }
-
-        private void RefreshRowNumbers()
-        {
-            // Redo animation row numbering
-            for (int i = 0; i < dataGridView_AnimationOrder.Rows.Count; i++)
-            {
-                dataGridView_AnimationOrder.Rows[i].Cells[0].Value = i + 1;
-            }
-        }
-
-        private void Up_Click(object sender, EventArgs e)
-        {
-            MoveItem(-1);
-        }
-
-        private void Down_Click(object sender, EventArgs e)
-        {
-            MoveItem(1);
-        }
-
-        private void btn_Create_DragEnter(object sender, DragEventArgs e)
-        {
-            e.Effect = DragDropEffects.Move;
-        }
-
-        private void btn_Extract_DragEnter(object sender, DragEventArgs e)
-        {
-            e.Effect = DragDropEffects.Move;
-        }
-
-        //Create MDS from chosen GMO or FBX
-        private void btn_Extract_Click(object sender, EventArgs e)
-        {
-            CommonOpenFileDialog dialog = new CommonOpenFileDialog();
-            dialog.Filters.Add(new CommonFileDialogFilter("GMO Model", "*.gmo"));
-            dialog.Filters.Add(new CommonFileDialogFilter("FBX Model", "*.fbx"));
-            dialog.Title = "Load Model...";
-            if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
-            {
-                CreateMDS(dialog.FileName);
-            }
-        }
-
-        //Create GMO from chosen MDS
-        private void btn_Create_Click(object sender, EventArgs e)
-        {
-            CommonOpenFileDialog dialog = new CommonOpenFileDialog();
-            dialog.Filters.Add(new CommonFileDialogFilter("MDS File", "*.mds"));
-            dialog.Title = "Load MDS File...";
-            if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
-            {
-                CreateGMO(dialog.FileName);
-            }
-        }
-
-        //Save animation set to MDS file
-        private void btn_ExportAnim_Click(object sender, EventArgs e)
-        {
-            UpdateListBox();
-            if (animations.Count > 0)
-            {
-                CommonSaveFileDialog dialog = new CommonSaveFileDialog();
-                dialog.Filters.Add(new CommonFileDialogFilter("MDS File", "*.mds"));
-                dialog.Title = "Save Animation Set...";
-                if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
-                {
-                    string fileName = dialog.FileName;
-                    if (!fileName.ToLower().EndsWith(".mds"))
-                        fileName = fileName + ".mds";
-
-                    if (File.Exists(fileName))
-                        File.Delete(fileName);
-                    File.AppendAllLines(fileName, WriteAnimations());
-                }
-            }
-        }
-
-        //Load animation set from MDS file
-        private void btn_ImportAnim_Click(object sender, EventArgs e)
-        {
-            CommonOpenFileDialog dialog = new CommonOpenFileDialog();
-            dialog.Filters.Add(new CommonFileDialogFilter("MDS File", "*.mds"));
-            dialog.Title = "Load Animation Set...";
-            if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
-            {
-                ReadMDS(dialog.FileName, false);
-                FixMDS();
-                UpdateListBox();
-            }
-        }
-
-        private void comboBox_Preset_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            presetChanged = true;
-            UpdateListBox();
-            presetChanged = false;
-        }
-
-        private void dataGridView_AnimationOrder_CellMouseDown(object sender, DataGridViewCellMouseEventArgs e)
-        {
-            // Ignore if a column or row header is clicked
-            if (e.RowIndex != -1 && e.ColumnIndex != -1)
-            {
-                if (e.Button == MouseButtons.Right)
-                {
-                    DataGridViewCell clickedCell = (sender as DataGridView).Rows[e.RowIndex].Cells[e.ColumnIndex];
-
-                    // Here you can do whatever you want with the cell
-                    dataGridView_AnimationOrder.CurrentCell = clickedCell;  // Select the clicked cell, for instance
-
-                    // Get mouse position relative to the vehicles grid
-                    var relativeMousePosition = dataGridView_AnimationOrder.PointToClient(Cursor.Position);
-
-                    // Show the context menu
-                    this.contextMenuStrip_Animations.Show(dataGridView_AnimationOrder, relativeMousePosition);
-
-                    //Set the row number
-                    selectedRow = e.RowIndex;
-                }
-            }
-        }
-
-        private void menuStrip_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
-        {
-            if (e.ClickedItem.Text == "Add")
-            {
-                //TODO: Add single animation importing
-            }
-            else if (e.ClickedItem.Text == "Remove")
-            {
-                //TODO: Add removal
-            }
-            else if (e.ClickedItem.Text == "Rename")
-            {
-                //TODO: Add renaming
-            }
-        }
-
-        private void chkBox_Animations_CheckedChanged(object sender, EventArgs e)
-        {
-            if (chkBox_Animations.Checked)
-                btn_ImportAnim.Enabled = true;
             else
-                btn_ImportAnim.Enabled = false;
+            {
+                chkBox_fbxoldexport.Enabled = true;
+                chkBox_fbxnewexport.Enabled = true;
+                chkBox_fbxnooptimize.Enabled = true;
+                chkBox_fbxascii.Enabled = true;
+            }
+        }
+
+        private void chkBox_fbxoldexport_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chkBox_fbxoldexport.Checked)
+                chkBox_fbxnewexport.Checked = false;
+        }
+
+        private void chkBox_fbxnewexport_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chkBox_fbxnewexport.Checked)
+                chkBox_fbxoldexport.Checked = false;
         }
     }
 }
