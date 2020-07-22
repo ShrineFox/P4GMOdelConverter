@@ -35,7 +35,7 @@
             this.btn_CreateGMO = new System.Windows.Forms.Button();
             this.btn_Up = new System.Windows.Forms.Button();
             this.btn_Down = new System.Windows.Forms.Button();
-            this.chkBox_Extract = new System.Windows.Forms.CheckBox();
+            this.chkBox_ExtractTex = new System.Windows.Forms.CheckBox();
             this.chkBox_Animations = new System.Windows.Forms.CheckBox();
             this.lbl_AnimationsLoaded = new System.Windows.Forms.Label();
             this.btn_ExportAnim = new System.Windows.Forms.Button();
@@ -43,7 +43,7 @@
             this.chkBox_Dummy = new System.Windows.Forms.CheckBox();
             this.lbl_WpnBone = new System.Windows.Forms.Label();
             this.txt_WpnBone = new System.Windows.Forms.TextBox();
-            this.chkBox_GMOtoFBX = new System.Windows.Forms.CheckBox();
+            this.chkBox_FBXtoGMO = new System.Windows.Forms.CheckBox();
             this.chkBox_PCFix = new System.Windows.Forms.CheckBox();
             this.chkBox_ViewGMO = new System.Windows.Forms.CheckBox();
             this.chkBox_RenameBones = new System.Windows.Forms.CheckBox();
@@ -84,7 +84,7 @@
             this.btn_Extract.Name = "btn_Extract";
             this.btn_Extract.Size = new System.Drawing.Size(200, 172);
             this.btn_Extract.TabIndex = 0;
-            this.btn_Extract.Text = "Generate MDS\r\nfrom FBX or GMO\r\n\r\n(and load animation)";
+            this.btn_Extract.Text = "Generate MDS\r\nfrom Model";
             this.btn_Extract.UseVisualStyleBackColor = true;
             this.btn_Extract.Click += new System.EventHandler(this.btn_Extract_Click);
             this.btn_Extract.DragDrop += new System.Windows.Forms.DragEventHandler(this.btn_Extract_DragDrop);
@@ -128,21 +128,23 @@
             this.btn_Down.UseVisualStyleBackColor = true;
             this.btn_Down.Click += new System.EventHandler(this.Down_Click);
             // 
-            // chkBox_Extract
+            // chkBox_ExtractTex
             // 
-            this.chkBox_Extract.AutoSize = true;
-            this.chkBox_Extract.Location = new System.Drawing.Point(4, 129);
-            this.chkBox_Extract.Margin = new System.Windows.Forms.Padding(4);
-            this.chkBox_Extract.Name = "chkBox_Extract";
-            this.chkBox_Extract.Size = new System.Drawing.Size(167, 21);
-            this.chkBox_Extract.TabIndex = 11;
-            this.chkBox_Extract.Text = "Extract TIM2 Textures";
-            this.chkBox_Extract.UseVisualStyleBackColor = true;
+            this.chkBox_ExtractTex.AutoSize = true;
+            this.chkBox_ExtractTex.Checked = true;
+            this.chkBox_ExtractTex.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkBox_ExtractTex.Location = new System.Drawing.Point(4, 129);
+            this.chkBox_ExtractTex.Margin = new System.Windows.Forms.Padding(4);
+            this.chkBox_ExtractTex.Name = "chkBox_ExtractTex";
+            this.chkBox_ExtractTex.Size = new System.Drawing.Size(167, 21);
+            this.chkBox_ExtractTex.TabIndex = 11;
+            this.chkBox_ExtractTex.Text = "Extract TIM2 Textures";
+            this.chkBox_ExtractTex.UseVisualStyleBackColor = true;
             // 
             // chkBox_Animations
             // 
             this.chkBox_Animations.AutoSize = true;
-            this.chkBox_Animations.Location = new System.Drawing.Point(4, 150);
+            this.chkBox_Animations.Location = new System.Drawing.Point(4, 68);
             this.chkBox_Animations.Margin = new System.Windows.Forms.Padding(4);
             this.chkBox_Animations.Name = "chkBox_Animations";
             this.chkBox_Animations.Size = new System.Drawing.Size(135, 21);
@@ -216,18 +218,16 @@
             this.txt_WpnBone.TabIndex = 15;
             this.txt_WpnBone.Text = "Bip01_L_Hand_Bone";
             // 
-            // chkBox_GMOtoFBX
+            // chkBox_FBXtoGMO
             // 
-            this.chkBox_GMOtoFBX.AutoSize = true;
-            this.chkBox_GMOtoFBX.Checked = true;
-            this.chkBox_GMOtoFBX.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkBox_GMOtoFBX.Location = new System.Drawing.Point(4, 109);
-            this.chkBox_GMOtoFBX.Margin = new System.Windows.Forms.Padding(4);
-            this.chkBox_GMOtoFBX.Name = "chkBox_GMOtoFBX";
-            this.chkBox_GMOtoFBX.Size = new System.Drawing.Size(162, 21);
-            this.chkBox_GMOtoFBX.TabIndex = 10;
-            this.chkBox_GMOtoFBX.Text = "Convert FBX to GMO\r\n";
-            this.chkBox_GMOtoFBX.UseVisualStyleBackColor = true;
+            this.chkBox_FBXtoGMO.AutoSize = true;
+            this.chkBox_FBXtoGMO.Location = new System.Drawing.Point(4, 109);
+            this.chkBox_FBXtoGMO.Margin = new System.Windows.Forms.Padding(4);
+            this.chkBox_FBXtoGMO.Name = "chkBox_FBXtoGMO";
+            this.chkBox_FBXtoGMO.Size = new System.Drawing.Size(162, 21);
+            this.chkBox_FBXtoGMO.TabIndex = 10;
+            this.chkBox_FBXtoGMO.Text = "Convert FBX to GMO\r\n";
+            this.chkBox_FBXtoGMO.UseVisualStyleBackColor = true;
             // 
             // chkBox_PCFix
             // 
@@ -273,9 +273,8 @@
             this.panel_FBX_GMO.Controls.Add(this.chkBox_fbxnewexport);
             this.panel_FBX_GMO.Controls.Add(this.chkBox_fbxnooptimize);
             this.panel_FBX_GMO.Controls.Add(this.chkBox_FBXOptimize);
-            this.panel_FBX_GMO.Controls.Add(this.chkBox_GMOtoFBX);
-            this.panel_FBX_GMO.Controls.Add(this.chkBox_Extract);
-            this.panel_FBX_GMO.Controls.Add(this.chkBox_Animations);
+            this.panel_FBX_GMO.Controls.Add(this.chkBox_FBXtoGMO);
+            this.panel_FBX_GMO.Controls.Add(this.chkBox_ExtractTex);
             this.panel_FBX_GMO.Location = new System.Drawing.Point(7, 182);
             this.panel_FBX_GMO.Name = "panel_FBX_GMO";
             this.panel_FBX_GMO.Size = new System.Drawing.Size(200, 183);
@@ -477,6 +476,7 @@
             this.panel1.Controls.Add(this.txt_WpnBone);
             this.panel1.Controls.Add(this.chkBox_RenameBones);
             this.panel1.Controls.Add(this.lbl_WpnBone);
+            this.panel1.Controls.Add(this.chkBox_Animations);
             this.panel1.Location = new System.Drawing.Point(215, 182);
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(200, 182);
@@ -488,9 +488,9 @@
             this.chkBox_FBXOptimize.Location = new System.Drawing.Point(4, 5);
             this.chkBox_FBXOptimize.Margin = new System.Windows.Forms.Padding(4);
             this.chkBox_FBXOptimize.Name = "chkBox_FBXOptimize";
-            this.chkBox_FBXOptimize.Size = new System.Drawing.Size(190, 21);
+            this.chkBox_FBXOptimize.Size = new System.Drawing.Size(189, 21);
             this.chkBox_FBXOptimize.TabIndex = 12;
-            this.chkBox_FBXOptimize.Text = "Optimize FBX with Noesis";
+            this.chkBox_FBXOptimize.Text = "Convert to FBX w/ Noesis";
             this.chkBox_FBXOptimize.UseVisualStyleBackColor = true;
             this.chkBox_FBXOptimize.CheckedChanged += new System.EventHandler(this.chkBox_FBXOptimize_CheckedChanged);
             // 
@@ -590,7 +590,7 @@
         private System.Windows.Forms.Button btn_CreateGMO;
         private System.Windows.Forms.Button btn_Up;
         private System.Windows.Forms.Button btn_Down;
-        private System.Windows.Forms.CheckBox chkBox_Extract;
+        private System.Windows.Forms.CheckBox chkBox_ExtractTex;
         private System.Windows.Forms.CheckBox chkBox_Animations;
         private System.Windows.Forms.Label lbl_AnimationsLoaded;
         private System.Windows.Forms.Button btn_ExportAnim;
@@ -598,7 +598,7 @@
         private System.Windows.Forms.CheckBox chkBox_Dummy;
         private System.Windows.Forms.Label lbl_WpnBone;
         private System.Windows.Forms.TextBox txt_WpnBone;
-        private System.Windows.Forms.CheckBox chkBox_GMOtoFBX;
+        private System.Windows.Forms.CheckBox chkBox_FBXtoGMO;
         private System.Windows.Forms.CheckBox chkBox_PCFix;
         private System.Windows.Forms.CheckBox chkBox_ViewGMO;
         private System.Windows.Forms.CheckBox chkBox_RenameBones;

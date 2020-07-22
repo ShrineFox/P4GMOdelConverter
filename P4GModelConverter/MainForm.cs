@@ -203,41 +203,44 @@ namespace P4GModelConverter
                 if (Path.GetExtension(path).ToUpper() == ".AMD")
                 {
                     //todo: extract GMO
-                    path = extensionlessPath + ".GMO";
+                    path = extensionlessPath + ".gmo";
                 }
-                if (Path.GetExtension(path).ToUpper() == ".FBX")
+                if(Path.GetExtension(path).ToUpper() == ".DAE" || Path.GetExtension(path).ToUpper() == ".SMD" || Path.GetExtension(path).ToUpper() == ".FBX")
                 {
-                    if (chkBox_FBXOptimize.Checked)
+                    if (chkBox_FBXOptimize.Checked || Path.GetExtension(path).ToUpper() != ".FBX")
                     {
-                        string args = "";
-                        if (chkBox_fbxoldexport.Checked)
-                            args += "-fbxoldexport ";
-                        if (chkBox_fbxnewexport.Checked)
-                            args += "-fbxnewexport ";
-                        if (chkBox_fbxnooptimize.Checked)
-                            args += "-fbxnooptimize ";
-                        if (chkBox_fbxascii.Checked)
-                            args += "-fbxascii ";
-                        NoesisOptimize(path, args);
-                        path = $"{extensionlessPath}_optimized.fbx";
+                        path = CreateOptimizedFBX(path); //Optimize FBX with settings or convert to FBX
                     }
-                    string mdsPath = extensionlessPath + ".mds";
-                    if (chkBox_GMOtoFBX.Checked)
+                    if (chkBox_FBXtoGMO.Checked)
                     {
-                        GMOConv(path); //Convert FBX directly to GMO without fixes first (optional, improves FBX support)
-                        GMOTool(extensionlessPath + ".gmo", true); //Create MDS from converted GMO
+                        GMOConv(path); //Convert FBX directly to GMO without fixes first
+                        path = extensionlessPath + ".gmo";
                     }
-                    else
-                        GMOTool(path, true); //Create MDS from FBX
                 }
-                else if (Path.GetExtension(path).ToUpper() == ".GMO")
+                if (Path.GetExtension(path).ToUpper() == ".GMO" || Path.GetExtension(path).ToUpper() == ".FBX")
                 {
-                    if (chkBox_Extract.Checked)
-                        ExtractTextures(path); //Extract TM2 textures (optional)
-                    GMOTool(path, true); //Create MDS from GMO
-                    string mdsPath = extensionlessPath + ".mds";
+                    if (chkBox_ExtractTex.Checked && Path.GetExtension(path).ToUpper() == ".GMO")
+                        ExtractTextures(path); //Extract TM2 Textures
+                    GMOTool(path, true); //Create MDS
                 }
             }
+        }
+        
+        //Convert model to FBX through Noesis commandline using specified settings
+        private string CreateOptimizedFBX(string path)
+        {
+            string args = "";
+            if (chkBox_fbxoldexport.Checked)
+                args += "-fbxoldexport ";
+            if (chkBox_fbxnewexport.Checked)
+                args += "-fbxnewexport ";
+            if (chkBox_fbxnooptimize.Checked)
+                args += "-fbxnooptimize ";
+            if (chkBox_fbxascii.Checked)
+                args += "-fbxascii ";
+            NoesisOptimize(path, args);
+            extensionlessPath += "_optimized";
+            return $"{extensionlessPath}.fbx";
         }
 
         //Create GMO from MDS
@@ -607,37 +610,25 @@ namespace P4GModelConverter
             foreach (var texture in textures)
             {
                 //Set up texture output path
-                string newTexPath = $"{Path.GetDirectoryName(path)}\\textures\\{texture.FileName}";
+                string newTexPath = $"{Path.GetDirectoryName(path)}\\textures\\{texture.FileName.Split('\\').Last()}";
                 Directory.CreateDirectory($"{Path.GetDirectoryName(path)}\\textures");
 
                 newLines.Add($"\tTexture \"{texture.Name}\" {{");
-
                 //Convert, move and edit path of non-tm2 textures
                 if (!texture.FileName.ToLower().Contains(".tm2") && chkBox_AutoConvertTex.Checked)
                 {
-                    
-                    if (!File.Exists(newTexPath + ".tm2"))
-                    {
-                        if (File.Exists(texture.FileName))
-                        {
-                            GIMConv(texture.FileName);
-                            File.Move(texture.FileName, $"{newTexPath}.tm2");
-                        }
-                    }
-                    newLines.Add($"\t\tFileName \"textures\\{texture.FileName}.tm2\"");
+                    GIMConv(texture.FileName);
+                    if (!File.Exists(newTexPath + ".tm2") && File.Exists(texture.FileName))
+                        File.Move(texture.FileName + ".tm2", newTexPath + ".tm2");
+                    newLines.Add($"\t\tFileName \"textures\\{texture.FileName.Split('\\').Last()}.tm2\"");
                 }
                 else //Move and edit path of tm2 textures
                 {
-                    if (!File.Exists($"{newTexPath}"))
-                    {
+                    if (!File.Exists(newTexPath))
                         if (File.Exists(texture.FileName))
-                        {
                             File.Move(texture.FileName, newTexPath);
-                        }
-                    }
-                    newLines.Add($"\t\tFileName \"textures\\{texture.FileName}\"");
+                    newLines.Add($"\t\tFileName \"textures\\{texture.FileName.Split('\\').Last()}\"");
                 }
-                    
                 newLines.Add($"\t}}");
             }
         }
@@ -850,6 +841,8 @@ namespace P4GModelConverter
             CommonOpenFileDialog dialog = new CommonOpenFileDialog();
             dialog.Filters.Add(new CommonFileDialogFilter("GMO Model", "*.gmo"));
             dialog.Filters.Add(new CommonFileDialogFilter("FBX Model", "*.fbx"));
+            dialog.Filters.Add(new CommonFileDialogFilter("DAE Model", "*.dae"));
+            dialog.Filters.Add(new CommonFileDialogFilter("SMD Model", "*.smd"));
             dialog.Filters.Add(new CommonFileDialogFilter("Atlus PAC", "*.pac,*.bin,*.amd"));
             dialog.Title = "Load Model...";
             if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
@@ -903,12 +896,30 @@ namespace P4GModelConverter
         {
             CommonOpenFileDialog dialog = new CommonOpenFileDialog();
             dialog.Filters.Add(new CommonFileDialogFilter("MDS File", "*.mds"));
+            dialog.Filters.Add(new CommonFileDialogFilter("FBX Animated Model", "*.fbx"));
+            dialog.Filters.Add(new CommonFileDialogFilter("DAE Animated Model", "*.dae"));
+            dialog.Filters.Add(new CommonFileDialogFilter("SMD Animated Model", "*.smd"));
             dialog.Title = "Load Animation Set...";
             if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
             {
                 animations = new List<Animation>();
-                dataGridView_AnimationOrder.Rows.Clear();
-                ReadMDS(dialog.FileName);
+                dataGridView_AnimationOrder.Rows.Clear(); //Remove old animation set
+                string mdsPath = dialog.FileName;
+                string ext = Path.GetExtension(mdsPath).ToUpper();
+                if (ext != ".MDS")
+                {
+                    NoesisOptimize(mdsPath, "-fbxoldexport"); //Create optimized FBX
+                    string extensionless = Path.Combine(Path.GetDirectoryName(mdsPath), Path.GetFileNameWithoutExtension(mdsPath));
+                    if (chkBox_FBXtoGMO.Checked)
+                    {
+                        GMOConv(extensionless + "_optimized.fbx"); //Convert FBX directly to GMO
+                        GMOTool(extensionless + "_optimized.gmo", true); //Create MDS
+                    }
+                    else
+                        GMOTool(extensionless + "_optimized.fbx", true); //Create MDS
+                    mdsPath = extensionless + "_optimized.mds";
+                }
+                ReadMDS(mdsPath); //Read MDS with animations
                 CreateAnimationRows();
                 UpdateAnimationDataGridView();
             }
@@ -1086,13 +1097,15 @@ namespace P4GModelConverter
         }
 
         //Run program to convert FBX to GMO directly
-        private void GMOConv(string model)
+        private void GMOConv(string fbx)
         {
             Process cmd = new Process();
             cmd.StartInfo.FileName = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Tools\\GMO\\GmoConv.exe";
             //cmd.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
-            cmd.StartInfo.Arguments = $"\"{model}\"";
+            cmd.StartInfo.Arguments = $"\"{fbx}\"";
             cmd.Start();
+            int x = 0;
+            while (!File.Exists($"{Path.Combine(Path.GetDirectoryName(fbx), Path.GetFileNameWithoutExtension(fbx))}.gmo")) { Thread.Sleep(1000); x++; if (x == 15) return; }
             cmd.WaitForExit();
         }
 
@@ -1104,6 +1117,8 @@ namespace P4GModelConverter
             //cmd.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             cmd.StartInfo.Arguments = $"\"{texture}\" -o \"{texture}.tm2\"";
             cmd.Start();
+            int x = 0;
+            while (!File.Exists($"{texture}.tm2")) { Thread.Sleep(1000); x++; if (x == 15) return; }
             cmd.WaitForExit();
         }
 
@@ -1123,8 +1138,8 @@ namespace P4GModelConverter
             Process process = new Process();
             ProcessStartInfo startInfo = new ProcessStartInfo();
             startInfo.WindowStyle = ProcessWindowStyle.Hidden;
-            startInfo.FileName = "cmd.exe";
-            startInfo.Arguments = $"\"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Tools\\Noesis\\Noesis.exe\" {args}";
+            startInfo.FileName = $"\"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Tools\\Noesis\\Noesis.exe\"";
+            startInfo.Arguments = args;
             process.StartInfo = startInfo;
             process.Start();
         }
@@ -1169,13 +1184,9 @@ namespace P4GModelConverter
         {
             if (!chkBox_FBXOptimize.Checked)
             {
-                chkBox_fbxoldexport.Checked = false;
                 chkBox_fbxoldexport.Enabled = false;
-                chkBox_fbxnewexport.Checked = false;
                 chkBox_fbxnewexport.Enabled = false;
-                chkBox_fbxnooptimize.Checked = false;
                 chkBox_fbxnooptimize.Enabled = false;
-                chkBox_fbxascii.Checked = false;
                 chkBox_fbxascii.Enabled = false;
             }
             else
