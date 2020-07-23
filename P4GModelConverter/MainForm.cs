@@ -30,12 +30,14 @@ namespace P4GModelConverter
         List<Texture> textures = new List<Texture>();
         string extensionlessPath;
         string p4gMDSpath;
-        List<List<string>> animationPresets = new List<List<string>>() { //null, p4g protag, p4g party, p4g culprit, p3p protag, p3p party, p3p strega
+        List<List<string>> animationPresets = new List<List<string>>() { //null, p4g protag, p4g party, p4g persona, p4g culprit, p3p protag, p3p party, p3p persona, p3p strega
             new List<string>{ "" }, 
             new List<string> { "Idle", "Idle 2", "Run", "Attack", "Attack Critical", "Placeholder 4", "Persona Change", "Persona Summon 1", "Persona Summon 2", "Persona Summon 3", "Persona Summon 4", "Guard", "Dodge", "Low HP", "Damaged", "Miss Attack", "Knocked Down", "Down", "Get Back Up", "Killed", "Revived", "Use Item", "Victory", "Pushed Out of the Way", "Placeholder 23", "Helped Up", "Placeholder 25", "Idle (Duplicate)" },
             new List<string>{ "Idle (Active)", "Idle 2", "Run", "Attack", "Attack Critical", "Special Attack 1", "Special Attack 2", "Persona Summon 1", "Persona Summon 2", "Persona Summon 3", "Persona Summon 4", "Guard", "Dodge", "Low HP", "Damaged", "Miss Attack", "Knocked Down", "Down", "Get Back Up", "Killed", "Revived", "Use Item", "Victory", "Knock Out of the Way", "Help Up Party Member", "Helped Up", "Yell At Party Member", "Idle (Still)", "Group Summon 1", "Group Summon 2", "Group Summon 3", "Group Summon 4" },
+            new List<string>{ "Physical Attack", "Magic Attack", "Physical Attack", "Magic Attack", "Idle" },
             new List<string>{ "Idle", "Low HP", "Damaged", "Run", "Attack", "Placeholder 4", "Dialog Animation", "Miss Attack", "Knocked Down", "Down", "Get Back Up", "Killed", "Persona Summon 1", "Persona Summon 2", "Persona Summon 3", "Persona Summon 4", "Dodge", "Idle 2" },
             new List<string>{ "Idle", "Low HP", "Damaged", "Run", "Attack", "Attack 2 Critical", "Attack 3 Critical", "Miss Attack", "Knocked Down", "Down", "Get Back Up", "Persona Summon 1", "Persona Summon 2", "Persona Summon 3", "Persona Summon 4", "Idle 2", "Use Item", "Dodge", "Revived", "Victory", "Killed", "Fusion Attack", "Guard", "Knock Out of the Way" },
+            new List<string>{ "Physical Attack", "Magic Attack", "Idle", "Magic attack" },
             new List<string>{ "Idle", "Low HP", "Damaged", "Run", "Attack", "Placeholder 4", "Killed", "Miss Attack", "Knocked Down", "Down", "Get Back Up", "Persona Summon 1", "Persona Summon 2", "Persona Summon 3", "Persona Summon 4", "Idle 2", "Placeholder 15", "Low HP (Duplicate)", "Dodge" }
         };
         bool presetChanged;
@@ -232,14 +234,10 @@ namespace P4GModelConverter
             string args = "";
             if (chkBox_fbxoldexport.Checked)
                 args += "-fbxoldexport ";
-            if (chkBox_fbxnewexport.Checked)
-                args += "-fbxnewexport ";
-            if (chkBox_fbxnooptimize.Checked)
-                args += "-fbxnooptimize ";
             if (chkBox_fbxascii.Checked)
                 args += "-fbxascii ";
-            NoesisOptimize(path, args);
-            extensionlessPath += "_optimized";
+            NoesisOptimize(path, $"{args} {txtBox_NoesisOptions.Text}");
+            extensionlessPath += "_noesis";
             return $"{extensionlessPath}.fbx";
         }
 
@@ -296,16 +294,9 @@ namespace P4GModelConverter
                     int x = i;
                     //Add bone data to bone list
                     Bone bone = new Bone();
+                    bone.Name = lines[x].Replace("\tBone \"", "").Replace("\" {", "");
                     if (chkBox_RenameBones.Checked)
-                    {
-                        bone.Name = lines[x].Replace("\tBone \"", "").Replace("\" {", "").Replace("_", " ").Replace(" Bone", "_Bone");
-                        if (bone.Name == "player root_Bone")
-                            bone.Name = "player_root_Bone";
-                        if (bone.Name == "player body_Bone")
-                            bone.Name = "player_body_Bone";
-                    }
-                    else
-                        bone.Name = lines[x].Replace("\tBone \"", "").Replace("\" {", "");
+                        bone.Name = SanitizeBoneName(bone.Name);
                     x++;
                     while (!lines[x].StartsWith("\t}"))
                     {
@@ -318,7 +309,7 @@ namespace P4GModelConverter
                         if (lines[x].StartsWith("\t\tParentBone"))
                         {
                             if (chkBox_RenameBones.Checked)
-                                bone.ParentBone = lines[x].Replace("_", " ").Replace(" Bone", "_Bone").Replace("player root_Bone", "player_root_Bone").Replace("player body_Bone", "player_body_Bone");
+                                bone.ParentBone = SanitizeBoneName(lines[x]);
                             else
                                 bone.ParentBone = lines[x];
                         }
@@ -329,7 +320,7 @@ namespace P4GModelConverter
                         if (lines[x].StartsWith("\t\tBlendBones"))
                         {
                             if (chkBox_RenameBones.Checked)
-                                bone.BlendBones = lines[x].Replace("_", " ").Replace(" Bone", "_Bone").Replace("player root_Bone", "player_root_Bone").Replace("player body_Bone", "player_body_Bone");
+                                bone.BlendBones = SanitizeBoneName(lines[x]);
                             else
                                 bone.BlendBones = lines[x];
                         }
@@ -464,6 +455,19 @@ namespace P4GModelConverter
                     animations.Add(anim);
                 }
             }
+        }
+
+        private string SanitizeBoneName(string name)
+        {
+            name = name.Replace("_", " ");
+            name = name.Replace("player ", "player_");
+            if (!name.Contains(" Bone"))
+            {
+                name = name.Replace("\"", " Bone\"");
+                name = name.Replace("  Bone\"", "\"");
+            }
+            name = name.Replace(" Bone", "_Bone");
+            return name;
         }
 
         //Reformat data for writing to new mds file
@@ -609,18 +613,21 @@ namespace P4GModelConverter
         {
             foreach (var texture in textures)
             {
+                if (texture.FileName.StartsWith("\\\\")) //fix for DAE texture paths
+                    texture.FileName = texture.FileName.Replace("\\\\", "").Insert(1, ":");
                 //Set up texture output path
-                string newTexPath = $"{Path.GetDirectoryName(path)}\\textures\\{texture.FileName.Split('\\').Last()}";
+                string newTexPath = $"{Path.GetDirectoryName(path)}\\textures\\{new DirectoryInfo(texture.FileName).Name}";
                 Directory.CreateDirectory($"{Path.GetDirectoryName(path)}\\textures");
 
                 newLines.Add($"\tTexture \"{texture.Name}\" {{");
                 //Convert, move and edit path of non-tm2 textures
                 if (!texture.FileName.ToLower().Contains(".tm2") && chkBox_AutoConvertTex.Checked)
                 {
-                    GIMConv(texture.FileName);
+                    if (File.Exists(texture.FileName))
+                        GIMConv(texture.FileName);
                     if (!File.Exists(newTexPath + ".tm2") && File.Exists(texture.FileName))
                         File.Move(texture.FileName + ".tm2", newTexPath + ".tm2");
-                    newLines.Add($"\t\tFileName \"textures\\{texture.FileName.Split('\\').Last()}.tm2\"");
+                    newLines.Add($"\t\tFileName \"textures\\{new DirectoryInfo(texture.FileName).Name}.tm2\"");
                 }
                 else //Move and edit path of tm2 textures
                 {
@@ -912,12 +919,12 @@ namespace P4GModelConverter
                     string extensionless = Path.Combine(Path.GetDirectoryName(mdsPath), Path.GetFileNameWithoutExtension(mdsPath));
                     if (chkBox_FBXtoGMO.Checked)
                     {
-                        GMOConv(extensionless + "_optimized.fbx"); //Convert FBX directly to GMO
-                        GMOTool(extensionless + "_optimized.gmo", true); //Create MDS
+                        GMOConv(extensionless + "_noesis.fbx"); //Convert FBX directly to GMO
+                        GMOTool(extensionless + "_noesis.gmo", true); //Create MDS
                     }
                     else
-                        GMOTool(extensionless + "_optimized.fbx", true); //Create MDS
-                    mdsPath = extensionless + "_optimized.mds";
+                        GMOTool(extensionless + "_noesis.fbx", true); //Create MDS
+                    mdsPath = extensionless + "_noesis.mds";
                 }
                 ReadMDS(mdsPath); //Read MDS with animations
                 CreateAnimationRows();
@@ -981,6 +988,37 @@ namespace P4GModelConverter
                     selectedRow = e.RowIndex;
                 }
             }
+        }
+
+
+        private void chkBox_ViewGMO_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chkBox_ViewGMO.Checked)
+                comboBox_Preview.Enabled = true;
+            else
+                comboBox_Preview.Enabled = false;
+        }
+
+        private void chkBox_FBXOptimize_CheckedChanged(object sender, EventArgs e)
+        {
+            if (!chkBox_FBXOptimize.Checked)
+            {
+                chkBox_fbxoldexport.Enabled = false;
+                chkBox_fbxascii.Enabled = false;
+                txtBox_NoesisOptions.Enabled = false;
+            }
+            else
+            {
+                chkBox_fbxoldexport.Enabled = true;
+                chkBox_fbxascii.Enabled = true;
+                txtBox_NoesisOptions.Enabled = true;
+            }
+        }
+
+        private void chkBox_Dummy_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chkBox_Dummy.Checked)
+                chkBox_AutoConvertTex.Checked = false;
         }
 
         /*
@@ -1152,11 +1190,11 @@ namespace P4GModelConverter
                 cmdProcess.StartInfo.UseShellExecute = true;
                 cmdProcess.StartInfo.WorkingDirectory = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Tools\\Noesis";
                 cmdProcess.StartInfo.FileName = @"C:\Windows\System32\cmd.exe";
-                cmdProcess.StartInfo.Arguments = "/k " + $"Noesis.exe ?cmode \"{path}\" \"{extensionlessPath}_optimized.fbx\" {args}";
+                cmdProcess.StartInfo.Arguments = "/k " + $"Noesis.exe ?cmode \"{path}\" \"{extensionlessPath}_noesis.fbx\" {args}";
                 cmdProcess.StartInfo.WindowStyle = ProcessWindowStyle.Normal;
                 cmdProcess.Start();
                 int x = 0;
-                while (!File.Exists($"{extensionlessPath}_optimized.fbx")) { Thread.Sleep(1000); x++; if (x == 15) return; }
+                while (!File.Exists($"{extensionlessPath}_noesis.fbx")) { Thread.Sleep(1000); x++; if (x == 15) return; }
                 cmdProcess.Kill();
             }
         }
@@ -1170,44 +1208,6 @@ namespace P4GModelConverter
             cmd.StartInfo.Arguments = $"\"{path}\"";
             cmd.Start();
             cmd.WaitForExit();
-        }
-
-        private void chkBox_ViewGMO_CheckedChanged(object sender, EventArgs e)
-        {
-            if (chkBox_ViewGMO.Checked)
-                comboBox_Preview.Enabled = true;
-            else
-                comboBox_Preview.Enabled = false;
-        }
-
-        private void chkBox_FBXOptimize_CheckedChanged(object sender, EventArgs e)
-        {
-            if (!chkBox_FBXOptimize.Checked)
-            {
-                chkBox_fbxoldexport.Enabled = false;
-                chkBox_fbxnewexport.Enabled = false;
-                chkBox_fbxnooptimize.Enabled = false;
-                chkBox_fbxascii.Enabled = false;
-            }
-            else
-            {
-                chkBox_fbxoldexport.Enabled = true;
-                chkBox_fbxnewexport.Enabled = true;
-                chkBox_fbxnooptimize.Enabled = true;
-                chkBox_fbxascii.Enabled = true;
-            }
-        }
-
-        private void chkBox_fbxoldexport_CheckedChanged(object sender, EventArgs e)
-        {
-            if (chkBox_fbxoldexport.Checked)
-                chkBox_fbxnewexport.Checked = false;
-        }
-
-        private void chkBox_fbxnewexport_CheckedChanged(object sender, EventArgs e)
-        {
-            if (chkBox_fbxnewexport.Checked)
-                chkBox_fbxoldexport.Checked = false;
         }
     }
 }

@@ -48,10 +48,12 @@
             this.chkBox_ViewGMO = new System.Windows.Forms.CheckBox();
             this.chkBox_RenameBones = new System.Windows.Forms.CheckBox();
             this.panel_FBX_GMO = new System.Windows.Forms.Panel();
+            this.chkBox_fbxascii = new System.Windows.Forms.CheckBox();
+            this.chkBox_fbxoldexport = new System.Windows.Forms.CheckBox();
+            this.chkBox_FBXOptimize = new System.Windows.Forms.CheckBox();
             this.chkBox_AutoConvertTex = new System.Windows.Forms.CheckBox();
             this.panel_MDS = new System.Windows.Forms.Panel();
             this.comboBox_Preview = new System.Windows.Forms.ComboBox();
-            this.lbl_PreviewWith = new System.Windows.Forms.Label();
             this.btn_Update = new System.Windows.Forms.Button();
             this.comboBox_Preset = new System.Windows.Forms.ComboBox();
             this.dataGridView_AnimationOrder = new System.Windows.Forms.DataGridView();
@@ -64,11 +66,8 @@
             this.chkBox_AutoUpdate = new System.Windows.Forms.CheckBox();
             this.btn_FixMDS = new System.Windows.Forms.Button();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.chkBox_FBXOptimize = new System.Windows.Forms.CheckBox();
-            this.chkBox_fbxoldexport = new System.Windows.Forms.CheckBox();
-            this.chkBox_fbxnewexport = new System.Windows.Forms.CheckBox();
-            this.chkBox_fbxnooptimize = new System.Windows.Forms.CheckBox();
-            this.chkBox_fbxascii = new System.Windows.Forms.CheckBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.txtBox_NoesisOptions = new System.Windows.Forms.TextBox();
             this.panel_FBX_GMO.SuspendLayout();
             this.panel_MDS.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView_AnimationOrder)).BeginInit();
@@ -133,7 +132,7 @@
             this.chkBox_ExtractTex.AutoSize = true;
             this.chkBox_ExtractTex.Checked = true;
             this.chkBox_ExtractTex.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkBox_ExtractTex.Location = new System.Drawing.Point(4, 129);
+            this.chkBox_ExtractTex.Location = new System.Drawing.Point(4, 132);
             this.chkBox_ExtractTex.Margin = new System.Windows.Forms.Padding(4);
             this.chkBox_ExtractTex.Name = "chkBox_ExtractTex";
             this.chkBox_ExtractTex.Size = new System.Drawing.Size(167, 21);
@@ -144,7 +143,7 @@
             // chkBox_Animations
             // 
             this.chkBox_Animations.AutoSize = true;
-            this.chkBox_Animations.Location = new System.Drawing.Point(4, 68);
+            this.chkBox_Animations.Location = new System.Drawing.Point(4, 66);
             this.chkBox_Animations.Margin = new System.Windows.Forms.Padding(4);
             this.chkBox_Animations.Name = "chkBox_Animations";
             this.chkBox_Animations.Size = new System.Drawing.Size(135, 21);
@@ -156,7 +155,7 @@
             // lbl_AnimationsLoaded
             // 
             this.lbl_AnimationsLoaded.AutoSize = true;
-            this.lbl_AnimationsLoaded.Location = new System.Drawing.Point(822, 319);
+            this.lbl_AnimationsLoaded.Location = new System.Drawing.Point(822, 315);
             this.lbl_AnimationsLoaded.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lbl_AnimationsLoaded.Name = "lbl_AnimationsLoaded";
             this.lbl_AnimationsLoaded.Size = new System.Drawing.Size(151, 17);
@@ -192,18 +191,19 @@
             // chkBox_Dummy
             // 
             this.chkBox_Dummy.AutoSize = true;
-            this.chkBox_Dummy.Location = new System.Drawing.Point(4, 47);
+            this.chkBox_Dummy.Location = new System.Drawing.Point(4, 45);
             this.chkBox_Dummy.Margin = new System.Windows.Forms.Padding(4);
             this.chkBox_Dummy.Name = "chkBox_Dummy";
             this.chkBox_Dummy.Size = new System.Drawing.Size(167, 21);
             this.chkBox_Dummy.TabIndex = 12;
             this.chkBox_Dummy.Text = "Use Dummy Materials";
             this.chkBox_Dummy.UseVisualStyleBackColor = true;
+            this.chkBox_Dummy.CheckedChanged += new System.EventHandler(this.chkBox_Dummy_CheckedChanged);
             // 
             // lbl_WpnBone
             // 
             this.lbl_WpnBone.AutoSize = true;
-            this.lbl_WpnBone.Location = new System.Drawing.Point(7, 133);
+            this.lbl_WpnBone.Location = new System.Drawing.Point(1, 125);
             this.lbl_WpnBone.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lbl_WpnBone.Name = "lbl_WpnBone";
             this.lbl_WpnBone.Size = new System.Drawing.Size(143, 17);
@@ -212,7 +212,7 @@
             // 
             // txt_WpnBone
             // 
-            this.txt_WpnBone.Location = new System.Drawing.Point(10, 153);
+            this.txt_WpnBone.Location = new System.Drawing.Point(4, 145);
             this.txt_WpnBone.Name = "txt_WpnBone";
             this.txt_WpnBone.Size = new System.Drawing.Size(149, 22);
             this.txt_WpnBone.TabIndex = 15;
@@ -221,7 +221,7 @@
             // chkBox_FBXtoGMO
             // 
             this.chkBox_FBXtoGMO.AutoSize = true;
-            this.chkBox_FBXtoGMO.Location = new System.Drawing.Point(4, 109);
+            this.chkBox_FBXtoGMO.Location = new System.Drawing.Point(4, 112);
             this.chkBox_FBXtoGMO.Margin = new System.Windows.Forms.Padding(4);
             this.chkBox_FBXtoGMO.Name = "chkBox_FBXtoGMO";
             this.chkBox_FBXtoGMO.Size = new System.Drawing.Size(162, 21);
@@ -234,7 +234,7 @@
             this.chkBox_PCFix.AutoSize = true;
             this.chkBox_PCFix.Checked = true;
             this.chkBox_PCFix.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkBox_PCFix.Location = new System.Drawing.Point(4, 4);
+            this.chkBox_PCFix.Location = new System.Drawing.Point(4, 5);
             this.chkBox_PCFix.Margin = new System.Windows.Forms.Padding(4);
             this.chkBox_PCFix.Name = "chkBox_PCFix";
             this.chkBox_PCFix.Size = new System.Drawing.Size(174, 21);
@@ -248,9 +248,9 @@
             this.chkBox_ViewGMO.Location = new System.Drawing.Point(4, 25);
             this.chkBox_ViewGMO.Margin = new System.Windows.Forms.Padding(4);
             this.chkBox_ViewGMO.Name = "chkBox_ViewGMO";
-            this.chkBox_ViewGMO.Size = new System.Drawing.Size(147, 21);
+            this.chkBox_ViewGMO.Size = new System.Drawing.Size(164, 21);
             this.chkBox_ViewGMO.TabIndex = 13;
-            this.chkBox_ViewGMO.Text = "Preview New GMO";
+            this.chkBox_ViewGMO.Text = "Preview New GMO w/";
             this.chkBox_ViewGMO.UseVisualStyleBackColor = true;
             this.chkBox_ViewGMO.CheckedChanged += new System.EventHandler(this.chkBox_ViewGMO_CheckedChanged);
             // 
@@ -260,18 +260,18 @@
             this.chkBox_RenameBones.Location = new System.Drawing.Point(4, 25);
             this.chkBox_RenameBones.Margin = new System.Windows.Forms.Padding(4);
             this.chkBox_RenameBones.Name = "chkBox_RenameBones";
-            this.chkBox_RenameBones.Size = new System.Drawing.Size(172, 21);
+            this.chkBox_RenameBones.Size = new System.Drawing.Size(173, 21);
             this.chkBox_RenameBones.TabIndex = 16;
-            this.chkBox_RenameBones.Text = "Fix Bone Names (FBX)";
+            this.chkBox_RenameBones.Text = "Reformat Bone Names";
             this.chkBox_RenameBones.UseVisualStyleBackColor = true;
             // 
             // panel_FBX_GMO
             // 
             this.panel_FBX_GMO.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panel_FBX_GMO.Controls.Add(this.txtBox_NoesisOptions);
+            this.panel_FBX_GMO.Controls.Add(this.label1);
             this.panel_FBX_GMO.Controls.Add(this.chkBox_fbxascii);
             this.panel_FBX_GMO.Controls.Add(this.chkBox_fbxoldexport);
-            this.panel_FBX_GMO.Controls.Add(this.chkBox_fbxnewexport);
-            this.panel_FBX_GMO.Controls.Add(this.chkBox_fbxnooptimize);
             this.panel_FBX_GMO.Controls.Add(this.chkBox_FBXOptimize);
             this.panel_FBX_GMO.Controls.Add(this.chkBox_FBXtoGMO);
             this.panel_FBX_GMO.Controls.Add(this.chkBox_ExtractTex);
@@ -280,12 +280,48 @@
             this.panel_FBX_GMO.Size = new System.Drawing.Size(200, 183);
             this.panel_FBX_GMO.TabIndex = 17;
             // 
+            // chkBox_fbxascii
+            // 
+            this.chkBox_fbxascii.AutoSize = true;
+            this.chkBox_fbxascii.Enabled = false;
+            this.chkBox_fbxascii.Location = new System.Drawing.Point(4, 45);
+            this.chkBox_fbxascii.Margin = new System.Windows.Forms.Padding(4);
+            this.chkBox_fbxascii.Name = "chkBox_fbxascii";
+            this.chkBox_fbxascii.Size = new System.Drawing.Size(165, 21);
+            this.chkBox_fbxascii.TabIndex = 33;
+            this.chkBox_fbxascii.Text = "-fbxascii (mds output)";
+            this.chkBox_fbxascii.UseVisualStyleBackColor = true;
+            // 
+            // chkBox_fbxoldexport
+            // 
+            this.chkBox_fbxoldexport.AutoSize = true;
+            this.chkBox_fbxoldexport.Enabled = false;
+            this.chkBox_fbxoldexport.Location = new System.Drawing.Point(4, 25);
+            this.chkBox_fbxoldexport.Margin = new System.Windows.Forms.Padding(4);
+            this.chkBox_fbxoldexport.Name = "chkBox_fbxoldexport";
+            this.chkBox_fbxoldexport.Size = new System.Drawing.Size(186, 21);
+            this.chkBox_fbxoldexport.TabIndex = 31;
+            this.chkBox_fbxoldexport.Text = "-fbxoldexport (animation)";
+            this.chkBox_fbxoldexport.UseVisualStyleBackColor = true;
+            // 
+            // chkBox_FBXOptimize
+            // 
+            this.chkBox_FBXOptimize.AutoSize = true;
+            this.chkBox_FBXOptimize.Location = new System.Drawing.Point(4, 5);
+            this.chkBox_FBXOptimize.Margin = new System.Windows.Forms.Padding(4);
+            this.chkBox_FBXOptimize.Name = "chkBox_FBXOptimize";
+            this.chkBox_FBXOptimize.Size = new System.Drawing.Size(189, 21);
+            this.chkBox_FBXOptimize.TabIndex = 12;
+            this.chkBox_FBXOptimize.Text = "Convert to FBX w/ Noesis";
+            this.chkBox_FBXOptimize.UseVisualStyleBackColor = true;
+            this.chkBox_FBXOptimize.CheckedChanged += new System.EventHandler(this.chkBox_FBXOptimize_CheckedChanged);
+            // 
             // chkBox_AutoConvertTex
             // 
             this.chkBox_AutoConvertTex.AutoSize = true;
             this.chkBox_AutoConvertTex.Checked = true;
             this.chkBox_AutoConvertTex.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkBox_AutoConvertTex.Location = new System.Drawing.Point(4, 4);
+            this.chkBox_AutoConvertTex.Location = new System.Drawing.Point(4, 5);
             this.chkBox_AutoConvertTex.Margin = new System.Windows.Forms.Padding(4);
             this.chkBox_AutoConvertTex.Name = "chkBox_AutoConvertTex";
             this.chkBox_AutoConvertTex.Size = new System.Drawing.Size(186, 21);
@@ -297,7 +333,6 @@
             // 
             this.panel_MDS.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.panel_MDS.Controls.Add(this.comboBox_Preview);
-            this.panel_MDS.Controls.Add(this.lbl_PreviewWith);
             this.panel_MDS.Controls.Add(this.chkBox_ViewGMO);
             this.panel_MDS.Controls.Add(this.chkBox_PCFix);
             this.panel_MDS.Location = new System.Drawing.Point(423, 182);
@@ -316,20 +351,10 @@
             this.comboBox_Preview.Items.AddRange(new object[] {
             "Noesis",
             "GMOView"});
-            this.comboBox_Preview.Location = new System.Drawing.Point(27, 66);
+            this.comboBox_Preview.Location = new System.Drawing.Point(27, 45);
             this.comboBox_Preview.Name = "comboBox_Preview";
-            this.comboBox_Preview.Size = new System.Drawing.Size(151, 24);
+            this.comboBox_Preview.Size = new System.Drawing.Size(124, 24);
             this.comboBox_Preview.TabIndex = 25;
-            // 
-            // lbl_PreviewWith
-            // 
-            this.lbl_PreviewWith.AutoSize = true;
-            this.lbl_PreviewWith.Location = new System.Drawing.Point(24, 46);
-            this.lbl_PreviewWith.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lbl_PreviewWith.Name = "lbl_PreviewWith";
-            this.lbl_PreviewWith.Size = new System.Drawing.Size(93, 17);
-            this.lbl_PreviewWith.TabIndex = 27;
-            this.lbl_PreviewWith.Text = "Preview With:";
             // 
             // btn_Update
             // 
@@ -352,8 +377,10 @@
             "Animation Preset",
             "P4G Protag",
             "P4G Party Member",
+            "P4G Persona",
             "P4G Culprit",
             "P3P Protag/Protag",
+            "P3P Persona",
             "P3P Strega"});
             this.comboBox_Preset.Location = new System.Drawing.Point(632, 340);
             this.comboBox_Preset.Name = "comboBox_Preset";
@@ -482,67 +509,23 @@
             this.panel1.Size = new System.Drawing.Size(200, 182);
             this.panel1.TabIndex = 19;
             // 
-            // chkBox_FBXOptimize
+            // label1
             // 
-            this.chkBox_FBXOptimize.AutoSize = true;
-            this.chkBox_FBXOptimize.Location = new System.Drawing.Point(4, 5);
-            this.chkBox_FBXOptimize.Margin = new System.Windows.Forms.Padding(4);
-            this.chkBox_FBXOptimize.Name = "chkBox_FBXOptimize";
-            this.chkBox_FBXOptimize.Size = new System.Drawing.Size(189, 21);
-            this.chkBox_FBXOptimize.TabIndex = 12;
-            this.chkBox_FBXOptimize.Text = "Convert to FBX w/ Noesis";
-            this.chkBox_FBXOptimize.UseVisualStyleBackColor = true;
-            this.chkBox_FBXOptimize.CheckedChanged += new System.EventHandler(this.chkBox_FBXOptimize_CheckedChanged);
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(24, 66);
+            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(127, 17);
+            this.label1.TabIndex = 28;
+            this.label1.Text = "Additional Options:";
             // 
-            // chkBox_fbxoldexport
+            // txtBox_NoesisOptions
             // 
-            this.chkBox_fbxoldexport.AutoSize = true;
-            this.chkBox_fbxoldexport.Enabled = false;
-            this.chkBox_fbxoldexport.Location = new System.Drawing.Point(27, 26);
-            this.chkBox_fbxoldexport.Margin = new System.Windows.Forms.Padding(4);
-            this.chkBox_fbxoldexport.Name = "chkBox_fbxoldexport";
-            this.chkBox_fbxoldexport.Size = new System.Drawing.Size(106, 21);
-            this.chkBox_fbxoldexport.TabIndex = 31;
-            this.chkBox_fbxoldexport.Text = "fbxoldexport";
-            this.chkBox_fbxoldexport.UseVisualStyleBackColor = true;
-            this.chkBox_fbxoldexport.CheckedChanged += new System.EventHandler(this.chkBox_fbxoldexport_CheckedChanged);
-            // 
-            // chkBox_fbxnewexport
-            // 
-            this.chkBox_fbxnewexport.AutoSize = true;
-            this.chkBox_fbxnewexport.Enabled = false;
-            this.chkBox_fbxnewexport.Location = new System.Drawing.Point(27, 46);
-            this.chkBox_fbxnewexport.Margin = new System.Windows.Forms.Padding(4);
-            this.chkBox_fbxnewexport.Name = "chkBox_fbxnewexport";
-            this.chkBox_fbxnewexport.Size = new System.Drawing.Size(112, 21);
-            this.chkBox_fbxnewexport.TabIndex = 32;
-            this.chkBox_fbxnewexport.Text = "fbxnewexport";
-            this.chkBox_fbxnewexport.UseVisualStyleBackColor = true;
-            this.chkBox_fbxnewexport.CheckedChanged += new System.EventHandler(this.chkBox_fbxnewexport_CheckedChanged);
-            // 
-            // chkBox_fbxnooptimize
-            // 
-            this.chkBox_fbxnooptimize.AutoSize = true;
-            this.chkBox_fbxnooptimize.Enabled = false;
-            this.chkBox_fbxnooptimize.Location = new System.Drawing.Point(27, 67);
-            this.chkBox_fbxnooptimize.Margin = new System.Windows.Forms.Padding(4);
-            this.chkBox_fbxnooptimize.Name = "chkBox_fbxnooptimize";
-            this.chkBox_fbxnooptimize.Size = new System.Drawing.Size(116, 21);
-            this.chkBox_fbxnooptimize.TabIndex = 30;
-            this.chkBox_fbxnooptimize.Text = "fbxnooptimize";
-            this.chkBox_fbxnooptimize.UseVisualStyleBackColor = true;
-            // 
-            // chkBox_fbxascii
-            // 
-            this.chkBox_fbxascii.AutoSize = true;
-            this.chkBox_fbxascii.Enabled = false;
-            this.chkBox_fbxascii.Location = new System.Drawing.Point(27, 87);
-            this.chkBox_fbxascii.Margin = new System.Windows.Forms.Padding(4);
-            this.chkBox_fbxascii.Name = "chkBox_fbxascii";
-            this.chkBox_fbxascii.Size = new System.Drawing.Size(76, 21);
-            this.chkBox_fbxascii.TabIndex = 33;
-            this.chkBox_fbxascii.Text = "fbxascii";
-            this.chkBox_fbxascii.UseVisualStyleBackColor = true;
+            this.txtBox_NoesisOptions.Enabled = false;
+            this.txtBox_NoesisOptions.Location = new System.Drawing.Point(27, 87);
+            this.txtBox_NoesisOptions.Name = "txtBox_NoesisOptions";
+            this.txtBox_NoesisOptions.Size = new System.Drawing.Size(163, 22);
+            this.txtBox_NoesisOptions.TabIndex = 34;
             // 
             // MainForm
             // 
@@ -617,13 +600,12 @@
         private System.Windows.Forms.CheckBox chkBox_AutoUpdate;
         private System.Windows.Forms.Button btn_FixMDS;
         private System.Windows.Forms.Panel panel1;
-        private System.Windows.Forms.Label lbl_PreviewWith;
         private System.Windows.Forms.ComboBox comboBox_Preview;
         private System.Windows.Forms.CheckBox chkBox_FBXOptimize;
         private System.Windows.Forms.CheckBox chkBox_fbxascii;
         private System.Windows.Forms.CheckBox chkBox_fbxoldexport;
-        private System.Windows.Forms.CheckBox chkBox_fbxnewexport;
-        private System.Windows.Forms.CheckBox chkBox_fbxnooptimize;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.TextBox txtBox_NoesisOptions;
     }
 }
 
