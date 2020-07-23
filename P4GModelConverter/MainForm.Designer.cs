@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.btn_Extract = new System.Windows.Forms.Button();
             this.btn_CreateGMO = new System.Windows.Forms.Button();
@@ -68,6 +68,7 @@
             this.panel1 = new System.Windows.Forms.Panel();
             this.label1 = new System.Windows.Forms.Label();
             this.txtBox_NoesisOptions = new System.Windows.Forms.TextBox();
+            this.toolStripTextBox_Rename = new System.Windows.Forms.ToolStripTextBox();
             this.panel_FBX_GMO.SuspendLayout();
             this.panel_MDS.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView_AnimationOrder)).BeginInit();
@@ -408,8 +409,8 @@
             this.dataGridView_AnimationOrder.RowHeadersVisible = false;
             this.dataGridView_AnimationOrder.RowHeadersWidth = 25;
             this.dataGridView_AnimationOrder.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.DisableResizing;
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            this.dataGridView_AnimationOrder.RowsDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dataGridView_AnimationOrder.RowsDefaultCellStyle = dataGridViewCellStyle3;
             this.dataGridView_AnimationOrder.RowTemplate.Height = 24;
             this.dataGridView_AnimationOrder.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.dataGridView_AnimationOrder.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
@@ -448,25 +449,29 @@
             this.toolStripMenuItem_Remove,
             this.toolStripMenuItem_Rename});
             this.contextMenuStrip_Animations.Name = "contextMenuStrip_Animations";
-            this.contextMenuStrip_Animations.Size = new System.Drawing.Size(133, 76);
+            this.contextMenuStrip_Animations.Size = new System.Drawing.Size(211, 104);
             this.contextMenuStrip_Animations.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.menuStrip_ItemClicked);
             // 
             // toolStripMenuItem_Add
             // 
             this.toolStripMenuItem_Add.Name = "toolStripMenuItem_Add";
-            this.toolStripMenuItem_Add.Size = new System.Drawing.Size(132, 24);
+            this.toolStripMenuItem_Add.Size = new System.Drawing.Size(210, 24);
             this.toolStripMenuItem_Add.Text = "Add";
+            this.toolStripMenuItem_Add.Click += new System.EventHandler(this.toolStripMenuItem_Add_Click);
             // 
             // toolStripMenuItem_Remove
             // 
             this.toolStripMenuItem_Remove.Name = "toolStripMenuItem_Remove";
-            this.toolStripMenuItem_Remove.Size = new System.Drawing.Size(132, 24);
+            this.toolStripMenuItem_Remove.Size = new System.Drawing.Size(210, 24);
             this.toolStripMenuItem_Remove.Text = "Remove";
+            this.toolStripMenuItem_Remove.Click += new System.EventHandler(this.toolStripMenuItem_Remove_Click);
             // 
             // toolStripMenuItem_Rename
             // 
+            this.toolStripMenuItem_Rename.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripTextBox_Rename});
             this.toolStripMenuItem_Rename.Name = "toolStripMenuItem_Rename";
-            this.toolStripMenuItem_Rename.Size = new System.Drawing.Size(132, 24);
+            this.toolStripMenuItem_Rename.Size = new System.Drawing.Size(210, 24);
             this.toolStripMenuItem_Rename.Text = "Rename";
             // 
             // chkBox_AutoUpdate
@@ -526,6 +531,13 @@
             this.txtBox_NoesisOptions.Name = "txtBox_NoesisOptions";
             this.txtBox_NoesisOptions.Size = new System.Drawing.Size(163, 22);
             this.txtBox_NoesisOptions.TabIndex = 34;
+            // 
+            // toolStripTextBox_Rename
+            // 
+            this.toolStripTextBox_Rename.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.toolStripTextBox_Rename.Name = "toolStripTextBox_Rename";
+            this.toolStripTextBox_Rename.Size = new System.Drawing.Size(100, 27);
+            this.toolStripTextBox_Rename.TextChanged += new System.EventHandler(this.toolStripTextBox_Rename_TextChanged);
             // 
             // MainForm
             // 
@@ -606,6 +618,7 @@
         private System.Windows.Forms.CheckBox chkBox_fbxoldexport;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TextBox txtBox_NoesisOptions;
+        private System.Windows.Forms.ToolStripTextBox toolStripTextBox_Rename;
     }
 }
 

@@ -901,35 +901,9 @@ namespace P4GModelConverter
         //Load animation set from MDS file
         private void btn_ImportAnim_Click(object sender, EventArgs e)
         {
-            CommonOpenFileDialog dialog = new CommonOpenFileDialog();
-            dialog.Filters.Add(new CommonFileDialogFilter("MDS File", "*.mds"));
-            dialog.Filters.Add(new CommonFileDialogFilter("FBX Animated Model", "*.fbx"));
-            dialog.Filters.Add(new CommonFileDialogFilter("DAE Animated Model", "*.dae"));
-            dialog.Filters.Add(new CommonFileDialogFilter("SMD Animated Model", "*.smd"));
-            dialog.Title = "Load Animation Set...";
-            if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
-            {
-                animations = new List<Animation>();
-                dataGridView_AnimationOrder.Rows.Clear(); //Remove old animation set
-                string mdsPath = dialog.FileName;
-                string ext = Path.GetExtension(mdsPath).ToUpper();
-                if (ext != ".MDS")
-                {
-                    NoesisOptimize(mdsPath, "-fbxoldexport"); //Create optimized FBX
-                    string extensionless = Path.Combine(Path.GetDirectoryName(mdsPath), Path.GetFileNameWithoutExtension(mdsPath));
-                    if (chkBox_FBXtoGMO.Checked)
-                    {
-                        GMOConv(extensionless + "_noesis.fbx"); //Convert FBX directly to GMO
-                        GMOTool(extensionless + "_noesis.gmo", true); //Create MDS
-                    }
-                    else
-                        GMOTool(extensionless + "_noesis.fbx", true); //Create MDS
-                    mdsPath = extensionless + "_noesis.mds";
-                }
-                ReadMDS(mdsPath); //Read MDS with animations
-                CreateAnimationRows();
-                UpdateAnimationDataGridView();
-            }
+            ChooseAnimationSet();
+            CreateAnimationRows();
+            UpdateAnimationDataGridView();
         }
 
         //Update listbox with new animation names if preset is selected
@@ -990,6 +964,34 @@ namespace P4GModelConverter
             }
         }
 
+        //Add animations from MDS or model
+        private void toolStripMenuItem_Add_Click(object sender, EventArgs e)
+        {
+            var oldAnimations = animations;
+            ChooseAnimationSet();
+            foreach (var animation in animations)
+                oldAnimations.Add(animation);
+            animations = oldAnimations;
+            CreateAnimationRows();
+            UpdateAnimationDataGridView();
+        }
+
+        //Delete selected animation
+        private void toolStripMenuItem_Remove_Click(object sender, EventArgs e)
+        {
+            animations.RemoveAt(selectedRow);
+            CreateAnimationRows();
+            UpdateAnimationDataGridView();
+        }
+
+        //Rename selected animation
+        private void toolStripTextBox_Rename_TextChanged(object sender, EventArgs e)
+        {
+            animations[selectedRow].Name = toolStripTextBox_Rename.Text;
+            toolStripTextBox_Rename.Text = "";
+            CreateAnimationRows();
+            UpdateAnimationDataGridView();
+        }
 
         private void chkBox_ViewGMO_CheckedChanged(object sender, EventArgs e)
         {
@@ -1112,6 +1114,38 @@ namespace P4GModelConverter
                         break;
                     }
                 }
+            }
+        }
+
+        //Read animations from input MDS or model
+        private void ChooseAnimationSet()
+        {
+            CommonOpenFileDialog dialog = new CommonOpenFileDialog();
+            dialog.Filters.Add(new CommonFileDialogFilter("MDS File", "*.mds"));
+            dialog.Filters.Add(new CommonFileDialogFilter("FBX Animated Model", "*.fbx"));
+            dialog.Filters.Add(new CommonFileDialogFilter("DAE Animated Model", "*.dae"));
+            dialog.Filters.Add(new CommonFileDialogFilter("SMD Animated Model", "*.smd"));
+            dialog.Title = "Load Animation Set...";
+            if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
+            {
+                animations = new List<Animation>();
+                dataGridView_AnimationOrder.Rows.Clear(); //Remove old animation set
+                string mdsPath = dialog.FileName;
+                string ext = Path.GetExtension(mdsPath).ToUpper();
+                if (ext != ".MDS")
+                {
+                    NoesisOptimize(mdsPath, "-fbxoldexport"); //Create optimized FBX
+                    string extensionless = Path.Combine(Path.GetDirectoryName(mdsPath), Path.GetFileNameWithoutExtension(mdsPath));
+                    if (chkBox_FBXtoGMO.Checked)
+                    {
+                        GMOConv(extensionless + "_noesis.fbx"); //Convert FBX directly to GMO
+                        GMOTool(extensionless + "_noesis.gmo", true); //Create MDS
+                    }
+                    else
+                        GMOTool(extensionless + "_noesis.fbx", true); //Create MDS
+                    mdsPath = extensionless + "_noesis.mds";
+                }
+                ReadMDS(mdsPath); //Read MDS with animations
             }
         }
 
