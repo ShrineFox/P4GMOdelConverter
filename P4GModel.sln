@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30104.148
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "P4GModelConverter", "P4GModelConverter\P4GModelConverter.csproj", "{D7F62AA1-D396-4366-B788-CB4B202F9987}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "P4GModel", "P4GModelConverter\P4GModel.csproj", "{D7F62AA1-D396-4366-B788-CB4B202F9987}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
