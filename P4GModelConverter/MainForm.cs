@@ -160,6 +160,9 @@ namespace P4GModelConverter
                 DarkTreeNode firstNode = selectedNodes[0];
                 //Assign selected object to propertygrid
                 propertyGrid_Main.SelectedObject = firstNode.Tag;
+                //Show right click menu
+                if (e.Button.Equals(MouseButtons.Right))
+                    darkContextMenu_RightClick.Show(this, new Point(e.X + ((Control)sender).Left + 4, e.Y + ((Control)sender).Top + 4));
             }
         }
 

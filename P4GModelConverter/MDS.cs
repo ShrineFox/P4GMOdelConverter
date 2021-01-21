@@ -35,6 +35,10 @@ namespace P4GModelConverter
         public string BlendBones { get; set; }
         public string BlendOffsets { get; set; }
         public string BoundingBox { get; set; }
+        public static void Export()
+        {
+
+        }
     }
     public class Part
     {

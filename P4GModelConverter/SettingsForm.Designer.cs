@@ -76,12 +76,11 @@ namespace P4GModelConverter
             // 
             this.txtBox_AdditionalFBXOptions.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(69)))), ((int)(((byte)(73)))), ((int)(((byte)(74)))));
             this.txtBox_AdditionalFBXOptions.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.txtBox_AdditionalFBXOptions.Enabled = false;
             this.txtBox_AdditionalFBXOptions.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
             this.txtBox_AdditionalFBXOptions.Location = new System.Drawing.Point(30, 118);
             this.txtBox_AdditionalFBXOptions.Name = "txtBox_AdditionalFBXOptions";
             this.txtBox_AdditionalFBXOptions.Size = new System.Drawing.Size(163, 22);
-            this.txtBox_AdditionalFBXOptions.TabIndex = 41;
+            this.txtBox_AdditionalFBXOptions.TabIndex = 6;
             // 
             // chkBox_AsciiFBX
             // 
@@ -91,7 +90,7 @@ namespace P4GModelConverter
             this.chkBox_AsciiFBX.Margin = new System.Windows.Forms.Padding(4);
             this.chkBox_AsciiFBX.Name = "chkBox_AsciiFBX";
             this.chkBox_AsciiFBX.Size = new System.Drawing.Size(165, 21);
-            this.chkBox_AsciiFBX.TabIndex = 40;
+            this.chkBox_AsciiFBX.TabIndex = 4;
             this.chkBox_AsciiFBX.Text = "-fbxascii (mds output)";
             // 
             // label1
@@ -103,7 +102,7 @@ namespace P4GModelConverter
             this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(127, 17);
-            this.label1.TabIndex = 38;
+            this.label1.TabIndex = 5;
             this.label1.Text = "Additional Options:";
             // 
             // chkBox_ExtractTextures
@@ -113,7 +112,7 @@ namespace P4GModelConverter
             this.chkBox_ExtractTextures.Margin = new System.Windows.Forms.Padding(4);
             this.chkBox_ExtractTextures.Name = "chkBox_ExtractTextures";
             this.chkBox_ExtractTextures.Size = new System.Drawing.Size(167, 21);
-            this.chkBox_ExtractTextures.TabIndex = 36;
+            this.chkBox_ExtractTextures.TabIndex = 8;
             this.chkBox_ExtractTextures.Text = "Extract TIM2 Textures";
             // 
             // chkBox_ConvertToGMO
@@ -123,7 +122,7 @@ namespace P4GModelConverter
             this.chkBox_ConvertToGMO.Margin = new System.Windows.Forms.Padding(4);
             this.chkBox_ConvertToGMO.Name = "chkBox_ConvertToGMO";
             this.chkBox_ConvertToGMO.Size = new System.Drawing.Size(162, 21);
-            this.chkBox_ConvertToGMO.TabIndex = 35;
+            this.chkBox_ConvertToGMO.TabIndex = 7;
             this.chkBox_ConvertToGMO.Text = "Convert FBX to GMO\r\n";
             // 
             // chkBox_OldFBXExport
@@ -134,7 +133,7 @@ namespace P4GModelConverter
             this.chkBox_OldFBXExport.Margin = new System.Windows.Forms.Padding(4);
             this.chkBox_OldFBXExport.Name = "chkBox_OldFBXExport";
             this.chkBox_OldFBXExport.Size = new System.Drawing.Size(186, 21);
-            this.chkBox_OldFBXExport.TabIndex = 39;
+            this.chkBox_OldFBXExport.TabIndex = 3;
             this.chkBox_OldFBXExport.Text = "-fbxoldexport (animation)";
             // 
             // chkBox_ConvertToFBX
@@ -144,7 +143,7 @@ namespace P4GModelConverter
             this.chkBox_ConvertToFBX.Margin = new System.Windows.Forms.Padding(4);
             this.chkBox_ConvertToFBX.Name = "chkBox_ConvertToFBX";
             this.chkBox_ConvertToFBX.Size = new System.Drawing.Size(189, 21);
-            this.chkBox_ConvertToFBX.TabIndex = 37;
+            this.chkBox_ConvertToFBX.TabIndex = 2;
             this.chkBox_ConvertToFBX.Text = "Convert to FBX w/ Noesis";
             // 
             // groupBox_Conversion
@@ -159,7 +158,7 @@ namespace P4GModelConverter
             this.groupBox_Conversion.Location = new System.Drawing.Point(218, 12);
             this.groupBox_Conversion.Name = "groupBox_Conversion";
             this.groupBox_Conversion.Size = new System.Drawing.Size(200, 244);
-            this.groupBox_Conversion.TabIndex = 1;
+            this.groupBox_Conversion.TabIndex = 9;
             this.groupBox_Conversion.TabStop = false;
             this.groupBox_Conversion.Text = "Conversion Settings";
             // 
@@ -170,7 +169,7 @@ namespace P4GModelConverter
             this.chkBox_AutoConvertTex.Margin = new System.Windows.Forms.Padding(4);
             this.chkBox_AutoConvertTex.Name = "chkBox_AutoConvertTex";
             this.chkBox_AutoConvertTex.Size = new System.Drawing.Size(186, 21);
-            this.chkBox_AutoConvertTex.TabIndex = 23;
+            this.chkBox_AutoConvertTex.TabIndex = 10;
             this.chkBox_AutoConvertTex.Text = "Convert Textures to TM2";
             // 
             // lbl_WpnBone
@@ -182,7 +181,7 @@ namespace P4GModelConverter
             this.lbl_WpnBone.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lbl_WpnBone.Name = "lbl_WpnBone";
             this.lbl_WpnBone.Size = new System.Drawing.Size(143, 17);
-            this.lbl_WpnBone.TabIndex = 20;
+            this.lbl_WpnBone.TabIndex = 14;
             this.lbl_WpnBone.Text = "Weapon Bone Name:";
             // 
             // chkBox_UseDummyMaterials
@@ -192,7 +191,7 @@ namespace P4GModelConverter
             this.chkBox_UseDummyMaterials.Margin = new System.Windows.Forms.Padding(4);
             this.chkBox_UseDummyMaterials.Name = "chkBox_UseDummyMaterials";
             this.chkBox_UseDummyMaterials.Size = new System.Drawing.Size(167, 21);
-            this.chkBox_UseDummyMaterials.TabIndex = 19;
+            this.chkBox_UseDummyMaterials.TabIndex = 12;
             this.chkBox_UseDummyMaterials.Text = "Use Dummy Materials";
             // 
             // chkBox_LoadAnimations
@@ -202,7 +201,7 @@ namespace P4GModelConverter
             this.chkBox_LoadAnimations.Margin = new System.Windows.Forms.Padding(4);
             this.chkBox_LoadAnimations.Name = "chkBox_LoadAnimations";
             this.chkBox_LoadAnimations.Size = new System.Drawing.Size(135, 21);
-            this.chkBox_LoadAnimations.TabIndex = 18;
+            this.chkBox_LoadAnimations.TabIndex = 13;
             this.chkBox_LoadAnimations.Text = "Load Animations";
             // 
             // txt_WeaponBoneName
@@ -213,7 +212,7 @@ namespace P4GModelConverter
             this.txt_WeaponBoneName.Location = new System.Drawing.Point(10, 176);
             this.txt_WeaponBoneName.Name = "txt_WeaponBoneName";
             this.txt_WeaponBoneName.Size = new System.Drawing.Size(149, 22);
-            this.txt_WeaponBoneName.TabIndex = 21;
+            this.txt_WeaponBoneName.TabIndex = 15;
             this.txt_WeaponBoneName.Text = "Bip01_L_Hand_Bone";
             // 
             // chkBox_RenameBones
@@ -223,7 +222,7 @@ namespace P4GModelConverter
             this.chkBox_RenameBones.Margin = new System.Windows.Forms.Padding(4);
             this.chkBox_RenameBones.Name = "chkBox_RenameBones";
             this.chkBox_RenameBones.Size = new System.Drawing.Size(173, 21);
-            this.chkBox_RenameBones.TabIndex = 22;
+            this.chkBox_RenameBones.TabIndex = 11;
             this.chkBox_RenameBones.Text = "Reformat Bone Names";
             // 
             // groupBox_Output
@@ -235,7 +234,7 @@ namespace P4GModelConverter
             this.groupBox_Output.Location = new System.Drawing.Point(424, 12);
             this.groupBox_Output.Name = "groupBox_Output";
             this.groupBox_Output.Size = new System.Drawing.Size(200, 244);
-            this.groupBox_Output.TabIndex = 2;
+            this.groupBox_Output.TabIndex = 16;
             this.groupBox_Output.TabStop = false;
             this.groupBox_Output.Text = "Output Settings";
             // 
@@ -253,7 +252,7 @@ namespace P4GModelConverter
             this.comboBox_PreviewWith.Location = new System.Drawing.Point(30, 76);
             this.comboBox_PreviewWith.Name = "comboBox_PreviewWith";
             this.comboBox_PreviewWith.Size = new System.Drawing.Size(124, 24);
-            this.comboBox_PreviewWith.TabIndex = 28;
+            this.comboBox_PreviewWith.TabIndex = 19;
             // 
             // chkBox_PreviewOutputGMO
             // 
@@ -262,7 +261,7 @@ namespace P4GModelConverter
             this.chkBox_PreviewOutputGMO.Margin = new System.Windows.Forms.Padding(4);
             this.chkBox_PreviewOutputGMO.Name = "chkBox_PreviewOutputGMO";
             this.chkBox_PreviewOutputGMO.Size = new System.Drawing.Size(164, 21);
-            this.chkBox_PreviewOutputGMO.TabIndex = 27;
+            this.chkBox_PreviewOutputGMO.TabIndex = 18;
             this.chkBox_PreviewOutputGMO.Text = "Preview New GMO w/";
             // 
             // chkBox_FixForPC
@@ -272,7 +271,7 @@ namespace P4GModelConverter
             this.chkBox_FixForPC.Margin = new System.Windows.Forms.Padding(4);
             this.chkBox_FixForPC.Name = "chkBox_FixForPC";
             this.chkBox_FixForPC.Size = new System.Drawing.Size(174, 21);
-            this.chkBox_FixForPC.TabIndex = 26;
+            this.chkBox_FixForPC.TabIndex = 17;
             this.chkBox_FixForPC.Text = "Fix Output GMO for PC";
             // 
             // btn_Save
@@ -282,7 +281,7 @@ namespace P4GModelConverter
             this.btn_Save.Name = "btn_Save";
             this.btn_Save.Padding = new System.Windows.Forms.Padding(5);
             this.btn_Save.Size = new System.Drawing.Size(75, 30);
-            this.btn_Save.TabIndex = 3;
+            this.btn_Save.TabIndex = 21;
             this.btn_Save.Text = "Save";
             this.btn_Save.Click += new System.EventHandler(this.Save_Click);
             // 
@@ -293,7 +292,7 @@ namespace P4GModelConverter
             this.btn_Cancel.Name = "btn_Cancel";
             this.btn_Cancel.Padding = new System.Windows.Forms.Padding(5);
             this.btn_Cancel.Size = new System.Drawing.Size(75, 30);
-            this.btn_Cancel.TabIndex = 4;
+            this.btn_Cancel.TabIndex = 20;
             this.btn_Cancel.Text = "Cancel";
             // 
             // SettingsForm
