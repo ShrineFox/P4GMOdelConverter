@@ -111,6 +111,8 @@ namespace P4GModelConverter
                         RefreshTreeview();
                     }
                 }
+                //Update filename in title
+                this.Text = "P4GMOdel - " + Path.GetFileName(model.Path);
             }
         }
 
