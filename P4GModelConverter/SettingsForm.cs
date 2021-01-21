@@ -16,17 +16,31 @@ namespace P4GModelConverter
 {
     public partial class SettingsForm : Form
     {
-        public ResultValue Result { get; private set; }
         public Settings settings;
 
         public SettingsForm()
         {
             InitializeComponent();
+            comboBox_PreviewWith.SelectedIndex = 0;
             //Load settings
             if (File.Exists("settings.yml"))
             {
-                var deserializer = new DeserializerBuilder().WithNamingConvention(UnderscoredNamingConvention.Instance).Build();
+                var deserializer = new DeserializerBuilder().WithNamingConvention(PascalCaseNamingConvention.Instance).Build();
                 settings = deserializer.Deserialize<Settings>(File.ReadAllText("settings.yml"));
+                chkBox_ConvertToFBX.Checked = settings.ConvertToFBX;
+                chkBox_OldFBXExport.Checked = settings.OldFBXExport;
+                chkBox_AsciiFBX.Checked = settings.AsciiFBX;
+                txtBox_AdditionalFBXOptions.Text = settings.AdditionalFBXOptions;
+                chkBox_ConvertToGMO.Checked = settings.ConvertToGMO;
+                chkBox_ExtractTextures.Checked = settings.ExtractTextures;
+                chkBox_AutoConvertTex.Checked = settings.AutoConvertTex;
+                chkBox_RenameBones.Checked = settings.RenameBones;
+                chkBox_UseDummyMaterials.Checked = settings.UseDummyMaterials;
+                chkBox_LoadAnimations.Checked = settings.LoadAnimations;
+                txt_WeaponBoneName.Text = settings.WeaponBoneName;
+                chkBox_FixForPC.Checked = settings.FixForPC;
+                chkBox_PreviewOutputGMO.Checked = settings.PreviewOutputGMO;
+                comboBox_PreviewWith.SelectedIndex = comboBox_PreviewWith.Items.IndexOf(settings.PreviewWith);
             }
             else
             {
@@ -58,39 +72,26 @@ namespace P4GModelConverter
 
         private void Save_Click(object sender, EventArgs e)
         {
-            Result = new ResultValue(this);
-        }
+            settings.ConvertToFBX = chkBox_ConvertToFBX.Checked;
+            settings.OldFBXExport = chkBox_OldFBXExport.Checked;
+            settings.AsciiFBX = chkBox_AsciiFBX.Checked;
+            settings.AdditionalFBXOptions = txtBox_AdditionalFBXOptions.Text;
+            settings.ConvertToGMO = chkBox_ConvertToGMO.Checked;
+            settings.ExtractTextures = chkBox_ExtractTextures.Checked;
 
-        public class ResultValue
-        {
-            private readonly SettingsForm mParent;
+            settings.AutoConvertTex = chkBox_AutoConvertTex.Checked;
+            settings.RenameBones = chkBox_RenameBones.Checked;
+            settings.UseDummyMaterials = chkBox_UseDummyMaterials.Checked;
+            settings.LoadAnimations = chkBox_LoadAnimations.Checked;
+            settings.WeaponBoneName = txt_WeaponBoneName.Text;
 
-            internal ResultValue(SettingsForm parent)
-            {
-                mParent = parent;
-            }
+            settings.FixForPC = chkBox_FixForPC.Checked;
+            settings.PreviewOutputGMO = chkBox_PreviewOutputGMO.Checked;
+            settings.PreviewWith = comboBox_PreviewWith.SelectedItem.ToString();
 
-            public Settings ResultSettings => new Settings {
-                // Input
-                ConvertToFBX = mParent.chkBox_ConvertToFBX.Checked,
-                OldFBXExport = mParent.chkBox_OldFBXExport.Checked,
-                AsciiFBX = mParent.chkBox_AsciiFBX.Checked,
-                AdditionalFBXOptions = mParent.txtBox_AdditionalFBXOptions.Text,
-                ConvertToGMO = mParent.chkBox_ConvertToGMO.Checked,
-                ExtractTextures = mParent.chkBox_ExtractTextures.Checked,
-
-                // Conversion
-                AutoConvertTex = mParent.chkBox_AutoConvertTex.Checked,
-                RenameBones = mParent.chkBox_RenameBones.Checked,
-                UseDummyMaterials = mParent.chkBox_UseDummyMaterials.Checked,
-                LoadAnimations = mParent.chkBox_LoadAnimations.Checked,
-                WeaponBoneName = mParent.txt_WeaponBoneName.Text,
-
-                // Output
-                FixForPC = mParent.chkBox_FixForPC.Checked,
-                PreviewOutputGMO = mParent.chkBox_PreviewOutputGMO.Checked,
-                PreviewWith = mParent.comboBox_PreviewWith.SelectedItem.ToString(),
-            };
+            var serializer = new SerializerBuilder().WithNamingConvention(PascalCaseNamingConvention.Instance).Build();
+            var yaml = serializer.Serialize(settings);
+            File.WriteAllText("settings.yml", yaml);
         }
     }
 }

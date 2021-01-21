@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using TGE.IO;
 
 namespace P4GModelConverter
@@ -116,8 +117,13 @@ namespace P4GModelConverter
                 cmd.StartInfo.Arguments += " -E";
             else
                 cmd.StartInfo.Arguments += " -PSV";
-            cmd.Start();
-            cmd.WaitForExit();
+            if (File.Exists(cmd.StartInfo.FileName))
+            {
+                cmd.Start();
+                cmd.WaitForExit();
+            }
+            else
+                MessageBox.Show($"Error: Could not find .\\Tools\\GMOTool\\GMOTool.exe!");
         }
 
         //Run program to convert FBX to GMO directly
@@ -127,10 +133,16 @@ namespace P4GModelConverter
             cmd.StartInfo.FileName = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Tools\\GMO\\GmoConv.exe";
             //cmd.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             cmd.StartInfo.Arguments = $"\"{fbx}\"";
-            cmd.Start();
-            int x = 0;
-            while (!File.Exists($"{Path.Combine(Path.GetDirectoryName(fbx), Path.GetFileNameWithoutExtension(fbx))}.gmo")) { Thread.Sleep(1000); x++; if (x == 15) return; }
-            cmd.WaitForExit();
+            if (File.Exists(cmd.StartInfo.FileName))
+            {
+                cmd.Start();
+                int x = 0;
+                while (!File.Exists($"{Path.Combine(Path.GetDirectoryName(fbx), Path.GetFileNameWithoutExtension(fbx))}.gmo")) { Thread.Sleep(1000); x++; if (x == 15) return; }
+                cmd.WaitForExit();
+            }
+            else
+                MessageBox.Show($"Error: Could not find .\\Tools\\GMO\\GmoConv.exe!");
+
         }
 
         //Run program to convert referenced textures to TM2
@@ -140,10 +152,16 @@ namespace P4GModelConverter
             cmd.StartInfo.FileName = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Tools\\GIM\\GimConv.exe";
             //cmd.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             cmd.StartInfo.Arguments = $"\"{texture}\" -o \"{texture}.tm2\"";
-            cmd.Start();
-            int x = 0;
-            while (!File.Exists($"{texture}.tm2")) { Thread.Sleep(1000); x++; if (x == 15) return; }
-            cmd.WaitForExit();
+            if (File.Exists(cmd.StartInfo.FileName))
+            {
+                cmd.Start();
+                int x = 0;
+                while (!File.Exists($"{texture}.tm2")) { Thread.Sleep(1000); x++; if (x == 15) return; }
+                cmd.WaitForExit();
+            }
+            else
+                MessageBox.Show($"Error: Could not find .\\Tools\\GIM\\GIMConv.exe!");
+
         }
 
         //Run program to view newly generated GMO file
@@ -153,7 +171,11 @@ namespace P4GModelConverter
             cmd.StartInfo.FileName = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Tools\\GMO\\GmoView.exe";
             //cmd.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             cmd.StartInfo.Arguments = $"\"{model}\"";
-            cmd.Start();
+            if (File.Exists(cmd.StartInfo.FileName))
+                cmd.Start();
+            else
+                MessageBox.Show($"Error: Could not find .\\Tools\\GMO\\GmoView.exe!");
+
         }
 
         //Run model through Noesis for viewing
@@ -165,7 +187,11 @@ namespace P4GModelConverter
             startInfo.FileName = $"\"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Tools\\Noesis\\Noesis.exe\"";
             startInfo.Arguments = args;
             process.StartInfo = startInfo;
-            process.Start();
+            if (File.Exists(startInfo.FileName))
+                process.Start();
+            else
+                MessageBox.Show($"Error: Could not find .\\Tools\\Noesis\\Noesis.exe!");
+
         }
 
         //Run model through Noesis for optimizing
@@ -179,10 +205,15 @@ namespace P4GModelConverter
                 cmdProcess.StartInfo.FileName = @"C:\Windows\System32\cmd.exe";
                 cmdProcess.StartInfo.Arguments = "/k " + $"Noesis.exe ?cmode \"{path}\" \"{extensionlessPath}_noesis.fbx\" {args}";
                 cmdProcess.StartInfo.WindowStyle = ProcessWindowStyle.Normal;
-                cmdProcess.Start();
-                int x = 0;
-                while (!File.Exists($"{extensionlessPath}_noesis.fbx")) { Thread.Sleep(1000); x++; if (x == 15) return; }
-                cmdProcess.Kill();
+                if (File.Exists(Path.Combine(cmdProcess.StartInfo.WorkingDirectory, "Noesis.exe")))
+                {
+                    cmdProcess.Start();
+                    int x = 0;
+                    while (!File.Exists($"{extensionlessPath}_noesis.fbx")) { Thread.Sleep(1000); x++; if (x == 15) return; }
+                    cmdProcess.Kill();
+                }
+                else
+                    MessageBox.Show($"Error: Could not find .\\Tools\\Noesis\\Noesis.exe!");
             }
         }
 
@@ -193,8 +224,13 @@ namespace P4GModelConverter
             cmd.StartInfo.FileName = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Tools\\p4gpc-gmofix\\p4gpc-gmofix.exe";
             //cmd.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             cmd.StartInfo.Arguments = $"\"{path}\"";
-            cmd.Start();
-            cmd.WaitForExit();
+            if (File.Exists(cmd.StartInfo.FileName))
+            {
+                cmd.Start();
+                cmd.WaitForExit();
+            }
+            else
+                MessageBox.Show($"Error: Could not find .\\Tools\\p4gpc-gmofix\\p4gpc-gmofix.exe!");
         }
 
         //Convert model to FBX through Noesis commandline using specified settings

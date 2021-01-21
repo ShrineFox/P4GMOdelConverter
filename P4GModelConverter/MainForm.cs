@@ -44,13 +44,11 @@ namespace P4GModelConverter
             //Load settings
             if (File.Exists("settings.yml"))
             {
-                var deserializer = new DeserializerBuilder().WithNamingConvention(UnderscoredNamingConvention.Instance).Build();
+                var deserializer = new DeserializerBuilder().WithNamingConvention(PascalCaseNamingConvention.Instance).Build();
                 settings = deserializer.Deserialize<SettingsForm.Settings>(File.ReadAllText("settings.yml"));
             }
             else
-            {
                 settings = new SettingsForm.Settings();
-            }
         }
 
         private void Open_Click(object sender, EventArgs e)
@@ -64,7 +62,6 @@ namespace P4GModelConverter
                 model = new Model();
                 model.Path = dialog.FileName;
                 string extensionlessPath = Path.Combine(Path.GetDirectoryName(model.Path), Path.GetFileNameWithoutExtension(model.Path));
-                darkTreeView_Main.Nodes.Clear();
 
                 //Open file
                 if (Path.GetExtension(model.Path.ToUpper()) == ".PAC")
@@ -82,9 +79,7 @@ namespace P4GModelConverter
                 if (Path.GetExtension(model.Path).ToUpper() == ".DAE" || Path.GetExtension(model.Path).ToUpper() == ".SMD" || Path.GetExtension(model.Path).ToUpper() == ".FBX")
                 {
                     if (settings.ConvertToFBX || Path.GetExtension(model.Path).ToUpper() != ".FBX")
-                    {
                         model.Path = Tools.CreateOptimizedFBX(model.Path, settings); //Optimize FBX with settings or convert to FBX
-                    }
                     if (settings.ConvertToGMO)
                     {
                         Tools.GMOConv(model.Path); //Convert FBX directly to GMO without fixes first
@@ -93,44 +88,51 @@ namespace P4GModelConverter
                 }
                 if (Path.GetExtension(model.Path).ToUpper() == ".GMO" || Path.GetExtension(model.Path).ToUpper() == ".FBX")
                 {
-                    if (settings.ExtractTextures && Path.GetExtension(model.Path).ToUpper() == ".GMO")
-                        Tools.ExtractTextures(model.Path); //Extract TM2 Textures
-                    Tools.GMOTool(model.Path, true); //Create MDS
-                    model.Path = extensionlessPath + ".mds";
+                    if (!File.Exists(model.Path))
+                        MessageBox.Show("Error: Model file was not found!");
+                    else
+                    {
+                        if (settings.ExtractTextures && Path.GetExtension(model.Path).ToUpper() == ".GMO")
+                            Tools.ExtractTextures(model.Path); //Extract TM2 Textures
+                        Tools.GMOTool(model.Path, true); //Create MDS
+                        model.Path = extensionlessPath + ".mds";
+
+                    }
                 }
                 if (Path.GetExtension(model.Path.ToLower()) == ".mds")
                 {
-                    var mdsLines = File.ReadAllLines(model.Path).ToList();
-                    model = Model.Deserialize(model, mdsLines.ToArray(), settings);
+                    if (!File.Exists(model.Path))
+                        MessageBox.Show("Error: No .MDS file found! One may not have been generated due to an error with GMOTool.");
+                    else
+                    {
+                        var mdsLines = File.ReadAllLines(model.Path).ToList();
+                        model = Model.Deserialize(model, mdsLines.ToArray(), settings);
+                        //Load treeview
+                        RefreshTreeview();
+                    }
                 }
             }
-            //Load treeview
-            RefreshTreeview();
         }
 
         private void RefreshTreeview()
         {
-            darkTreeView_Main.Nodes.Add(new DarkTreeNode() { Text = "Model" });
-            darkTreeView_Main.Nodes.First().Nodes.Add(new DarkTreeNode() { Text = "BlindData" });
-            darkTreeView_Main.Nodes.First().Nodes.Add(new DarkTreeNode() { Text = "Bones" });
-            foreach (Bone bone in model.Bones)
+            if (model != null)
             {
-                darkTreeView_Main.Nodes.First().Nodes.First(x => x.Text == "Bones").Nodes.Add(new DarkTreeNode() { Text = bone.Name });
-            }
-            darkTreeView_Main.Nodes.First().Nodes.Add(new DarkTreeNode() { Text = "Parts" });
-            foreach (Part part in model.Parts)
-            {
-                darkTreeView_Main.Nodes.First().Nodes.First(x => x.Text == "Parts").Nodes.Add(new DarkTreeNode() { Text = part.Name });
-            }
-            darkTreeView_Main.Nodes.First().Nodes.Add(new DarkTreeNode() { Text = "Materials" });
-            foreach (Material material in model.Materials)
-            {
-                darkTreeView_Main.Nodes.First().Nodes.First(x => x.Text == "Materials").Nodes.Add(new DarkTreeNode() { Text = material.Name });
-            }
-            darkTreeView_Main.Nodes.First().Nodes.Add(new DarkTreeNode() { Text = "Animations" });
-            foreach (Animation animation in model.Animations)
-            {
-                darkTreeView_Main.Nodes.First().Nodes.First(x => x.Text == "Animations").Nodes.Add(new DarkTreeNode() { Text = animation.Name });
+                darkTreeView_Main.Nodes.Clear();
+                darkTreeView_Main.Nodes.Add(new DarkTreeNode() { Text = "Model", Tag = model });
+                darkTreeView_Main.Nodes.First().Nodes.Add(new DarkTreeNode() { Text = "BlindData", Tag = model.BlindData });
+                darkTreeView_Main.Nodes.First().Nodes.Add(new DarkTreeNode() { Text = "Bones", Tag = model.Bones });
+                foreach (Bone bone in model.Bones)
+                    darkTreeView_Main.Nodes.First().Nodes.First(x => x.Text == "Bones").Nodes.Add(new DarkTreeNode() { Text = bone.Name, Tag = bone });
+                darkTreeView_Main.Nodes.First().Nodes.Add(new DarkTreeNode() { Text = "Parts", Tag = model.Parts });
+                foreach (Part part in model.Parts)
+                    darkTreeView_Main.Nodes.First().Nodes.First(x => x.Text == "Parts").Nodes.Add(new DarkTreeNode() { Text = part.Name, Tag = part });
+                darkTreeView_Main.Nodes.First().Nodes.Add(new DarkTreeNode() { Text = "Materials", Tag = model.Materials });
+                foreach (Material material in model.Materials)
+                    darkTreeView_Main.Nodes.First().Nodes.First(x => x.Text == "Materials").Nodes.Add(new DarkTreeNode() { Text = material.Name, Tag = material });
+                darkTreeView_Main.Nodes.First().Nodes.Add(new DarkTreeNode() { Text = "Animations", Tag = model.Animations });
+                foreach (Animation animation in model.Animations)
+                    darkTreeView_Main.Nodes.First().Nodes.First(x => x.Text == "Animations").Nodes.Add(new DarkTreeNode() { Text = animation.Name, Tag = animation });
             }
         }
 
@@ -140,12 +142,28 @@ namespace P4GModelConverter
             {
                 if (dialog.ShowDialog() != DialogResult.OK)
                     return;
-                settings = dialog.Result.ResultSettings;
-                //Save new settings to file
-                var serializer = new SerializerBuilder().WithNamingConvention(CamelCaseNamingConvention.Instance).Build();
-                var yaml = serializer.Serialize(settings);
-                File.WriteAllText("settings.yml", yaml);
+                var deserializer = new DeserializerBuilder().WithNamingConvention(PascalCaseNamingConvention.Instance).Build();
+                settings = deserializer.Deserialize<SettingsForm.Settings>(File.ReadAllText("settings.yml"));
             }
+        }
+
+        private void TreeView_MouseClick(object sender, MouseEventArgs e)
+        {
+            //Update object if changed
+            propertyGrid_Main.SelectedObject = propertyGrid_Main.SelectedObject;
+
+            var selectedNodes = darkTreeView_Main.SelectedNodes;
+            if (selectedNodes.Count > 0)
+            {
+                DarkTreeNode firstNode = selectedNodes[0];
+                //Assign selected object to propertygrid
+                propertyGrid_Main.SelectedObject = firstNode.Tag;
+            }
+        }
+
+        private void Refresh(object sender, EventArgs e)
+        {
+            RefreshTreeview();
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -108,6 +109,7 @@ namespace P4GModelConverter
     {
         public string Name { get; set; } = "Model";
         public string BoundingBox { get; set; } = "";
+        public string BlindData { get; set; } = "";
         public List<Bone> Bones { get; set; } = new List<Bone>();
         public List<Part> Parts { get; set; } = new List<Part>();
         public List<Tuple<string, string>> BoneDrawPartPairs { get; set; } = new List<Tuple<string, string>>();
@@ -120,7 +122,9 @@ namespace P4GModelConverter
             //Organize lines into objects
             for (int i = 0; i < lines.Count(); i++)
             {
-                if (lines[i].StartsWith("\tBone"))
+                if (lines[i].StartsWith("BlindData"))
+                    model.BlindData = lines[i].Replace("BlindData ", "");
+                else if (lines[i].StartsWith("\tBone"))
                 {
                     int x = i;
                     //Add bone data to bone list
@@ -132,38 +136,38 @@ namespace P4GModelConverter
                     while (!lines[x].StartsWith("\t}"))
                     {
                         if (lines[x].StartsWith("\t\tBoundingBox"))
-                            bone.BoundingBox = lines[x];
+                            bone.BoundingBox = lines[x].Replace("\t","");
                         if (lines[x].StartsWith("\t\tTranslate"))
-                            bone.Translate = lines[x];
+                            bone.Translate = lines[x].Replace("\t", "");
                         if (lines[x].StartsWith("\t\tRotate"))
-                            bone.Rotate = lines[x];
+                            bone.Rotate = lines[x].Replace("\t", "");
                         if (lines[x].StartsWith("\t\tParentBone"))
                         {
                             if (settings.RenameBones)
-                                bone.ParentBone = SanitizeBoneName(lines[x]);
+                                bone.ParentBone = SanitizeBoneName(lines[x]).Replace("\t", "");
                             else
-                                bone.ParentBone = lines[x];
+                                bone.ParentBone = lines[x].Replace("\t", "");
                         }
                         if (lines[x].StartsWith("\t\tScale"))
-                            bone.Scale = lines[x];
+                            bone.Scale = lines[x].Replace("\t", "");
                         if (lines[x].StartsWith("\t\tBlindData"))
-                            bone.BlindData = lines[x];
+                            bone.BlindData = lines[x].Replace("\t", "");
                         if (lines[x].StartsWith("\t\tBlendBones"))
                         {
                             if (settings.RenameBones)
-                                bone.BlendBones = SanitizeBoneName(lines[x]);
+                                bone.BlendBones = SanitizeBoneName(lines[x]).Replace("\t", "");
                             else
-                                bone.BlendBones = lines[x];
+                                bone.BlendBones = lines[x].Replace("\t", "");
                         }
                         if (lines[x].StartsWith("\t\tDrawPart"))
-                            bone.DrawParts.Add(lines[x]);
+                            bone.DrawParts.Add(lines[x].Replace("\t", ""));
                         if (lines[x].StartsWith("\t\tBlendOffsets"))
                         {
-                            string blendOffsets = lines[x];
+                            string blendOffsets = lines[x].Replace("\t", "");
                             x++;
                             while (lines[x].StartsWith("\t\t\t"))
                             {
-                                blendOffsets += "\n" + lines[x];
+                                blendOffsets += "\n" + lines[x].Replace("\t", "");
                                 x++;
                             }
                             bone.BlendOffsets = blendOffsets;
@@ -184,11 +188,11 @@ namespace P4GModelConverter
                     {
                         if (lines[x].Contains("\t\tMesh"))
                         {
-                            string mesh = lines[x];
+                            string mesh = lines[x].Replace("\t", "");
                             x++;
                             while (!lines[x].Contains("}"))
                             {
-                                mesh += "\n" + lines[x];
+                                mesh += "\n" + lines[x].Replace("\t", "");
                                 x++;
                             }
                             mesh += "\n\t\t}";
@@ -196,11 +200,11 @@ namespace P4GModelConverter
                         }
                         else if (lines[x].StartsWith("\t\tArrays"))
                         {
-                            string array = lines[x];
+                            string array = lines[x].Replace("\t", "");
                             x++;
                             while (!lines[x].Contains("}"))
                             {
-                                array += "\n" + lines[x];
+                                array += "\n" + lines[x].Replace("\t", "");
                                 x++;
                             }
                             array += "\n\t\t}";
@@ -208,7 +212,7 @@ namespace P4GModelConverter
                         }
                         else if (lines[x].StartsWith("\t\tBoundingBox"))
                         {
-                            part.BoundingBox = lines[x];
+                            part.BoundingBox = lines[x].Replace("\t", "");
                             x++;
                         }
                         else
@@ -226,21 +230,21 @@ namespace P4GModelConverter
                     while (!lines[x].StartsWith("\t}"))
                     {
                         if (lines[x].StartsWith("\t\tDiffuse"))
-                            mat.Diffuse = lines[x];
+                            mat.Diffuse = lines[x].Replace("\t", "");
                         if (lines[x].StartsWith("\t\tAmbient"))
-                            mat.Ambient = lines[x];
+                            mat.Ambient = lines[x].Replace("\t", "");
                         if (lines[x].StartsWith("\t\tReflection"))
-                            mat.Reflection = lines[x];
+                            mat.Reflection = lines[x].Replace("\t", "");
                         if (lines[x].StartsWith("\t\tRefraction"))
-                            mat.Refraction = lines[x];
+                            mat.Refraction = lines[x].Replace("\t", "");
                         if (lines[x].StartsWith("\t\tBump"))
-                            mat.Bump = lines[x];
+                            mat.Bump = lines[x].Replace("\t", "");
                         if (lines[x].StartsWith("\t\tBlindData"))
-                            mat.BlindData = lines[x];
+                            mat.BlindData = lines[x].Replace("\t", "");
                         if (lines[x].StartsWith("\t\t\tSetTexture"))
-                            mat.SetTexture = lines[x];
+                            mat.SetTexture = lines[x].Replace("\t", "");
                         if (lines[x].StartsWith("\t\t\tBlendFunc"))
-                            mat.BlendFunc = lines[x];
+                            mat.BlendFunc = lines[x].Replace("\t", "");
                         x++;
                     }
                     model.Materials.Add(mat);
@@ -263,17 +267,17 @@ namespace P4GModelConverter
                     while (x < lines.Count() && lines[x] != "\t}")
                     {
                         if (lines[x].StartsWith("\t\tFrameLoop"))
-                            anim.FrameLoop = lines[x];
+                            anim.FrameLoop = lines[x].Replace("\t", "");
                         if (lines[x].StartsWith("\t\tFrameRate"))
-                            anim.FrameRate = lines[x];
+                            anim.FrameRate = lines[x].Replace("\t", "");
                         if (lines[x].StartsWith("\t\tAnimate"))
-                            animateLines.Add(lines[x]);
+                            animateLines.Add(lines[x].Replace("\t", ""));
                         if (lines[x].StartsWith("\t\tFCurve"))
                         {
                             var fcurveLines = new List<string>();
                             for (int w = x; w < lines.Count(); w++)
                             {
-                                fcurveLines.Add(lines[w]);
+                                fcurveLines.Add(lines[w].Replace("\t", ""));
                                 if (lines[w].StartsWith("\t\t}"))
                                     break;
                             }

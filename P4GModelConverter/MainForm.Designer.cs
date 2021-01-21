@@ -36,6 +36,7 @@
             this.toolStripMenuItem_New = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem_Open = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem_Save = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem_SaveAs = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem_Close = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem_Exit = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem_Settings = new System.Windows.Forms.ToolStripMenuItem();
@@ -43,7 +44,6 @@
             this.toolStripMenuItem_Help = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem_About = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem_Tutorial = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripMenuItem_SaveAs = new System.Windows.Forms.ToolStripMenuItem();
             this.darkMenuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -80,6 +80,7 @@
             this.darkTreeView_Main.Size = new System.Drawing.Size(435, 662);
             this.darkTreeView_Main.TabIndex = 1;
             this.darkTreeView_Main.Text = "darkTreeView_Main";
+            this.darkTreeView_Main.MouseClick += new System.Windows.Forms.MouseEventHandler(this.TreeView_MouseClick);
             // 
             // darkMenuStrip1
             // 
@@ -118,7 +119,7 @@
             this.toolStripMenuItem_New.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(63)))), ((int)(((byte)(65)))));
             this.toolStripMenuItem_New.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
             this.toolStripMenuItem_New.Name = "toolStripMenuItem_New";
-            this.toolStripMenuItem_New.Size = new System.Drawing.Size(224, 26);
+            this.toolStripMenuItem_New.Size = new System.Drawing.Size(152, 26);
             this.toolStripMenuItem_New.Text = "New";
             // 
             // toolStripMenuItem_Open
@@ -126,7 +127,7 @@
             this.toolStripMenuItem_Open.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(63)))), ((int)(((byte)(65)))));
             this.toolStripMenuItem_Open.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
             this.toolStripMenuItem_Open.Name = "toolStripMenuItem_Open";
-            this.toolStripMenuItem_Open.Size = new System.Drawing.Size(224, 26);
+            this.toolStripMenuItem_Open.Size = new System.Drawing.Size(152, 26);
             this.toolStripMenuItem_Open.Text = "Open";
             this.toolStripMenuItem_Open.Click += new System.EventHandler(this.Open_Click);
             // 
@@ -135,15 +136,23 @@
             this.toolStripMenuItem_Save.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(63)))), ((int)(((byte)(65)))));
             this.toolStripMenuItem_Save.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
             this.toolStripMenuItem_Save.Name = "toolStripMenuItem_Save";
-            this.toolStripMenuItem_Save.Size = new System.Drawing.Size(224, 26);
+            this.toolStripMenuItem_Save.Size = new System.Drawing.Size(152, 26);
             this.toolStripMenuItem_Save.Text = "Save";
+            // 
+            // toolStripMenuItem_SaveAs
+            // 
+            this.toolStripMenuItem_SaveAs.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(63)))), ((int)(((byte)(65)))));
+            this.toolStripMenuItem_SaveAs.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
+            this.toolStripMenuItem_SaveAs.Name = "toolStripMenuItem_SaveAs";
+            this.toolStripMenuItem_SaveAs.Size = new System.Drawing.Size(152, 26);
+            this.toolStripMenuItem_SaveAs.Text = "Save As...";
             // 
             // toolStripMenuItem_Close
             // 
             this.toolStripMenuItem_Close.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(63)))), ((int)(((byte)(65)))));
             this.toolStripMenuItem_Close.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
             this.toolStripMenuItem_Close.Name = "toolStripMenuItem_Close";
-            this.toolStripMenuItem_Close.Size = new System.Drawing.Size(224, 26);
+            this.toolStripMenuItem_Close.Size = new System.Drawing.Size(152, 26);
             this.toolStripMenuItem_Close.Text = "Close";
             // 
             // toolStripMenuItem_Exit
@@ -151,7 +160,7 @@
             this.toolStripMenuItem_Exit.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(63)))), ((int)(((byte)(65)))));
             this.toolStripMenuItem_Exit.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
             this.toolStripMenuItem_Exit.Name = "toolStripMenuItem_Exit";
-            this.toolStripMenuItem_Exit.Size = new System.Drawing.Size(224, 26);
+            this.toolStripMenuItem_Exit.Size = new System.Drawing.Size(152, 26);
             this.toolStripMenuItem_Exit.Text = "Exit";
             // 
             // toolStripMenuItem_Settings
@@ -170,6 +179,7 @@
             this.toolStripMenuItem_Refresh.Name = "toolStripMenuItem_Refresh";
             this.toolStripMenuItem_Refresh.Size = new System.Drawing.Size(72, 24);
             this.toolStripMenuItem_Refresh.Text = "Refresh";
+            this.toolStripMenuItem_Refresh.Click += new System.EventHandler(this.Refresh);
             // 
             // toolStripMenuItem_Help
             // 
@@ -197,14 +207,6 @@
             this.toolStripMenuItem_Tutorial.Name = "toolStripMenuItem_Tutorial";
             this.toolStripMenuItem_Tutorial.Size = new System.Drawing.Size(143, 26);
             this.toolStripMenuItem_Tutorial.Text = "Tutorial";
-            // 
-            // toolStripMenuItem_SaveAs
-            // 
-            this.toolStripMenuItem_SaveAs.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(63)))), ((int)(((byte)(65)))));
-            this.toolStripMenuItem_SaveAs.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
-            this.toolStripMenuItem_SaveAs.Name = "toolStripMenuItem_SaveAs";
-            this.toolStripMenuItem_SaveAs.Size = new System.Drawing.Size(224, 26);
-            this.toolStripMenuItem_SaveAs.Text = "Save As...";
             // 
             // MainForm
             // 
