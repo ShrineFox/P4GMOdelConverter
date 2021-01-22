@@ -28,7 +28,6 @@ namespace P4GModelConverter
 {
     public partial class MainForm : Form
     {
-        List<string> newLines = new List<string>();
         List<List<string>> animationPresets = new List<List<string>>() { //null, p4g protag, p4g party, p4g persona, p4g culprit, p3p protag, p3p party, p3p persona, p3p strega
             new List<string>{ "" },
             new List<string> { "Idle", "Idle 2", "Run", "Attack", "Attack Critical", "Placeholder 4", "Persona Change", "Persona Summon 1", "Persona Summon 2", "Persona Summon 3", "Persona Summon 4", "Guard", "Dodge", "Low HP", "Damaged", "Miss Attack", "Knocked Down", "Down", "Get Back Up", "Killed", "Revived", "Use Item", "Victory", "Pushed Out of the Way", "Placeholder 23", "Helped Up", "Placeholder 25", "Idle (Duplicate)" },
@@ -66,6 +65,9 @@ namespace P4GModelConverter
 
         private void OpenFile(string path)
         {
+            if (model != null && !ConfirmDelete())
+                return;
+
             //Re-initialize variables and form
             model = new Model();
             model.Path = path;
@@ -155,12 +157,20 @@ namespace P4GModelConverter
             if (Path.GetExtension(model.Path.ToLower()) == ".mds")
             {
                 if (!File.Exists(model.Path))
+                {
+                    toolStripMenuItem_Save.Enabled = false;
+                    toolStripMenuItem_SaveAs.Enabled = false;
+                    toolStripMenuItem_Export.Enabled = false;
                     MessageBox.Show("Error: No .MDS file found! One may not have been generated due to an error with GMOTool.");
+                }
                 else
                 {
                     var mdsLines = File.ReadAllLines(model.Path).ToList();
                     model = Model.Deserialize(model, mdsLines.ToArray(), settings);
                     RefreshTreeview();
+                    toolStripMenuItem_Save.Enabled = true;
+                    toolStripMenuItem_SaveAs.Enabled = true;
+                    toolStripMenuItem_Export.Enabled = true;
                 }
             }
             //Update filename in title
@@ -217,13 +227,11 @@ namespace P4GModelConverter
                 {
                     moveUpToolStripMenuItem.Visible = true;
                     moveDownToolStripMenuItem.Visible = true;
-                    deleteToolStripMenuItem.Visible = true;
                 }
                 else
                 {
                     moveUpToolStripMenuItem.Visible = false;
                     moveDownToolStripMenuItem.Visible = false;
-                    deleteToolStripMenuItem.Visible = false;
                 }
                 if (e.Button.Equals(MouseButtons.Right))
                     darkContextMenu_RightClick.Show(this, new Point(e.X + ((Control)sender).Left + 4, e.Y + ((Control)sender).Top + 4));
@@ -245,6 +253,51 @@ namespace P4GModelConverter
             string[] fileList = (string[])e.Data.GetData(DataFormats.FileDrop, false);
             if (fileList.Length > 0)
                 OpenFile(fileList[0]);
+        }
+
+        private void Save_Click(object sender, EventArgs e)
+        {
+            if (model.Path.ToLower().EndsWith(".mds"))
+            {
+                File.WriteAllText(Model.Serialize(model, settings), model.Path);
+                MessageBox.Show("MDS file saved!");
+            }
+        }
+
+        private void SaveAs_Click(object sender, EventArgs e)
+        {
+            CommonOpenFileDialog dialog = new CommonOpenFileDialog();
+            dialog.Filters.Add(new CommonFileDialogFilter("MDS", "*.mds"));
+            dialog.Title = "Save MDS...";
+            if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
+            {
+                File.WriteAllText(Model.Serialize(model, settings), dialog.FileName);
+                MessageBox.Show("MDS file saved!");
+            }
+        }
+
+        private void New_Click(object sender, EventArgs e)
+        {
+            if (model != null && !ConfirmDelete())
+                return;
+            model = new Model();
+            RefreshTreeview();
+        }
+
+        public static bool ConfirmDelete()
+        {
+            DialogResult result = MessageBox.Show("Any changes you're currently working on will be lost! Are you sure?", "Unsaved Changes", MessageBoxButtons.YesNo);
+            if (result == DialogResult.Yes)
+                return true;
+            else
+                return false;
+        }
+
+        private void Exit_Click(object sender, EventArgs e)
+        {
+            if (model != null && !ConfirmDelete())
+                return;
+            Environment.Exit(0);
         }
     }
 }

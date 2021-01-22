@@ -31,8 +31,10 @@ namespace P4GModelConverter
                     i = offset;
                     using (EndianBinaryReader reader = new EndianBinaryReader(File.OpenRead(path), Endianness.BigEndian))
                     {
-                        reader.BaseStream.Position = i - 20;
-                        byte[] nameBytes = reader.ReadBytes(24);
+                        int dim = 40;
+                        if (i > dim) dim = 20;
+                        reader.BaseStream.Position = i - dim;
+                        byte[] nameBytes = reader.ReadBytes(dim + 4);
                         string name = Encoding.UTF8.GetString(nameBytes);
                         textureNames.Add(name.Substring(name.LastIndexOf('\0') + 1));
                     }
