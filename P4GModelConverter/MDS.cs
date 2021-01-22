@@ -227,7 +227,7 @@ namespace P4GModelConverter
                     int x = i;
                     //Add part data to part list
                     Part part = new Part();
-                    part.Name = lines[x].Replace("\tPart \"", "").Replace("{", "").Replace("\"", "");
+                    part.Name = lines[x].Replace("\tPart \"", "").Replace("{", "").Replace("\"", "").Trim();
                     x++;
                     while (!lines[x].StartsWith("\t}"))
                     {
@@ -531,7 +531,7 @@ namespace P4GModelConverter
                 for (int z = 0; z < model.Parts[w].Meshes.Count; z++)
                 {
                     string splitName = $"{model.Parts[w].Name}_{z}";
-                    string firstBone = model.Bones.First(b => b.DrawParts.Any(a => a.Contains(model.Parts[w].Name))).Name;
+                    string firstBone = model.Bones.First(b => b.DrawParts.Any(a => a.Contains(model.Parts[w].Name.Trim()))).Name; //TODO: figure out where that space is coming from
                     Tuple<string, string> boneDrawPartPair = new Tuple<string, string>(firstBone, splitName);
                     model.BoneDrawPartPairs.Add(boneDrawPartPair);
                 }

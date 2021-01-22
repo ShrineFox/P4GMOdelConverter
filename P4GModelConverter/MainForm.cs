@@ -54,15 +54,6 @@ namespace P4GModelConverter
                 settings = new SettingsForm.Settings();
         }
 
-        private void Open_Click(object sender, EventArgs e)
-        {
-            CommonOpenFileDialog dialog = new CommonOpenFileDialog();
-            dialog.Filters.Add(new CommonFileDialogFilter("P4G Model", "*.mds, *.gmo, *.amd, *.pac, *.fbx, *.dae, *.smd"));
-            dialog.Title = "Choose Model File...";
-            if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
-                OpenFile(dialog.FileName);
-        }
-
         private void OpenFile(string path)
         {
             if (model != null && !ConfirmDelete())
@@ -199,17 +190,6 @@ namespace P4GModelConverter
             }
         }
 
-        private void Settings_Click(object sender, EventArgs e)
-        {
-            using (var dialog = new SettingsForm())
-            {
-                if (dialog.ShowDialog() != DialogResult.OK)
-                    return;
-                var deserializer = new DeserializerBuilder().WithNamingConvention(PascalCaseNamingConvention.Instance).Build();
-                settings = deserializer.Deserialize<SettingsForm.Settings>(File.ReadAllText("settings.yml"));
-            }
-        }
-
         private void TreeView_MouseClick(object sender, MouseEventArgs e)
         {
             //Update object if changed
@@ -243,6 +223,8 @@ namespace P4GModelConverter
             RefreshTreeview();
         }
 
+        /* DRAG AND DROP */
+
         private void Treeview_DragEnter(object sender, DragEventArgs e)
         {
             e.Effect = DragDropEffects.Move;
@@ -253,6 +235,19 @@ namespace P4GModelConverter
             string[] fileList = (string[])e.Data.GetData(DataFormats.FileDrop, false);
             if (fileList.Length > 0)
                 OpenFile(fileList[0]);
+        }
+
+        /* TOOLSTRIP */
+
+        private void New_Click(object sender, EventArgs e)
+        {
+            if (model != null && !ConfirmDelete())
+                return;
+            model = new Model();
+            RefreshTreeview();
+            toolStripMenuItem_Save.Enabled = true;
+            toolStripMenuItem_SaveAs.Enabled = true;
+            toolStripMenuItem_Export.Enabled = true;
         }
 
         private void Save_Click(object sender, EventArgs e)
@@ -271,17 +266,9 @@ namespace P4GModelConverter
             dialog.Title = "Save MDS...";
             if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
             {
-                File.WriteAllText(Model.Serialize(model, settings), dialog.FileName);
+                File.WriteAllText(dialog.FileName, Model.Serialize(model, settings));
                 MessageBox.Show("MDS file saved!");
             }
-        }
-
-        private void New_Click(object sender, EventArgs e)
-        {
-            if (model != null && !ConfirmDelete())
-                return;
-            model = new Model();
-            RefreshTreeview();
         }
 
         public static bool ConfirmDelete()
@@ -293,11 +280,40 @@ namespace P4GModelConverter
                 return false;
         }
 
+        private void Open_Click(object sender, EventArgs e)
+        {
+            CommonOpenFileDialog dialog = new CommonOpenFileDialog();
+            dialog.Filters.Add(new CommonFileDialogFilter("P4G Model or Archive", "*.mds, *.gmo, *.amd, *.pac, *.fbx, *.dae, *.smd"));
+            dialog.Title = "Open Model or Archive...";
+            if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
+                OpenFile(dialog.FileName);
+        }
+
+        private void Export_Click(object sender, EventArgs e)
+        {
+            CommonOpenFileDialog dialog = new CommonOpenFileDialog();
+            dialog.Filters.Add(new CommonFileDialogFilter("P4G Model or Archive", "*.gmo, *.amd, *.pac"));
+            dialog.Title = "Save Model or Archive...";
+            if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
+                Tools.CreateGMO(dialog.FileName, model, settings);
+        }
+
         private void Exit_Click(object sender, EventArgs e)
         {
             if (model != null && !ConfirmDelete())
                 return;
             Environment.Exit(0);
+        }
+
+        private void Settings_Click(object sender, EventArgs e)
+        {
+            using (var dialog = new SettingsForm())
+            {
+                if (dialog.ShowDialog() != DialogResult.OK)
+                    return;
+                var deserializer = new DeserializerBuilder().WithNamingConvention(PascalCaseNamingConvention.Instance).Build();
+                settings = deserializer.Deserialize<SettingsForm.Settings>(File.ReadAllText("settings.yml"));
+            }
         }
     }
 }

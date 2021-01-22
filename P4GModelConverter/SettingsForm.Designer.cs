@@ -145,6 +145,7 @@ namespace P4GModelConverter
             this.chkBox_ConvertToFBX.Size = new System.Drawing.Size(189, 21);
             this.chkBox_ConvertToFBX.TabIndex = 2;
             this.chkBox_ConvertToFBX.Text = "Convert to FBX w/ Noesis";
+            this.chkBox_ConvertToFBX.CheckedChanged += new System.EventHandler(this.ConvertToFBX_Checked);
             // 
             // groupBox_Conversion
             // 
@@ -263,6 +264,7 @@ namespace P4GModelConverter
             this.chkBox_PreviewOutputGMO.Size = new System.Drawing.Size(164, 21);
             this.chkBox_PreviewOutputGMO.TabIndex = 18;
             this.chkBox_PreviewOutputGMO.Text = "Preview New GMO w/";
+            this.chkBox_PreviewOutputGMO.CheckedChanged += new System.EventHandler(this.PreviewOutputGMO_Checked);
             // 
             // chkBox_FixForPC
             // 

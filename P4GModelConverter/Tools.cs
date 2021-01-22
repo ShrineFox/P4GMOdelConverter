@@ -1,4 +1,8 @@
-﻿using System;
+﻿using AmicitiaLibrary.FileSystems.AMD;
+using AtlusFileSystemLibrary;
+using AtlusFileSystemLibrary.Common.IO;
+using AtlusFileSystemLibrary.FileSystems.PAK;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -9,6 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using TGE.IO;
+using static AtlusFileSystemLibrary.ConflictPolicy;
 
 namespace P4GModelConverter
 {
@@ -29,7 +34,7 @@ namespace P4GModelConverter
                 {
                     offset = FindSequence(File.ReadAllBytes(path), i, Encoding.ASCII.GetBytes(".tm2"));
                     i = offset;
-                    using (EndianBinaryReader reader = new EndianBinaryReader(File.OpenRead(path), Endianness.BigEndian))
+                    using (TGE.IO.EndianBinaryReader reader = new TGE.IO.EndianBinaryReader(File.OpenRead(path), TGE.IO.Endianness.BigEndian))
                     {
                         int dim = 40;
                         if (i > dim) dim = 20;
@@ -59,7 +64,7 @@ namespace P4GModelConverter
                         offset = FindSequence(File.ReadAllBytes(path), offset, Encoding.ASCII.GetBytes("TIM2"));
                         Directory.CreateDirectory($"{Path.GetDirectoryName(path)}\\textures");
                         string newFile = $"{Path.GetDirectoryName(path)}\\textures\\{textureNames[i]}";
-                        using (EndianBinaryReader reader = new EndianBinaryReader(File.OpenRead(path), Endianness.BigEndian))
+                        using (TGE.IO.EndianBinaryReader reader = new TGE.IO.EndianBinaryReader(File.OpenRead(path), TGE.IO.Endianness.BigEndian))
                         {
                             reader.BaseStream.Position = offset;
                             reader.ReadBytes(16);
@@ -250,31 +255,107 @@ namespace P4GModelConverter
         }
 
         //Create GMO from MDS
-        public static void CreateGMO(string path, SettingsForm.Settings settings)
+        public static void CreateGMO(string output, Model model, SettingsForm.Settings settings)
         {
-            string extensionlessPath = Path.Combine(Path.GetDirectoryName(path), Path.GetFileNameWithoutExtension(path));
-            if (File.Exists(path) && Path.GetExtension(path).ToUpper() == ".MDS")
-            {
-                GMOTool(path, false);
-                if (settings.FixForPC)
-                    GMOFixTool(extensionlessPath + ".gmo");
+            //Save temporary MDS
+            string extensionless = Path.Combine(Path.GetDirectoryName(output), Path.GetFileNameWithoutExtension(output));
+            File.WriteAllText(Model.Serialize(model, settings), extensionless + "_p4gmoconv.mds");
 
-                if (File.Exists(extensionlessPath + ".AMD"))
+            if (File.Exists(extensionless + "_p4gmoconv.mds"))
+            {
+                //Create new GMO
+                GMOTool(extensionless + "_p4gmoconv.mds", false);
+                if (settings.FixForPC)
+                    GMOFixTool(model.Path + ".gmo");
+
+                if (output.ToLower().EndsWith(".amd"))
                 {
-                    //Todo: AUTO REPLACE GMO DATA IN AMD
+                    if (File.Exists(output))
+                    {
+                        //Replace GMO data in AMD if it already exists
+                        AmdFile amd = new AmdFile(output);
+                        foreach (var chunk in amd.Chunks)
+                        {
+                            if (chunk.Tag.ToUpper().Equals("MODEL_DATA"))
+                                chunk.Data = File.ReadAllBytes(extensionless + "_p4gmoconv.gmo");
+                        }
+                        amd.Save(output);
+                    }
+                    else
+                    {
+                        //Create new AMD containing new GMO
+                        AmdFile amd = new AmdFile();
+                        AmdChunk chunk = new AmdChunk() { Data = File.ReadAllBytes(extensionless + "_p4gmoconv.gmo") };
+                        amd.Chunks.Add(chunk);
+                        amd.Save(output);
+                    }
                 }
-                if (File.Exists(extensionlessPath + ".PAC"))
+                else if (output.ToLower().EndsWith(".pac"))
                 {
-                    //Todo: AUTO REPACK AMD INTO PAC
+                    PAKFileSystem pak = new PAKFileSystem();
+                    if (File.Exists(output))
+                    {
+                        //Replace GMO data in PAC
+                        if (PAKFileSystem.TryOpen(output, out pak))
+                        {
+                            //If PAC already contains AMD...
+                            bool hasAMD = false;
+                            foreach (var pakFile in pak.EnumerateFiles())
+                            {
+                                if (pakFile.ToLower().EndsWith(".amd"))
+                                {
+                                    //Replace GMO data in AMD
+                                    AmdFile amd = new AmdFile(pak.OpenFile(pakFile));
+                                    foreach (var chunk in amd.Chunks)
+                                    {
+                                        if (chunk.Tag.ToUpper().Equals("MODEL_DATA"))
+                                            chunk.Data = File.ReadAllBytes(extensionless + "_p4gmoconv.gmo");
+                                    }
+                                    amd.Save("temp.amd");
+                                    hasAMD = true;
+                                    pak.AddFile("temp.amd", model.Name + ".AMD", ConflictPolicy.Replace);
+                                }
+                            }
+                            if (!hasAMD)
+                                pak.AddFile(extensionless + "_p4gmoconv.gmo", model.Name + ".gmo", ConflictPolicy.Replace);
+                            //Save new PAC
+                            pak.Save(output);
+                        }
+                        else
+                            MessageBox.Show("Failed to open PAC for GMO replacement!");
+                    }
+                    else
+                    {
+                        DialogResult result = MessageBox.Show("Is your new PAC for P4G? If not, it will not contain an AMD.", "P4G PAC?", MessageBoxButtons.YesNo);
+                        if (result == DialogResult.Yes)
+                        {
+                            //If GMO is for P4G put it in new AMD inside PAC
+                            AmdFile amd = new AmdFile();
+                            AmdChunk chunk = new AmdChunk() { Data = File.ReadAllBytes(extensionless + "_p4gmoconv.gmo") };
+                            amd.Chunks.Add(chunk);
+                            amd.Save("temp.amd");
+                            pak.AddFile("temp.amd", model.Name + ".AMD", ConflictPolicy.Replace);
+                        }
+                        else
+                            pak.AddFile(extensionless + "_p4gmoconv.gmo", model.Name + ".gmo", ConflictPolicy.Replace); //Add GMO to PAC
+                    }
+                    //Save PAC
+                    pak.Save(output);
                 }
+                else
+                    File.Copy(extensionless + "_p4gmoconv.gmo", output, true); //Save GMO (overwrite)
+            }
+            else
+            {
+                MessageBox.Show("Failed to create temporary MDS!");
             }
 
             if (settings.PreviewOutputGMO)
             {
                 if (settings.PreviewWith == "Noesis")
-                    Noesis($"\"{extensionlessPath + ".gmo"}\"");
+                    Noesis($"\"{extensionless + "_p4gmoconv.gmo"}\"");
                 else if (settings.PreviewWith == "GMOView")
-                    GMOView(extensionlessPath + ".gmo");
+                    GMOView(extensionless + "_p4gmoconv.gmo");
             }
 
         }

@@ -93,5 +93,29 @@ namespace P4GModelConverter
             var yaml = serializer.Serialize(settings);
             File.WriteAllText("settings.yml", yaml);
         }
+
+        private void ConvertToFBX_Checked(object sender, EventArgs e)
+        {
+            if (chkBox_ConvertToFBX.Checked)
+            {
+                chkBox_OldFBXExport.Enabled = true;
+                chkBox_AsciiFBX.Enabled = true;
+                txtBox_AdditionalFBXOptions.Enabled = true;
+            }
+            else 
+            {
+                chkBox_OldFBXExport.Enabled = false;
+                chkBox_AsciiFBX.Enabled = false;
+                txtBox_AdditionalFBXOptions.Enabled = false;
+            }
+        }
+
+        private void PreviewOutputGMO_Checked(object sender, EventArgs e)
+        {
+            if (chkBox_PreviewOutputGMO.Checked)
+                comboBox_PreviewWith.Enabled = true;
+            else
+                comboBox_PreviewWith.Enabled = false;
+        }
     }
 }

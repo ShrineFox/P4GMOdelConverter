@@ -70,7 +70,7 @@
             this.propertyGrid_Main.Name = "propertyGrid_Main";
             this.propertyGrid_Main.SelectedItemWithFocusBackColor = System.Drawing.Color.SteelBlue;
             this.propertyGrid_Main.SelectedItemWithFocusForeColor = System.Drawing.Color.Azure;
-            this.propertyGrid_Main.Size = new System.Drawing.Size(576, 277);
+            this.propertyGrid_Main.Size = new System.Drawing.Size(576, 385);
             this.propertyGrid_Main.TabIndex = 2;
             this.propertyGrid_Main.ToolbarVisible = false;
             this.propertyGrid_Main.ViewBackColor = System.Drawing.SystemColors.ControlDarkDark;
@@ -105,7 +105,7 @@
             this.darkMenuStrip_Main.Location = new System.Drawing.Point(0, 0);
             this.darkMenuStrip_Main.Name = "darkMenuStrip_Main";
             this.darkMenuStrip_Main.Padding = new System.Windows.Forms.Padding(3, 2, 0, 2);
-            this.darkMenuStrip_Main.Size = new System.Drawing.Size(1039, 30);
+            this.darkMenuStrip_Main.Size = new System.Drawing.Size(1039, 28);
             this.darkMenuStrip_Main.TabIndex = 0;
             this.darkMenuStrip_Main.Text = "darkMenuStrip1";
             // 
@@ -121,7 +121,7 @@
             this.toolStripMenuItem_Exit});
             this.toolStripMenuItem_File.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
             this.toolStripMenuItem_File.Name = "toolStripMenuItem_File";
-            this.toolStripMenuItem_File.Size = new System.Drawing.Size(46, 26);
+            this.toolStripMenuItem_File.Size = new System.Drawing.Size(46, 24);
             this.toolStripMenuItem_File.Text = "File";
             // 
             // toolStripMenuItem_New
@@ -176,7 +176,7 @@
             this.toolStripMenuItem_Settings.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(63)))), ((int)(((byte)(65)))));
             this.toolStripMenuItem_Settings.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
             this.toolStripMenuItem_Settings.Name = "toolStripMenuItem_Settings";
-            this.toolStripMenuItem_Settings.Size = new System.Drawing.Size(76, 26);
+            this.toolStripMenuItem_Settings.Size = new System.Drawing.Size(76, 24);
             this.toolStripMenuItem_Settings.Text = "Settings";
             this.toolStripMenuItem_Settings.Click += new System.EventHandler(this.Settings_Click);
             // 
@@ -185,7 +185,7 @@
             this.toolStripMenuItem_Refresh.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(63)))), ((int)(((byte)(65)))));
             this.toolStripMenuItem_Refresh.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
             this.toolStripMenuItem_Refresh.Name = "toolStripMenuItem_Refresh";
-            this.toolStripMenuItem_Refresh.Size = new System.Drawing.Size(72, 26);
+            this.toolStripMenuItem_Refresh.Size = new System.Drawing.Size(72, 24);
             this.toolStripMenuItem_Refresh.Text = "Refresh";
             this.toolStripMenuItem_Refresh.Click += new System.EventHandler(this.Refresh);
             // 
@@ -197,7 +197,7 @@
             this.toolStripMenuItem_Tutorial});
             this.toolStripMenuItem_Help.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
             this.toolStripMenuItem_Help.Name = "toolStripMenuItem_Help";
-            this.toolStripMenuItem_Help.Size = new System.Drawing.Size(55, 26);
+            this.toolStripMenuItem_Help.Size = new System.Drawing.Size(55, 24);
             this.toolStripMenuItem_Help.Text = "Help";
             // 
             // toolStripMenuItem_About
@@ -289,6 +289,7 @@
             this.toolStripMenuItem_Export.Name = "toolStripMenuItem_Export";
             this.toolStripMenuItem_Export.Size = new System.Drawing.Size(224, 26);
             this.toolStripMenuItem_Export.Text = "Export";
+            this.toolStripMenuItem_Export.Click += new System.EventHandler(this.Export_Click);
             // 
             // MainForm
             // 
