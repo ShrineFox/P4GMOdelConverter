@@ -19,6 +19,10 @@ using System.Threading;
 using YamlDotNet.Serialization.NamingConventions;
 using YamlDotNet.Serialization;
 using DarkUI.Controls;
+using AtlusFileSystemLibrary;
+using AtlusFileSystemLibrary.FileSystems.PAK;
+using AtlusFileSystemLibrary.Common.IO;
+using AmicitiaLibrary.FileSystems.AMD;
 
 namespace P4GModelConverter
 {
@@ -57,63 +61,110 @@ namespace P4GModelConverter
             dialog.Filters.Add(new CommonFileDialogFilter("P4G Model", "*.mds, *.gmo, *.amd, *.pac, *.fbx, *.dae, *.smd"));
             dialog.Title = "Choose Model File...";
             if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
+                OpenFile(dialog.FileName);
+        }
+
+        private void OpenFile(string path)
+        {
+            //Re-initialize variables and form
+            model = new Model();
+            model.Path = path;
+            string extensionlessPath = Path.Combine(Path.GetDirectoryName(model.Path), Path.GetFileNameWithoutExtension(model.Path));
+
+            //Open file
+            if (Path.GetExtension(model.Path.ToLower()) == ".pac")
             {
-                //Re-initialize variables and form
-                model = new Model();
-                model.Path = dialog.FileName;
-                string extensionlessPath = Path.Combine(Path.GetDirectoryName(model.Path), Path.GetFileNameWithoutExtension(model.Path));
-
-                //Open file
-                if (Path.GetExtension(model.Path.ToUpper()) == ".PAC")
+                //Extract AMD or GMO from PAC
+                PAKFileSystem pak = new PAKFileSystem();
+                if (PAKFileSystem.TryOpen(model.Path, out pak))
                 {
-                    //Extract AMD or GMO
-                    //Set path to amd or gmo path
-                    model.Path = extensionlessPath + ".gmo";
-                }
-                if (Path.GetExtension(model.Path.ToUpper()) == ".AMD")
-                {
-                    //Extract GMO
-                    //Set path to gmo path
-                    model.Path = extensionlessPath + ".gmo";
-                }
-                if (Path.GetExtension(model.Path).ToUpper() == ".DAE" || Path.GetExtension(model.Path).ToUpper() == ".SMD" || Path.GetExtension(model.Path).ToUpper() == ".FBX")
-                {
-                    if (settings.ConvertToFBX || Path.GetExtension(model.Path).ToUpper() != ".FBX")
-                        model.Path = Tools.CreateOptimizedFBX(model.Path, settings); //Optimize FBX with settings or convert to FBX
-                    if (settings.ConvertToGMO)
+                    bool extracted = false;
+                    foreach (var pakFile in pak.EnumerateFiles())
                     {
-                        Tools.GMOConv(model.Path); //Convert FBX directly to GMO without fixes first
-                        model.Path = extensionlessPath + ".gmo";
+                        if (pakFile.ToLower().EndsWith(".amd"))
+                        {
+                            model.Path = extensionlessPath + ".amd";
+                            using (var stream = FileUtils.Create(model.Path))
+                            using (var inputStream = pak.OpenFile(pakFile))
+                                inputStream.CopyTo(stream);
+                            extracted = true;
+                        }
+                        else if (pakFile.ToUpper().Equals("MODEL_DATA"))
+                        {
+                            model.Path = extensionlessPath + ".gmo";
+                            using (var stream = FileUtils.Create(model.Path))
+                            using (var inputStream = pak.OpenFile(pakFile))
+                                inputStream.CopyTo(stream);
+                            extracted = true;
+                        }
                     }
-                }
-                if (Path.GetExtension(model.Path).ToUpper() == ".GMO" || Path.GetExtension(model.Path).ToUpper() == ".FBX")
-                {
-                    if (!File.Exists(model.Path))
-                        MessageBox.Show("Error: Model file was not found!");
+                    if (!extracted)
+                        MessageBox.Show("Could not find AMD or GMO model data in PAC archive!");
                     else
-                    {
-                        if (settings.ExtractTextures && Path.GetExtension(model.Path).ToUpper() == ".GMO")
-                            Tools.ExtractTextures(model.Path); //Extract TM2 Textures
-                        Tools.GMOTool(model.Path, true); //Create MDS
-                        model.Path = extensionlessPath + ".mds";
-
-                    }
+                        while (!File.Exists(model.Path)) { Thread.Sleep(100); }
                 }
-                if (Path.GetExtension(model.Path.ToLower()) == ".mds")
-                {
-                    if (!File.Exists(model.Path))
-                        MessageBox.Show("Error: No .MDS file found! One may not have been generated due to an error with GMOTool.");
-                    else
-                    {
-                        var mdsLines = File.ReadAllLines(model.Path).ToList();
-                        model = Model.Deserialize(model, mdsLines.ToArray(), settings);
-                        //Load treeview
-                        RefreshTreeview();
-                    }
-                }
-                //Update filename in title
-                this.Text = "P4GMOdel - " + Path.GetFileName(model.Path);
+                else
+                    MessageBox.Show("Failed to open PAC archive!");
             }
+            if (Path.GetExtension(model.Path.ToUpper()) == ".AMD")
+            {
+                //Extract GMO
+                if (File.Exists(model.Path))
+                {
+                    bool extracted = false;
+                    AmdFile amd = new AmdFile(model.Path);
+                    foreach (var chunk in amd.Chunks)
+                    {
+                        if (chunk.Tag.ToUpper().Equals("MODEL_DATA"))
+                        {
+                            model.Path = extensionlessPath + ".gmo";
+                            File.WriteAllBytes(model.Path, chunk.Data);
+                            extracted = true;
+                        }
+                    }
+                    if (!extracted)
+                        MessageBox.Show("Could not find GMO model data in AMD archive!");
+                    else
+                        while (!File.Exists(model.Path)) { Thread.Sleep(100); }
+                }
+                else
+                    MessageBox.Show("Failed to open AMD archive!");
+            }
+            if (Path.GetExtension(model.Path).ToLower() == ".dae" || Path.GetExtension(model.Path).ToLower() == ".smd" || Path.GetExtension(model.Path).ToLower() == ".fbx")
+            {
+                if (settings.ConvertToFBX || Path.GetExtension(model.Path).ToLower() != ".fbx")
+                    model.Path = Tools.CreateOptimizedFBX(model.Path, settings); //Optimize FBX with settings or convert to FBX
+                if (settings.ConvertToGMO)
+                {
+                    Tools.GMOConv(model.Path); //Convert FBX directly to GMO without fixes first
+                    model.Path = extensionlessPath + ".gmo";
+                }
+            }
+            if (Path.GetExtension(model.Path).ToLower() == ".gmo" || Path.GetExtension(model.Path).ToLower() == ".fbx")
+            {
+                if (!File.Exists(model.Path))
+                    MessageBox.Show("Error: Model file was not found!");
+                else
+                {
+                    if (settings.ExtractTextures && Path.GetExtension(model.Path).ToLower() == ".gmo")
+                        Tools.ExtractTextures(model.Path); //Extract TM2 Textures
+                    Tools.GMOTool(model.Path, true); //Create MDS
+                    model.Path = extensionlessPath + ".mds";
+                }
+            }
+            if (Path.GetExtension(model.Path.ToLower()) == ".mds")
+            {
+                if (!File.Exists(model.Path))
+                    MessageBox.Show("Error: No .MDS file found! One may not have been generated due to an error with GMOTool.");
+                else
+                {
+                    var mdsLines = File.ReadAllLines(model.Path).ToList();
+                    model = Model.Deserialize(model, mdsLines.ToArray(), settings);
+                    RefreshTreeview();
+                }
+            }
+            //Update filename in title
+            this.Text = "P4GMOdel - " + Path.GetFileName(model.Path);
         }
 
         private void RefreshTreeview()
@@ -161,6 +212,19 @@ namespace P4GModelConverter
                 //Assign selected object to propertygrid
                 propertyGrid_Main.SelectedObject = firstNode.Tag;
                 //Show right click menu
+                string[] hideOptions = new string[] { "Model", "BlindData", "Bones", "Parts", "Materials", "Textures", "Animations" };
+                if (!hideOptions.Any(x => x.Equals(selectedNodes[0].Text)))
+                {
+                    moveUpToolStripMenuItem.Visible = true;
+                    moveDownToolStripMenuItem.Visible = true;
+                    deleteToolStripMenuItem.Visible = true;
+                }
+                else
+                {
+                    moveUpToolStripMenuItem.Visible = false;
+                    moveDownToolStripMenuItem.Visible = false;
+                    deleteToolStripMenuItem.Visible = false;
+                }
                 if (e.Button.Equals(MouseButtons.Right))
                     darkContextMenu_RightClick.Show(this, new Point(e.X + ((Control)sender).Left + 4, e.Y + ((Control)sender).Top + 4));
             }
@@ -169,6 +233,18 @@ namespace P4GModelConverter
         private void Refresh(object sender, EventArgs e)
         {
             RefreshTreeview();
+        }
+
+        private void Treeview_DragEnter(object sender, DragEventArgs e)
+        {
+            e.Effect = DragDropEffects.Move;
+        }
+
+        private void Treeview_DragDrop(object sender, DragEventArgs e)
+        {
+            string[] fileList = (string[])e.Data.GetData(DataFormats.FileDrop, false);
+            if (fileList.Length > 0)
+                OpenFile(fileList[0]);
         }
     }
 }

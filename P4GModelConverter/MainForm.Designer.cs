@@ -45,12 +45,12 @@
             this.toolStripMenuItem_About = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem_Tutorial = new System.Windows.Forms.ToolStripMenuItem();
             this.darkContextMenu_RightClick = new DarkUI.Controls.DarkContextMenu();
+            this.moveUpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.moveDownToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exportToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.importToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.replaceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.moveUpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.moveDownToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.darkMenuStrip_Main.SuspendLayout();
             this.darkContextMenu_RightClick.SuspendLayout();
             this.SuspendLayout();
@@ -88,6 +88,8 @@
             this.darkTreeView_Main.Size = new System.Drawing.Size(435, 662);
             this.darkTreeView_Main.TabIndex = 1;
             this.darkTreeView_Main.Text = "darkTreeView_Main";
+            this.darkTreeView_Main.DragDrop += new System.Windows.Forms.DragEventHandler(this.Treeview_DragDrop);
+            this.darkTreeView_Main.DragEnter += new System.Windows.Forms.DragEventHandler(this.Treeview_DragEnter);
             this.darkTreeView_Main.MouseClick += new System.Windows.Forms.MouseEventHandler(this.TreeView_MouseClick);
             // 
             // darkMenuStrip_Main
@@ -127,7 +129,7 @@
             this.toolStripMenuItem_New.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(63)))), ((int)(((byte)(65)))));
             this.toolStripMenuItem_New.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
             this.toolStripMenuItem_New.Name = "toolStripMenuItem_New";
-            this.toolStripMenuItem_New.Size = new System.Drawing.Size(224, 26);
+            this.toolStripMenuItem_New.Size = new System.Drawing.Size(152, 26);
             this.toolStripMenuItem_New.Text = "New";
             // 
             // toolStripMenuItem_Open
@@ -135,7 +137,7 @@
             this.toolStripMenuItem_Open.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(63)))), ((int)(((byte)(65)))));
             this.toolStripMenuItem_Open.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
             this.toolStripMenuItem_Open.Name = "toolStripMenuItem_Open";
-            this.toolStripMenuItem_Open.Size = new System.Drawing.Size(224, 26);
+            this.toolStripMenuItem_Open.Size = new System.Drawing.Size(152, 26);
             this.toolStripMenuItem_Open.Text = "Open";
             this.toolStripMenuItem_Open.Click += new System.EventHandler(this.Open_Click);
             // 
@@ -144,7 +146,7 @@
             this.toolStripMenuItem_Save.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(63)))), ((int)(((byte)(65)))));
             this.toolStripMenuItem_Save.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
             this.toolStripMenuItem_Save.Name = "toolStripMenuItem_Save";
-            this.toolStripMenuItem_Save.Size = new System.Drawing.Size(224, 26);
+            this.toolStripMenuItem_Save.Size = new System.Drawing.Size(152, 26);
             this.toolStripMenuItem_Save.Text = "Save";
             // 
             // toolStripMenuItem_SaveAs
@@ -152,7 +154,7 @@
             this.toolStripMenuItem_SaveAs.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(63)))), ((int)(((byte)(65)))));
             this.toolStripMenuItem_SaveAs.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
             this.toolStripMenuItem_SaveAs.Name = "toolStripMenuItem_SaveAs";
-            this.toolStripMenuItem_SaveAs.Size = new System.Drawing.Size(224, 26);
+            this.toolStripMenuItem_SaveAs.Size = new System.Drawing.Size(152, 26);
             this.toolStripMenuItem_SaveAs.Text = "Save As...";
             // 
             // toolStripMenuItem_Close
@@ -160,7 +162,7 @@
             this.toolStripMenuItem_Close.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(63)))), ((int)(((byte)(65)))));
             this.toolStripMenuItem_Close.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
             this.toolStripMenuItem_Close.Name = "toolStripMenuItem_Close";
-            this.toolStripMenuItem_Close.Size = new System.Drawing.Size(224, 26);
+            this.toolStripMenuItem_Close.Size = new System.Drawing.Size(152, 26);
             this.toolStripMenuItem_Close.Text = "Close";
             // 
             // toolStripMenuItem_Exit
@@ -168,7 +170,7 @@
             this.toolStripMenuItem_Exit.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(63)))), ((int)(((byte)(65)))));
             this.toolStripMenuItem_Exit.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
             this.toolStripMenuItem_Exit.Name = "toolStripMenuItem_Exit";
-            this.toolStripMenuItem_Exit.Size = new System.Drawing.Size(224, 26);
+            this.toolStripMenuItem_Exit.Size = new System.Drawing.Size(152, 26);
             this.toolStripMenuItem_Exit.Text = "Exit";
             // 
             // toolStripMenuItem_Settings
@@ -205,7 +207,7 @@
             this.toolStripMenuItem_About.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(63)))), ((int)(((byte)(65)))));
             this.toolStripMenuItem_About.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
             this.toolStripMenuItem_About.Name = "toolStripMenuItem_About";
-            this.toolStripMenuItem_About.Size = new System.Drawing.Size(224, 26);
+            this.toolStripMenuItem_About.Size = new System.Drawing.Size(143, 26);
             this.toolStripMenuItem_About.Text = "About";
             // 
             // toolStripMenuItem_Tutorial
@@ -213,7 +215,7 @@
             this.toolStripMenuItem_Tutorial.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(63)))), ((int)(((byte)(65)))));
             this.toolStripMenuItem_Tutorial.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
             this.toolStripMenuItem_Tutorial.Name = "toolStripMenuItem_Tutorial";
-            this.toolStripMenuItem_Tutorial.Size = new System.Drawing.Size(224, 26);
+            this.toolStripMenuItem_Tutorial.Size = new System.Drawing.Size(143, 26);
             this.toolStripMenuItem_Tutorial.Text = "Tutorial";
             // 
             // darkContextMenu_RightClick
@@ -230,6 +232,24 @@
             this.deleteToolStripMenuItem});
             this.darkContextMenu_RightClick.Name = "darkContextMenu_RightClick";
             this.darkContextMenu_RightClick.Size = new System.Drawing.Size(159, 148);
+            // 
+            // moveUpToolStripMenuItem
+            // 
+            this.moveUpToolStripMenuItem.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(63)))), ((int)(((byte)(65)))));
+            this.moveUpToolStripMenuItem.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
+            this.moveUpToolStripMenuItem.Name = "moveUpToolStripMenuItem";
+            this.moveUpToolStripMenuItem.Size = new System.Drawing.Size(158, 24);
+            this.moveUpToolStripMenuItem.Text = "Move Up";
+            this.moveUpToolStripMenuItem.Visible = false;
+            // 
+            // moveDownToolStripMenuItem
+            // 
+            this.moveDownToolStripMenuItem.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(63)))), ((int)(((byte)(65)))));
+            this.moveDownToolStripMenuItem.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
+            this.moveDownToolStripMenuItem.Name = "moveDownToolStripMenuItem";
+            this.moveDownToolStripMenuItem.Size = new System.Drawing.Size(158, 24);
+            this.moveDownToolStripMenuItem.Text = "Move Down";
+            this.moveDownToolStripMenuItem.Visible = false;
             // 
             // exportToolStripMenuItem
             // 
@@ -262,22 +282,7 @@
             this.deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
             this.deleteToolStripMenuItem.Size = new System.Drawing.Size(158, 24);
             this.deleteToolStripMenuItem.Text = "Delete";
-            // 
-            // moveUpToolStripMenuItem
-            // 
-            this.moveUpToolStripMenuItem.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(63)))), ((int)(((byte)(65)))));
-            this.moveUpToolStripMenuItem.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
-            this.moveUpToolStripMenuItem.Name = "moveUpToolStripMenuItem";
-            this.moveUpToolStripMenuItem.Size = new System.Drawing.Size(158, 24);
-            this.moveUpToolStripMenuItem.Text = "Move Up";
-            // 
-            // moveDownToolStripMenuItem
-            // 
-            this.moveDownToolStripMenuItem.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(63)))), ((int)(((byte)(65)))));
-            this.moveDownToolStripMenuItem.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
-            this.moveDownToolStripMenuItem.Name = "moveDownToolStripMenuItem";
-            this.moveDownToolStripMenuItem.Size = new System.Drawing.Size(158, 24);
-            this.moveDownToolStripMenuItem.Text = "Move Down";
+            this.deleteToolStripMenuItem.Visible = false;
             // 
             // MainForm
             // 
