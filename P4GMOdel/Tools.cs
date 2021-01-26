@@ -15,7 +15,7 @@ using System.Windows.Forms;
 using TGE.IO;
 using static AtlusFileSystemLibrary.ConflictPolicy;
 
-namespace P4GModelConverter
+namespace P4GMOdel
 {
     public class Tools
     {

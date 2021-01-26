@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace P4GModelConverter
+namespace P4GMOdel
 {
     static class Program
     {

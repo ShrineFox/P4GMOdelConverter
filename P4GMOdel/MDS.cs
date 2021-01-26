@@ -7,7 +7,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace P4GModelConverter
+namespace P4GMOdel
 {
     public class Bone
     {
@@ -191,7 +191,7 @@ namespace P4GModelConverter
                             if (settings.RenameBones)
                                 bone.ParentBone = SanitizeBoneName(lines[x]).Replace("\t", "").Replace("\"", "");
                             else
-                                bone.ParentBone = lines[x].Replace("\t\tParentBone ", "");
+                                bone.ParentBone = lines[x].Replace("\t\tParentBone ", "").Replace("\"", "").Trim();
                         }
                         if (lines[x].StartsWith("\t\tScale"))
                             bone.Scale = lines[x].Replace("\t\tScale ", "");
@@ -234,7 +234,7 @@ namespace P4GModelConverter
                         if (lines[x].Contains("\t\tMesh"))
                         {
                             Mesh mesh = new Mesh();
-                            mesh.Name = lines[x].Replace("\t\tMesh ", "").Replace("\"", "");
+                            mesh.Name = lines[x].Replace("\t\tMesh ", "").Replace("\"", "").Replace("{", "").Trim();
                             x++;
                             while (!lines[x].Contains("}"))
                             {
@@ -275,13 +275,13 @@ namespace P4GModelConverter
                     int x = i;
                     //Add material data to material list
                     Material mat = new Material();
-                    mat.Name = lines[x].Replace("\tMaterial \"", "").Replace("\" {", "");
+                    mat.Name = lines[x].Replace("\tMaterial", "").Replace("{", "").Replace("\"","").Trim();
                     x++;
                     List<Layer> layers = new List<Layer>();
                     while (!lines[x].StartsWith("\t}"))
                     {
                         if (lines[x].StartsWith("\t\tRenderState"))
-                            mat.RenderState = lines[x].Replace("\t\ttRenderState ", "");
+                            mat.RenderState = lines[x].Replace("\t\tRenderState ", "");
                         if (lines[x].StartsWith("\t\tDiffuse"))
                             mat.Diffuse = lines[x].Replace("\t\tDiffuse ", "");
                         if (lines[x].StartsWith("\t\tAmbient"))
@@ -298,7 +298,7 @@ namespace P4GModelConverter
                         {
                             mat.Layers = new List<Layer>();
                             Layer layer = new Layer();
-                            layer.Name = lines[x].Replace("\t\tLayer ", "").Replace("\"","");
+                            layer.Name = lines[x].Replace("\t\tLayer ", "").Replace("\"","").Replace("{", "").Trim();
                             x++;
                             while (!lines[x].Contains("}"))
                             {
@@ -380,7 +380,7 @@ namespace P4GModelConverter
             model = RewriteParts(model, settings);
             if (!settings.UseDummyMaterials) 
             {
-                model = RewriteMaterials(model);
+                //model = RewriteMaterials(model);
                 model = RewriteTextures(model, settings);
             }
             else
@@ -598,7 +598,7 @@ namespace P4GModelConverter
                 //Bump
                 if (model.Materials[w].Bump != null)
                     model.Materials[w].Bump = "0.000000";
-                //BlendFunc
+                //Ambient
                 if (model.Materials[w].Ambient != null)
                     model.Materials[w].Ambient = "0.800000 0.800000 0.800000 1.000000";
             }

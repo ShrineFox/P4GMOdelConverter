@@ -1,5 +1,5 @@
 ﻿
-namespace P4GModelConverter
+namespace P4GMOdel
 {
     partial class SettingsForm
     {

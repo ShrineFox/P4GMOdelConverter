@@ -24,7 +24,7 @@ using AtlusFileSystemLibrary.FileSystems.PAK;
 using AtlusFileSystemLibrary.Common.IO;
 using AmicitiaLibrary.FileSystems.AMD;
 
-namespace P4GModelConverter
+namespace P4GMOdel
 {
     public partial class MainForm : Form
     {
@@ -40,6 +40,8 @@ namespace P4GModelConverter
         };
         SettingsForm.Settings settings;
         Model model;
+        DarkTreeNode lastSelectedTreeNode;
+        
 
         public MainForm()
         {
@@ -62,6 +64,7 @@ namespace P4GModelConverter
             //Re-initialize variables and form
             model = new Model();
             model.Path = path;
+            lastSelectedTreeNode = null;
             string extensionlessPath = Path.Combine(Path.GetDirectoryName(model.Path), Path.GetFileNameWithoutExtension(model.Path));
 
             //Open file
@@ -170,6 +173,10 @@ namespace P4GModelConverter
 
         private void RefreshTreeview()
         {
+            //Clear PropertryGridView
+            propertyGrid_Main.SelectedObject = new Object();
+            propertyGrid_Main.Update();
+            //Clear treeview and add serialized model elements to it
             if (model != null)
             {
                 darkTreeView_Main.Nodes.Clear();
@@ -184,9 +191,32 @@ namespace P4GModelConverter
                 darkTreeView_Main.Nodes.First().Nodes.Add(new DarkTreeNode() { Text = "Materials", Tag = model.Materials });
                 foreach (Material material in model.Materials)
                     darkTreeView_Main.Nodes.First().Nodes.First(x => x.Text == "Materials").Nodes.Add(new DarkTreeNode() { Text = material.Name, Tag = material });
+                darkTreeView_Main.Nodes.First().Nodes.Add(new DarkTreeNode() { Text = "Textures", Tag = model.Textures });
+                foreach (Texture texture in model.Textures)
+                    darkTreeView_Main.Nodes.First().Nodes.First(x => x.Text == "Textures").Nodes.Add(new DarkTreeNode() { Text = texture.Name, Tag = texture });
                 darkTreeView_Main.Nodes.First().Nodes.Add(new DarkTreeNode() { Text = "Animations", Tag = model.Animations });
                 foreach (Animation animation in model.Animations)
                     darkTreeView_Main.Nodes.First().Nodes.First(x => x.Text == "Animations").Nodes.Add(new DarkTreeNode() { Text = animation.Name, Tag = animation });
+            }
+            //Expand Model node
+            darkTreeView_Main.Nodes[0].Expanded = true;
+            //Set last selected node to Model by default
+            if (lastSelectedTreeNode == null)
+                lastSelectedTreeNode = darkTreeView_Main.Nodes[0];
+            //Expand nodes above selection
+            var node = GetNodeFromPath(darkTreeView_Main.Nodes[0], lastSelectedTreeNode.FullPath);
+            if (node != null)
+            {
+                if (node.ParentNode != null)
+                    node.ParentNode.Expanded = true;
+                if (node.ParentNode.ParentNode != null)
+                    node.ParentNode.ParentNode.Expanded = true;
+                //Reselect and scroll to it
+                darkTreeView_Main.SelectedNodes[0] = node;
+                darkTreeView_Main.SelectedNodes[0].EnsureVisible();
+                //Update PropertyGrid
+                propertyGrid_Main.SelectedObject = node.Tag;
+                propertyGrid_Main.Update();
             }
         }
 
@@ -198,12 +228,12 @@ namespace P4GModelConverter
             var selectedNodes = darkTreeView_Main.SelectedNodes;
             if (selectedNodes.Count > 0)
             {
-                DarkTreeNode firstNode = selectedNodes[0];
+                lastSelectedTreeNode = selectedNodes[0];
                 //Assign selected object to propertygrid
-                propertyGrid_Main.SelectedObject = firstNode.Tag;
+                propertyGrid_Main.SelectedObject = lastSelectedTreeNode.Tag;
                 //Show right click menu
                 string[] hideOptions = new string[] { "Model", "BlindData", "Bones", "Parts", "Materials", "Textures", "Animations" };
-                if (!hideOptions.Any(x => x.Equals(selectedNodes[0].Text)))
+                if (!hideOptions.Any(x => x.Equals(lastSelectedTreeNode.Text)))
                 {
                     moveUpToolStripMenuItem.Visible = true;
                     moveDownToolStripMenuItem.Visible = true;
@@ -244,6 +274,7 @@ namespace P4GModelConverter
             if (model != null && !ConfirmDelete())
                 return;
             model = new Model();
+            lastSelectedTreeNode = null;
             RefreshTreeview();
             toolStripMenuItem_Save.Enabled = true;
             toolStripMenuItem_SaveAs.Enabled = true;
@@ -314,6 +345,22 @@ namespace P4GModelConverter
                 var deserializer = new DeserializerBuilder().WithNamingConvention(PascalCaseNamingConvention.Instance).Build();
                 settings = deserializer.Deserialize<SettingsForm.Settings>(File.ReadAllText("settings.yml"));
             }
+        }
+
+        /* UTILITIES */
+        public DarkTreeNode GetNodeFromPath(DarkTreeNode node, string path)
+        {
+            DarkTreeNode foundNode = null;
+            foreach (DarkTreeNode tn in node.Nodes)
+            {
+                if (tn.FullPath == path)
+                    return tn;
+                else if (tn.Nodes.Count > 0)
+                    foundNode = GetNodeFromPath(tn, path);
+                if (foundNode != null)
+                    return foundNode;
+            }
+            return null;
         }
     }
 }

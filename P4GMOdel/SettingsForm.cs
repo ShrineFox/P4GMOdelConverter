@@ -12,7 +12,7 @@ using YamlDotNet;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
-namespace P4GModelConverter
+namespace P4GMOdel
 {
     public partial class SettingsForm : Form
     {

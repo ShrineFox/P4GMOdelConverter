@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace P4GModelConverter
+namespace P4GMOdel
 {
     public class GraphicNode : TreeNode
     {

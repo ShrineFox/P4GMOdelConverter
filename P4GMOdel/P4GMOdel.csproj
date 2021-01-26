@@ -157,11 +157,11 @@
     <Content Include="yu.ico" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Amicitia\Source\AmicitiaLibrary\AmicitiaLibrary.csproj">
+    <ProjectReference Include="..\..\Amicitia\Source\AmicitiaLibrary\AmicitiaLibrary.csproj">
       <Project>{ba454c28-35e7-4a90-8f34-a4248ed6e100}</Project>
       <Name>AmicitiaLibrary</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\AtlusFileSystemLibrary\Source\AtlusFileSystemLibrary\AtlusFileSystemLibrary.csproj">
+    <ProjectReference Include="..\..\AtlusFileSystemLibrary\Source\AtlusFileSystemLibrary\AtlusFileSystemLibrary.csproj">
       <Project>{9960b785-6207-44e8-ba42-ec7f6f785344}</Project>
       <Name>AtlusFileSystemLibrary</Name>
     </ProjectReference>
