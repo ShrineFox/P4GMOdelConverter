@@ -37,6 +37,7 @@
             this.toolStripMenuItem_Open = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem_Save = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem_SaveAs = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem_Export = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem_Exit = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem_Settings = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem_Refresh = new System.Windows.Forms.ToolStripMenuItem();
@@ -50,7 +51,7 @@
             this.importToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.replaceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripMenuItem_Export = new System.Windows.Forms.ToolStripMenuItem();
+            this.panel_GMOView = new System.Windows.Forms.Panel();
             this.darkMenuStrip_Main.SuspendLayout();
             this.darkContextMenu_RightClick.SuspendLayout();
             this.SuspendLayout();
@@ -60,17 +61,19 @@
             this.propertyGrid_Main.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.propertyGrid_Main.CategorySplitterColor = System.Drawing.SystemColors.ControlDarkDark;
+            this.propertyGrid_Main.CommandsVisibleIfAvailable = false;
             this.propertyGrid_Main.DisabledItemForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(127)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
             this.propertyGrid_Main.HelpBackColor = System.Drawing.SystemColors.ControlDarkDark;
             this.propertyGrid_Main.HelpBorderColor = System.Drawing.SystemColors.ControlDarkDark;
             this.propertyGrid_Main.HelpForeColor = System.Drawing.SystemColors.Control;
+            this.propertyGrid_Main.HelpVisible = false;
             this.propertyGrid_Main.LineColor = System.Drawing.SystemColors.ControlDarkDark;
-            this.propertyGrid_Main.Location = new System.Drawing.Point(451, 48);
+            this.propertyGrid_Main.Location = new System.Drawing.Point(451, 31);
             this.propertyGrid_Main.Margin = new System.Windows.Forms.Padding(1, 3, 3, 3);
             this.propertyGrid_Main.Name = "propertyGrid_Main";
             this.propertyGrid_Main.SelectedItemWithFocusBackColor = System.Drawing.Color.SteelBlue;
             this.propertyGrid_Main.SelectedItemWithFocusForeColor = System.Drawing.Color.Azure;
-            this.propertyGrid_Main.Size = new System.Drawing.Size(576, 385);
+            this.propertyGrid_Main.Size = new System.Drawing.Size(576, 260);
             this.propertyGrid_Main.TabIndex = 2;
             this.propertyGrid_Main.ToolbarVisible = false;
             this.propertyGrid_Main.ViewBackColor = System.Drawing.SystemColors.ControlDarkDark;
@@ -129,7 +132,7 @@
             this.toolStripMenuItem_New.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(63)))), ((int)(((byte)(65)))));
             this.toolStripMenuItem_New.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
             this.toolStripMenuItem_New.Name = "toolStripMenuItem_New";
-            this.toolStripMenuItem_New.Size = new System.Drawing.Size(224, 26);
+            this.toolStripMenuItem_New.Size = new System.Drawing.Size(152, 26);
             this.toolStripMenuItem_New.Text = "New";
             this.toolStripMenuItem_New.Click += new System.EventHandler(this.New_Click);
             // 
@@ -138,7 +141,7 @@
             this.toolStripMenuItem_Open.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(63)))), ((int)(((byte)(65)))));
             this.toolStripMenuItem_Open.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
             this.toolStripMenuItem_Open.Name = "toolStripMenuItem_Open";
-            this.toolStripMenuItem_Open.Size = new System.Drawing.Size(224, 26);
+            this.toolStripMenuItem_Open.Size = new System.Drawing.Size(152, 26);
             this.toolStripMenuItem_Open.Text = "Open";
             this.toolStripMenuItem_Open.Click += new System.EventHandler(this.Open_Click);
             // 
@@ -148,7 +151,7 @@
             this.toolStripMenuItem_Save.Enabled = false;
             this.toolStripMenuItem_Save.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(153)))), ((int)(((byte)(153)))), ((int)(((byte)(153)))));
             this.toolStripMenuItem_Save.Name = "toolStripMenuItem_Save";
-            this.toolStripMenuItem_Save.Size = new System.Drawing.Size(224, 26);
+            this.toolStripMenuItem_Save.Size = new System.Drawing.Size(152, 26);
             this.toolStripMenuItem_Save.Text = "Save";
             this.toolStripMenuItem_Save.Click += new System.EventHandler(this.Save_Click);
             // 
@@ -158,16 +161,26 @@
             this.toolStripMenuItem_SaveAs.Enabled = false;
             this.toolStripMenuItem_SaveAs.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(153)))), ((int)(((byte)(153)))), ((int)(((byte)(153)))));
             this.toolStripMenuItem_SaveAs.Name = "toolStripMenuItem_SaveAs";
-            this.toolStripMenuItem_SaveAs.Size = new System.Drawing.Size(224, 26);
+            this.toolStripMenuItem_SaveAs.Size = new System.Drawing.Size(152, 26);
             this.toolStripMenuItem_SaveAs.Text = "Save As...";
             this.toolStripMenuItem_SaveAs.Click += new System.EventHandler(this.SaveAs_Click);
+            // 
+            // toolStripMenuItem_Export
+            // 
+            this.toolStripMenuItem_Export.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(63)))), ((int)(((byte)(65)))));
+            this.toolStripMenuItem_Export.Enabled = false;
+            this.toolStripMenuItem_Export.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(153)))), ((int)(((byte)(153)))), ((int)(((byte)(153)))));
+            this.toolStripMenuItem_Export.Name = "toolStripMenuItem_Export";
+            this.toolStripMenuItem_Export.Size = new System.Drawing.Size(152, 26);
+            this.toolStripMenuItem_Export.Text = "Export";
+            this.toolStripMenuItem_Export.Click += new System.EventHandler(this.Export_Click);
             // 
             // toolStripMenuItem_Exit
             // 
             this.toolStripMenuItem_Exit.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(63)))), ((int)(((byte)(65)))));
             this.toolStripMenuItem_Exit.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
             this.toolStripMenuItem_Exit.Name = "toolStripMenuItem_Exit";
-            this.toolStripMenuItem_Exit.Size = new System.Drawing.Size(224, 26);
+            this.toolStripMenuItem_Exit.Size = new System.Drawing.Size(152, 26);
             this.toolStripMenuItem_Exit.Text = "Exit";
             this.toolStripMenuItem_Exit.Click += new System.EventHandler(this.Exit_Click);
             // 
@@ -281,15 +294,16 @@
             this.deleteToolStripMenuItem.Size = new System.Drawing.Size(158, 24);
             this.deleteToolStripMenuItem.Text = "Delete";
             // 
-            // toolStripMenuItem_Export
+            // panel_GMOView
             // 
-            this.toolStripMenuItem_Export.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(63)))), ((int)(((byte)(65)))));
-            this.toolStripMenuItem_Export.Enabled = false;
-            this.toolStripMenuItem_Export.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(153)))), ((int)(((byte)(153)))), ((int)(((byte)(153)))));
-            this.toolStripMenuItem_Export.Name = "toolStripMenuItem_Export";
-            this.toolStripMenuItem_Export.Size = new System.Drawing.Size(224, 26);
-            this.toolStripMenuItem_Export.Text = "Export";
-            this.toolStripMenuItem_Export.Click += new System.EventHandler(this.Export_Click);
+            this.panel_GMOView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.panel_GMOView.BackColor = System.Drawing.Color.Black;
+            this.panel_GMOView.Location = new System.Drawing.Point(451, 297);
+            this.panel_GMOView.Name = "panel_GMOView";
+            this.panel_GMOView.Size = new System.Drawing.Size(576, 413);
+            this.panel_GMOView.TabIndex = 3;
             // 
             // MainForm
             // 
@@ -298,6 +312,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ControlDarkDark;
             this.ClientSize = new System.Drawing.Size(1039, 722);
+            this.Controls.Add(this.panel_GMOView);
             this.Controls.Add(this.darkTreeView_Main);
             this.Controls.Add(this.propertyGrid_Main);
             this.Controls.Add(this.darkMenuStrip_Main);
@@ -307,6 +322,7 @@
             this.MinimumSize = new System.Drawing.Size(877, 689);
             this.Name = "MainForm";
             this.Text = "P4GMOdel";
+            this.Resize += new System.EventHandler(this.MainForm_Resize);
             this.darkMenuStrip_Main.ResumeLayout(false);
             this.darkMenuStrip_Main.PerformLayout();
             this.darkContextMenu_RightClick.ResumeLayout(false);
@@ -356,6 +372,7 @@
         private System.Windows.Forms.ToolStripMenuItem replaceToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem deleteToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_Export;
+        private System.Windows.Forms.Panel panel_GMOView;
     }
 }
 

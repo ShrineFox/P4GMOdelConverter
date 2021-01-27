@@ -23,25 +23,17 @@ using AtlusFileSystemLibrary;
 using AtlusFileSystemLibrary.FileSystems.PAK;
 using AtlusFileSystemLibrary.Common.IO;
 using AmicitiaLibrary.FileSystems.AMD;
+using System.Runtime.InteropServices;
+using System.Collections;
+using P4GModelConverter;
 
 namespace P4GMOdel
 {
     public partial class MainForm : Form
     {
-        List<List<string>> animationPresets = new List<List<string>>() { //null, p4g protag, p4g party, p4g persona, p4g culprit, p3p protag, p3p party, p3p persona, p3p strega
-            new List<string>{ "" },
-            new List<string> { "Idle", "Idle 2", "Run", "Attack", "Attack Critical", "Placeholder 4", "Persona Change", "Persona Summon 1", "Persona Summon 2", "Persona Summon 3", "Persona Summon 4", "Guard", "Dodge", "Low HP", "Damaged", "Miss Attack", "Knocked Down", "Down", "Get Back Up", "Killed", "Revived", "Use Item", "Victory", "Pushed Out of the Way", "Placeholder 23", "Helped Up", "Placeholder 25", "Idle (Duplicate)" },
-            new List<string>{ "Idle (Active)", "Idle 2", "Run", "Attack", "Attack Critical", "Special Attack 1", "Special Attack 2", "Persona Summon 1", "Persona Summon 2", "Persona Summon 3", "Persona Summon 4", "Guard", "Dodge", "Low HP", "Damaged", "Miss Attack", "Knocked Down", "Down", "Get Back Up", "Killed", "Revived", "Use Item", "Victory", "Knock Out of the Way", "Help Up Party Member", "Helped Up", "Yell At Party Member", "Idle (Still)", "Group Summon 1", "Group Summon 2", "Group Summon 3", "Group Summon 4" },
-            new List<string>{ "Physical Attack", "Magic Attack", "Physical Attack", "Magic Attack", "Idle" },
-            new List<string>{ "Idle", "Low HP", "Damaged", "Run", "Attack", "Placeholder 4", "Dialog Animation", "Miss Attack", "Knocked Down", "Down", "Get Back Up", "Killed", "Persona Summon 1", "Persona Summon 2", "Persona Summon 3", "Persona Summon 4", "Dodge", "Idle 2" },
-            new List<string>{ "Idle", "Low HP", "Damaged", "Run", "Attack", "Attack 2 Critical", "Attack 3 Critical", "Miss Attack", "Knocked Down", "Down", "Get Back Up", "Persona Summon 1", "Persona Summon 2", "Persona Summon 3", "Persona Summon 4", "Idle 2", "Use Item", "Dodge", "Revived", "Victory", "Killed", "Fusion Attack", "Guard", "Knock Out of the Way" },
-            new List<string>{ "Physical Attack", "Magic Attack", "Idle", "Magic attack" },
-            new List<string>{ "Idle", "Low HP", "Damaged", "Run", "Attack", "Placeholder 4", "Killed", "Miss Attack", "Knocked Down", "Down", "Get Back Up", "Persona Summon 1", "Persona Summon 2", "Persona Summon 3", "Persona Summon 4", "Idle 2", "Placeholder 15", "Low HP (Duplicate)", "Dodge" }
-        };
         SettingsForm.Settings settings;
         Model model;
         DarkTreeNode lastSelectedTreeNode;
-        
 
         public MainForm()
         {
@@ -54,6 +46,8 @@ namespace P4GMOdel
             }
             else
                 settings = new SettingsForm.Settings();
+            //Show model preview (test)
+            ModelViewer.LoadModel("bc001.gmo", this, panel_GMOView.Handle);
         }
 
         private void OpenFile(string path)
@@ -251,6 +245,12 @@ namespace P4GMOdel
         private void Refresh(object sender, EventArgs e)
         {
             RefreshTreeview();
+        }
+
+        private void MainForm_Resize(object sender, EventArgs e)
+        {
+            Process pHandle = (Process)ModelViewer.sessions["GMOView"];
+            ModelViewer.MoveWindow(pHandle.MainWindowHandle, 0, 0, this.Width, this.Height, true);
         }
 
         /* DRAG AND DROP */
