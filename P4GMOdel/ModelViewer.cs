@@ -8,8 +8,11 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using WindowsInput;
+using WindowsInput.Native;
 
 namespace P4GModelConverter
 {
@@ -42,6 +45,63 @@ namespace P4GModelConverter
             DrawMenuBar(pHandle.MainWindowHandle);
             //Remove title
             SetWindowLong(pHandle.MainWindowHandle, GWL_STYLE, WS_VISIBLE);
+            RotateModel();
+            ToggleLighting();
+            //ToggleWireframeBG();
+            ToggleAnimatedBG();
+            IncreaseSize();
+            PositionHigher();
+            FixAspectRatio();
+        }
+
+        public static void RotateModel()
+        {
+            InputSimulator s = new InputSimulator();
+            for (int i = 0; i < 18; i++)
+                s.Keyboard.KeyPress(VirtualKeyCode.LEFT);
+        }
+
+        public static void ToggleLighting()
+        {
+            InputSimulator s = new InputSimulator();
+            s.Keyboard.KeyPress(VirtualKeyCode.F1);
+        }
+
+        public static void ToggleWireframeBG()
+        {
+            InputSimulator s = new InputSimulator();
+            s.Keyboard.KeyPress(VirtualKeyCode.F7);
+        }
+
+        public static void ToggleAnimatedBG()
+        {
+            InputSimulator s = new InputSimulator();
+            s.Keyboard.KeyPress(VirtualKeyCode.F5);
+        }
+
+        public static void FixAspectRatio()
+        {
+            InputSimulator s = new InputSimulator();
+            s.Keyboard.KeyPress(VirtualKeyCode.F8);
+            s.Keyboard.KeyPress(VirtualKeyCode.F8);
+        }
+
+        public static void IncreaseSize()
+        {
+            InputSimulator s = new InputSimulator();
+            s.Keyboard.KeyPress(VirtualKeyCode.VK_3);
+            for (int i = 0; i < 12; i++)
+                s.Keyboard.KeyPress(VirtualKeyCode.DOWN);
+            for (int i = 0; i < 7; i++)
+                s.Keyboard.KeyPress(VirtualKeyCode.RIGHT);
+            s.Keyboard.KeyPress(VirtualKeyCode.VK_1);
+        }
+
+        public static void PositionHigher()
+        {
+            InputSimulator s = new InputSimulator();
+            for (int i = 0; i < 3; i++)
+                s.Keyboard.ModifiedKeyStroke(VirtualKeyCode.SHIFT, VirtualKeyCode.UP);
         }
 
         [DllImport("user32.dll", SetLastError = true)]

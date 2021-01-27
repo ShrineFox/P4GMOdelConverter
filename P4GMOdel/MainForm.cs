@@ -48,6 +48,12 @@ namespace P4GMOdel
                 settings = new SettingsForm.Settings();
             //Show model preview (test)
             ModelViewer.LoadModel("bc001.gmo", this, panel_GMOView.Handle);
+            this.Shown += new System.EventHandler(MainForm_Shown);
+        }
+
+        private void MainForm_Shown(object sender, EventArgs e)
+        {
+
         }
 
         private void OpenFile(string path)
@@ -193,24 +199,27 @@ namespace P4GMOdel
                     darkTreeView_Main.Nodes.First().Nodes.First(x => x.Text == "Animations").Nodes.Add(new DarkTreeNode() { Text = animation.Name, Tag = animation });
             }
             //Expand Model node
-            darkTreeView_Main.Nodes[0].Expanded = true;
-            //Set last selected node to Model by default
-            if (lastSelectedTreeNode == null)
-                lastSelectedTreeNode = darkTreeView_Main.Nodes[0];
-            //Expand nodes above selection
-            var node = GetNodeFromPath(darkTreeView_Main.Nodes[0], lastSelectedTreeNode.FullPath);
-            if (node != null)
+            if (darkTreeView_Main.Nodes.Count > 0)
             {
-                if (node.ParentNode != null)
-                    node.ParentNode.Expanded = true;
-                if (node.ParentNode.ParentNode != null)
-                    node.ParentNode.ParentNode.Expanded = true;
-                //Reselect and scroll to it
-                darkTreeView_Main.SelectedNodes[0] = node;
-                darkTreeView_Main.SelectedNodes[0].EnsureVisible();
-                //Update PropertyGrid
-                propertyGrid_Main.SelectedObject = node.Tag;
-                propertyGrid_Main.Update();
+                darkTreeView_Main.Nodes[0].Expanded = true;
+                //Set last selected node to Model by default
+                if (lastSelectedTreeNode == null)
+                    lastSelectedTreeNode = darkTreeView_Main.Nodes[0];
+                //Expand nodes above selection
+                var node = GetNodeFromPath(darkTreeView_Main.Nodes[0], lastSelectedTreeNode.FullPath);
+                if (node != null)
+                {
+                    if (node.ParentNode != null)
+                        node.ParentNode.Expanded = true;
+                    if (node.ParentNode.ParentNode != null)
+                        node.ParentNode.ParentNode.Expanded = true;
+                    //Reselect and scroll to it
+                    darkTreeView_Main.SelectedNodes[0] = node;
+                    darkTreeView_Main.SelectedNodes[0].EnsureVisible();
+                    //Update PropertyGrid
+                    propertyGrid_Main.SelectedObject = node.Tag;
+                    propertyGrid_Main.Update();
+                }
             }
         }
 
