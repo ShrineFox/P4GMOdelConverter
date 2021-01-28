@@ -58,7 +58,7 @@ namespace P4GMOdel
     public class Mesh
     {
         public Mesh() { }
-        public Mesh(string name, string setMaterial, string blendSubset, string drawArrays)
+        public Mesh(string name, string setMaterial, string blendSubset, List<string> drawArrays)
         {
             Name = name;
             SetMaterial = setMaterial;
@@ -68,7 +68,7 @@ namespace P4GMOdel
         public string Name { get; set; }
         public string SetMaterial { get; set; }
         public string BlendSubset { get; set; }
-        public string DrawArrays { get; set; }
+        public List<string> DrawArrays { get; set; }
     }
 
     public class Material
@@ -191,7 +191,7 @@ namespace P4GMOdel
                         if (lines[x].StartsWith("\t\tParentBone"))
                         {
                             if (settings.RenameBones)
-                                bone.ParentBone = SanitizeBoneName(lines[x]).Replace("\t", "").Replace("\"", "");
+                                bone.ParentBone = SanitizeBoneName(lines[x]).Replace("\t\tParentBone ", "").Replace("\t", "").Replace("\"", "");
                             else
                                 bone.ParentBone = lines[x].Replace("\t\tParentBone ", "").Replace("\"", "").Trim();
                         }
@@ -233,7 +233,12 @@ namespace P4GMOdel
                     x++;
                     while (!lines[x].StartsWith("\t}"))
                     {
-                        if (lines[x].Contains("\t\tMesh"))
+                        if (lines[x].Contains("\t\tBoundingBox"))
+                        {
+                            part.BoundingBox = lines[x].Replace("\t\tBoundingBox ", "");
+                            x++;
+                        }
+                        else if (lines[x].Contains("\t\tMesh"))
                         {
                             Mesh mesh = new Mesh();
                             mesh.Name = lines[x].Replace("\t\tMesh ", "").Replace("\"", "").Replace("{", "").Trim();
@@ -245,7 +250,11 @@ namespace P4GMOdel
                                 if (lines[x].StartsWith("\t\t\tBlendSubset"))
                                     mesh.BlendSubset = lines[x].Replace("\t\t\tBlendSubset ", "");
                                 if (lines[x].StartsWith("\t\t\tDrawArrays"))
-                                    mesh.DrawArrays = lines[x].Replace("\t\t\tDrawArrays ", "");
+                                {
+                                    if (mesh.DrawArrays == null)
+                                        mesh.DrawArrays = new List<string>();
+                                    mesh.DrawArrays.Add(lines[x].Replace("\t\t\tDrawArrays ", ""));
+                                }
                                 x++;
                             }
                             part.Meshes.Add(mesh);
@@ -310,7 +319,7 @@ namespace P4GMOdel
                                     layer.MapType = lines[x].Replace("\t\t\tMapType ", "");
                                 if (lines[x].StartsWith("\t\t\tMapFactor"))
                                     layer.MapFactor = lines[x].Replace("\t\t\tMapFactor ", "");
-                                if (lines[x].StartsWith("\t\t\tBlendFunc"))
+                                if (lines[x].StartsWith("\t\tBlendFunc"))
                                     layer.BlendFunc = lines[x].Replace("\t\t\tBlendFunc ", "");
                                 if (lines[x].StartsWith("\t\t\tTexWrap"))
                                     layer.TexWrap = lines[x].Replace("\t\t\tTexWrap ", "");
@@ -320,9 +329,9 @@ namespace P4GMOdel
                                 {
                                     string texMatrix = lines[x].Replace("\t\t\tTexMatrix ", "");
                                     x++;
-                                    while (lines[x].StartsWith("\t\t\t"))
+                                    while (!lines[x].Contains("}"))
                                     {
-                                        texMatrix += "\n" + lines[x].Replace("\t", "");
+                                        texMatrix += "\n" + lines[x];
                                         x++;
                                     }
                                     layer.TexMatrix = texMatrix;
@@ -377,9 +386,9 @@ namespace P4GMOdel
                 }
             }
             //Optimize data
-            //model = MatchBonesAndDrawParts(model);
-            //model = RewriteBones(model, settings);
-            //model = RewriteParts(model, settings);
+            model = MatchBonesAndDrawParts(model);
+            model = RewriteBones(model, settings);
+            model = RewriteParts(model, settings);
             if (!settings.UseDummyMaterials) 
             {
                 //model = RewriteMaterials(model);
@@ -396,6 +405,7 @@ namespace P4GMOdel
                 dummy.Diffuse = "1.000000 1.000000 1.000000 1.000000";
                 dummy.Reflection = "0.000000";
                 dummy.Refraction = "1.000000";
+                dummy.Layers = new List<Layer>();
                 dummy.Layers.Add(new Layer { BlendFunc = "ADD SRC_ALPHA INV_SRC_ALPH" });
                 dummyMaterials.Add(dummy);
                 model.Materials = dummyMaterials;
@@ -416,25 +426,27 @@ namespace P4GMOdel
                 foreach (var bone in model.Bones)
                 {
                     lines.Add($"\tBone \"{bone.Name}\" {{"); //Bone
-                        if (!string.IsNullOrEmpty(bone.ParentBone))
-                            lines.Add($"\t\tParentBone \"{bone.ParentBone}\""); //ParentBone
-                        if (!string.IsNullOrEmpty(bone.BlendBones))
-                            lines.Add($"\t\tBlendBones {bone.BlendBones}"); //BlendBones
-                        if (!string.IsNullOrEmpty(bone.BlendOffsets))
-                            lines.Add($"\t\tBlendOffsets {bone.BlendOffsets}"); //BlendOffsets
-                        if (!string.IsNullOrEmpty(bone.Translate))
-                            lines.Add($"\t\tTranslate {bone.Translate}"); //Translate
-                        if (!string.IsNullOrEmpty(bone.Rotate))
-                            lines.Add($"\t\tRotateZYX {bone.Rotate}"); //RotateZYX
-                        if (!string.IsNullOrEmpty(bone.Scale))
-                            lines.Add($"\t\tScale {bone.Scale}"); //Scale
-                        foreach (var drawPart in bone.DrawParts)
-                        {
-                            if (!string.IsNullOrEmpty(drawPart))
-                                lines.Add($"\t\tDrawPart \"{drawPart}\""); //DrawPart
-                        }
-                        if (!string.IsNullOrEmpty(bone.BlindData))
-                            lines.Add($"\t\tBlindData {bone.BlindData}"); //BlindData
+                    if (!string.IsNullOrEmpty(bone.BoundingBox))
+                        lines.Add($"\t\tBoundingBox {bone.BoundingBox}"); //BoundingBox
+                    if (!string.IsNullOrEmpty(bone.ParentBone))
+                        lines.Add($"\t\tParentBone \"{bone.ParentBone}\""); //ParentBone
+                    if (!string.IsNullOrEmpty(bone.BlendBones))
+                        lines.Add($"\t\tBlendBones {bone.BlendBones}"); //BlendBones
+                    if (!string.IsNullOrEmpty(bone.BlendOffsets))
+                        lines.Add($"\t\tBlendOffsets {bone.BlendOffsets}"); //BlendOffsets
+                    if (!string.IsNullOrEmpty(bone.Translate))
+                        lines.Add($"\t\tTranslate {bone.Translate}"); //Translate
+                    if (!string.IsNullOrEmpty(bone.Rotate))
+                        lines.Add($"\t\tRotateZYX {bone.Rotate}"); //RotateZYX
+                    if (!string.IsNullOrEmpty(bone.Scale))
+                        lines.Add($"\t\tScale {bone.Scale}"); //Scale
+                    foreach (var drawPart in bone.DrawParts)
+                    {
+                        if (!string.IsNullOrEmpty(drawPart))
+                            lines.Add($"\t\tDrawPart \"{drawPart}\""); //DrawPart
+                    }
+                    if (!string.IsNullOrEmpty(bone.BlindData))
+                        lines.Add($"\t\tBlindData {bone.BlindData}"); //BlindData
                     lines.Add("\t}");
                 }
                 foreach (var part in model.Parts)
@@ -450,8 +462,8 @@ namespace P4GMOdel
                                     lines.Add($"\t\t\tSetMaterial \"{mesh.SetMaterial}\""); //SetMaterial
                                 if (!string.IsNullOrEmpty(mesh.BlendSubset))
                                     lines.Add($"\t\t\tBlendSubset {mesh.BlendSubset}"); //BlendSubset
-                                if (!string.IsNullOrEmpty(mesh.DrawArrays))
-                                    lines.Add($"\t\t\tDrawArrays {mesh.DrawArrays}"); //DrawArrays
+                                if (mesh.DrawArrays.Count > 0)
+                                    lines.Add($"\t\t\tDrawArrays {String.Join("\n\t\t\tDrawArrays ", mesh.DrawArrays)}"); //DrawArrays
                             lines.Add("\t\t}");
                         }
                         foreach (var arrays in part.Arrays)
@@ -464,6 +476,8 @@ namespace P4GMOdel
                 foreach (var material in model.Materials)
                 {
                     lines.Add($"\tMaterial \"{material.Name}\" {{"); //Material
+                        if (!string.IsNullOrEmpty(material.RenderState))
+                            lines.Add($"\t\tRenderState {material.RenderState}"); //RenderState
                         if (!string.IsNullOrEmpty(material.Diffuse))
                             lines.Add($"\t\tDiffuse {material.Diffuse}"); //Diffuse
                         if (!string.IsNullOrEmpty(material.Ambient))
@@ -510,7 +524,9 @@ namespace P4GMOdel
                     lines.Add($"\t\tFrameRate {animation.FrameRate}"); //FrameRate
                     if (animation.Animate.Count > 0)
                         lines.Add($"\t\tAnimate {String.Join("\n\t\tAnimate ", animation.Animate)}"); //Animate
-                    lines.Add("\t}");
+                    foreach(var fCurve in animation.FCurve)
+                        lines.Add($"\t\tFCurve {String.Join("\n", fCurve)}"); //FCurve
+                lines.Add("\t}");
                 }
             lines.Add("}");
             return String.Join("\n", lines);
