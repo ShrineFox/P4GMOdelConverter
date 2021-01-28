@@ -1,4 +1,5 @@
 ﻿using P4GMOdel;
+using P4GModelConverter;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -18,33 +19,32 @@ namespace P4GModelConverter
 {
     class ModelViewer
     {
-        public static void LoadModel(string path, MainForm mainForm, IntPtr panelHandle)
+        public static void LoadModel(string path)
         {
+            //Close existing GMOView process
+            CloseProcess();
             //Load GMOView
-            mainForm.WindowState = FormWindowState.Maximized;
-            var process = new Process();
+            Process process = new Process();
             process.StartInfo.FileName = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Tools\\GMO\\GmoView.exe";
             process.StartInfo.Arguments = path;
             process.Start();
             process.WaitForInputIdle();
             sessions.Add("GMOView", process);
-            SetParent(process.MainWindowHandle, panelHandle);
-            ShowWindow(process.MainWindowHandle, SW_MAXIMIZE);
-            Process pHandle = (Process)sessions["GMOView"];
-            SetForegroundWindow(pHandle.MainWindowHandle);
-            SetFocus(pHandle.MainWindowHandle);
-            MoveWindow(pHandle.MainWindowHandle, 0, 0, mainForm.Width, mainForm.Height, true);
-            //Get Menu Bar
-            IntPtr HMENU = GetMenu(pHandle.MainWindowHandle);
-            //Get Item Count
+            //Add GMOView to form and focus on it
+            SetParent(process.MainWindowHandle, MainForm.panelHandle);
+            ShowWindow(process.MainWindowHandle, SW_MINIMIZE);
+            SetForegroundWindow(process.MainWindowHandle);
+            SetFocus(process.MainWindowHandle);
+            MoveWindow(process.MainWindowHandle, 0, 0, MainForm.formWidth, MainForm.formHeight, true);
+            //Remove menubar
+            IntPtr HMENU = GetMenu(process.MainWindowHandle);
             int count = GetMenuItemCount(HMENU);
-            //loop & remove
             for (int i = 0; i < count; i++)
                 RemoveMenu(HMENU, 0, (MF_BYPOSITION | MF_REMOVE));
-            //Force redraw
-            DrawMenuBar(pHandle.MainWindowHandle);
+            DrawMenuBar(process.MainWindowHandle);
             //Remove title
-            SetWindowLong(pHandle.MainWindowHandle, GWL_STYLE, WS_VISIBLE);
+            SetWindowLong(process.MainWindowHandle, GWL_STYLE, WS_VISIBLE);
+            //Improve GMOView appearance
             RotateModel();
             ToggleLighting();
             //ToggleWireframeBG();
@@ -52,6 +52,27 @@ namespace P4GModelConverter
             IncreaseSize();
             PositionHigher();
             FixAspectRatio();
+        }
+
+        public static void Update(Model model, SettingsForm.Settings settings)
+        {
+            if (model != null && File.Exists(model.Path))
+            {
+                //Create temporary directory
+                string tempDir = Path.Combine(Path.GetDirectoryName(model.Path), "temp");
+                if (Directory.Exists(tempDir))
+                    Directory.Delete(tempDir, true);
+                Directory.CreateDirectory(tempDir);
+                string tempPath = Path.Combine(tempDir, Path.GetFileNameWithoutExtension(model.Path));
+                //Save temporary mds
+                File.WriteAllText(tempPath + ".mds", Model.Serialize(model, settings));
+                using (WaitForFile(tempPath + ".mds", FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
+                //Attempt to generate temporary gmo
+                Tools.GMOTool(tempPath + ".mds", false);
+                //Reload model viewer with temporary GMO
+                using (WaitForFile(tempPath + ".gmo", FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
+                LoadModel(tempPath + ".gmo");
+            }
         }
 
         public static void RotateModel()
@@ -81,9 +102,21 @@ namespace P4GModelConverter
 
         public static void FixAspectRatio()
         {
+            Process p = (Process)sessions["GMOView"];
+            ShowWindow(p.MainWindowHandle, SW_MAXIMIZE);
+            SetForegroundWindow(p.MainWindowHandle);
+            SetFocus(p.MainWindowHandle);
             InputSimulator s = new InputSimulator();
             s.Keyboard.KeyPress(VirtualKeyCode.F8);
             s.Keyboard.KeyPress(VirtualKeyCode.F8);
+        }
+
+        public static void CloseProcess()
+        {
+            if (sessions.Count > 0)
+                foreach (Process p in Process.GetProcessesByName("GMOView"))
+                    p.Kill();
+            sessions.Clear();
         }
 
         public static void IncreaseSize()
@@ -126,12 +159,40 @@ namespace P4GModelConverter
         static extern bool RemoveMenu(IntPtr hMenu, uint uPosition, uint uFlags);
         [DllImport("user32.dll")]
         public static extern int SendMessage(IntPtr hWnd, int Msg, uint wParam, uint lParam);
+        [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        static extern bool DestroyWindow(IntPtr hwnd);
 
         const int GWL_STYLE = (-16);
         private const int SW_MAXIMIZE = 3;
+        private const int SW_MINIMIZE = 2;
+        private const int SW_NORMALE = 1;
         public static uint MF_BYPOSITION = 0x400;
         public static uint MF_REMOVE = 0x1000;
         const uint WS_VISIBLE = 0x10000000;
         public static Hashtable sessions = new Hashtable();
+
+        public static FileStream WaitForFile(string fullPath, FileMode mode, FileAccess access, FileShare share)
+        {
+            for (int numTries = 0; numTries < 10; numTries++)
+            {
+                FileStream fs = null;
+                try
+                {
+                    fs = new FileStream(fullPath, mode, access, share);
+                    return fs;
+                }
+                catch (IOException)
+                {
+                    if (fs != null)
+                    {
+                        fs.Dispose();
+                    }
+                    Thread.Sleep(200);
+                }
+            }
+
+            return null;
+        }
     }
 }

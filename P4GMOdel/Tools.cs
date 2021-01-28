@@ -257,16 +257,20 @@ namespace P4GMOdel
         //Create GMO from MDS
         public static void CreateGMO(string output, Model model, SettingsForm.Settings settings)
         {
-            //Save temporary MDS
-            string extensionless = Path.Combine(Path.GetDirectoryName(output), Path.GetFileNameWithoutExtension(output));
-            File.WriteAllText(Model.Serialize(model, settings), extensionless + "_p4gmoconv.mds");
+            //Create temporary directory
+            string tempDir = Path.Combine(Path.GetDirectoryName(model.Path), "temp");
+            if (Directory.Exists(tempDir))
+                Directory.Delete(tempDir, true);
+            Directory.CreateDirectory(tempDir);
+            string tempPath = Path.Combine(tempDir, Path.GetFileNameWithoutExtension(model.Path));
+            File.WriteAllText(Model.Serialize(model, settings), tempPath + ".mds");
 
-            if (File.Exists(extensionless + "_p4gmoconv.mds"))
+            if (File.Exists(tempPath + ".mds"))
             {
                 //Create new GMO
-                GMOTool(extensionless + "_p4gmoconv.mds", false);
+                GMOTool(tempPath + ".mds", false);
                 if (settings.FixForPC)
-                    GMOFixTool(model.Path + ".gmo");
+                    GMOFixTool(tempPath + ".gmo");
 
                 if (output.ToLower().EndsWith(".amd"))
                 {
@@ -277,7 +281,7 @@ namespace P4GMOdel
                         foreach (var chunk in amd.Chunks)
                         {
                             if (chunk.Tag.ToUpper().Equals("MODEL_DATA"))
-                                chunk.Data = File.ReadAllBytes(extensionless + "_p4gmoconv.gmo");
+                                chunk.Data = File.ReadAllBytes(tempPath + ".gmo");
                         }
                         amd.Save(output);
                     }
@@ -285,7 +289,7 @@ namespace P4GMOdel
                     {
                         //Create new AMD containing new GMO
                         AmdFile amd = new AmdFile();
-                        AmdChunk chunk = new AmdChunk() { Data = File.ReadAllBytes(extensionless + "_p4gmoconv.gmo") };
+                        AmdChunk chunk = new AmdChunk() { Data = File.ReadAllBytes(tempPath + ".gmo") };
                         amd.Chunks.Add(chunk);
                         amd.Save(output);
                     }
@@ -309,7 +313,7 @@ namespace P4GMOdel
                                     foreach (var chunk in amd.Chunks)
                                     {
                                         if (chunk.Tag.ToUpper().Equals("MODEL_DATA"))
-                                            chunk.Data = File.ReadAllBytes(extensionless + "_p4gmoconv.gmo");
+                                            chunk.Data = File.ReadAllBytes(tempPath + ".gmo");
                                     }
                                     amd.Save("temp.amd");
                                     hasAMD = true;
@@ -317,7 +321,7 @@ namespace P4GMOdel
                                 }
                             }
                             if (!hasAMD)
-                                pak.AddFile(extensionless + "_p4gmoconv.gmo", model.Name + ".gmo", ConflictPolicy.Replace);
+                                pak.AddFile(tempPath + ".gmo", model.Name + ".gmo", ConflictPolicy.Replace);
                             //Save new PAC
                             pak.Save(output);
                         }
@@ -331,33 +335,24 @@ namespace P4GMOdel
                         {
                             //If GMO is for P4G put it in new AMD inside PAC
                             AmdFile amd = new AmdFile();
-                            AmdChunk chunk = new AmdChunk() { Data = File.ReadAllBytes(extensionless + "_p4gmoconv.gmo") };
+                            AmdChunk chunk = new AmdChunk() { Data = File.ReadAllBytes(tempPath + ".gmo") };
                             amd.Chunks.Add(chunk);
                             amd.Save("temp.amd");
                             pak.AddFile("temp.amd", model.Name + ".AMD", ConflictPolicy.Replace);
                         }
                         else
-                            pak.AddFile(extensionless + "_p4gmoconv.gmo", model.Name + ".gmo", ConflictPolicy.Replace); //Add GMO to PAC
+                            pak.AddFile(tempPath + ".gmo", model.Name + ".gmo", ConflictPolicy.Replace); //Add GMO to PAC
                     }
                     //Save PAC
                     pak.Save(output);
                 }
                 else
-                    File.Copy(extensionless + "_p4gmoconv.gmo", output, true); //Save GMO (overwrite)
+                    File.Copy(tempPath + ".gmo", output, true); //Save GMO (overwrite)
             }
             else
             {
                 MessageBox.Show("Failed to create temporary MDS!");
             }
-
-            if (settings.PreviewOutputGMO)
-            {
-                if (settings.PreviewWith == "Noesis")
-                    Noesis($"\"{extensionless + "_p4gmoconv.gmo"}\"");
-                else if (settings.PreviewWith == "GMOView")
-                    GMOView(extensionless + "_p4gmoconv.gmo");
-            }
-
         }
 
         List<List<string>> animationPresets = new List<List<string>>() { //null, p4g protag, p4g party, p4g persona, p4g culprit, p3p protag, p3p party, p3p persona, p3p strega

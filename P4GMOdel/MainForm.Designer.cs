@@ -91,6 +91,7 @@
             this.darkTreeView_Main.Size = new System.Drawing.Size(435, 662);
             this.darkTreeView_Main.TabIndex = 1;
             this.darkTreeView_Main.Text = "darkTreeView_Main";
+            this.darkTreeView_Main.SelectedNodesChanged += new System.EventHandler(this.TreeView_SelectedNodesChanged);
             this.darkTreeView_Main.DragDrop += new System.Windows.Forms.DragEventHandler(this.Treeview_DragDrop);
             this.darkTreeView_Main.DragEnter += new System.Windows.Forms.DragEventHandler(this.Treeview_DragEnter);
             this.darkTreeView_Main.MouseClick += new System.Windows.Forms.MouseEventHandler(this.TreeView_MouseClick);

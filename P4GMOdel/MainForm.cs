@@ -34,6 +34,9 @@ namespace P4GMOdel
         SettingsForm.Settings settings;
         Model model;
         DarkTreeNode lastSelectedTreeNode;
+        public static IntPtr panelHandle;
+        public static int formWidth;
+        public static int formHeight;
 
         public MainForm()
         {
@@ -46,14 +49,13 @@ namespace P4GMOdel
             }
             else
                 settings = new SettingsForm.Settings();
-            //Show model preview (test)
-            ModelViewer.LoadModel("bc001.gmo", this, panel_GMOView.Handle);
-            this.Shown += new System.EventHandler(MainForm_Shown);
+            panelHandle = panel_GMOView.Handle;
+            AppDomain.CurrentDomain.ProcessExit += new EventHandler(OnProcessExit);
         }
 
-        private void MainForm_Shown(object sender, EventArgs e)
+        private void OnProcessExit(object sender, EventArgs e)
         {
-
+            ModelViewer.CloseProcess();
         }
 
         private void OpenFile(string path)
@@ -221,11 +223,21 @@ namespace P4GMOdel
                     propertyGrid_Main.Update();
                 }
             }
+            //Attempt to update model viewer by generating temporary GMO
+            ModelViewer.Update(model, settings);
         }
 
         private void TreeView_MouseClick(object sender, MouseEventArgs e)
         {
             //Update object if changed
+            UpdatePropertyGrid();
+            //Show context menu if right clicked
+            if (e.Button.Equals(MouseButtons.Right))
+                darkContextMenu_RightClick.Show(this, new Point(e.X + ((Control)sender).Left + 4, e.Y + ((Control)sender).Top + 4));
+        }
+
+        private void UpdatePropertyGrid()
+        {
             propertyGrid_Main.SelectedObject = propertyGrid_Main.SelectedObject;
 
             var selectedNodes = darkTreeView_Main.SelectedNodes;
@@ -246,9 +258,13 @@ namespace P4GMOdel
                     moveUpToolStripMenuItem.Visible = false;
                     moveDownToolStripMenuItem.Visible = false;
                 }
-                if (e.Button.Equals(MouseButtons.Right))
-                    darkContextMenu_RightClick.Show(this, new Point(e.X + ((Control)sender).Left + 4, e.Y + ((Control)sender).Top + 4));
             }
+        }
+
+        private void TreeView_SelectedNodesChanged(object sender, EventArgs e)
+        {
+            //Update object if changed
+            UpdatePropertyGrid();
         }
 
         private void Refresh(object sender, EventArgs e)
@@ -258,8 +274,13 @@ namespace P4GMOdel
 
         private void MainForm_Resize(object sender, EventArgs e)
         {
-            Process pHandle = (Process)ModelViewer.sessions["GMOView"];
-            ModelViewer.MoveWindow(pHandle.MainWindowHandle, 0, 0, this.Width, this.Height, true);
+            int formWidth = Width;
+            int formHeight = Height;
+            if (ModelViewer.sessions.Count > 0)
+            {
+                Process pHandle = (Process)ModelViewer.sessions["GMOView"];
+                ModelViewer.MoveWindow(pHandle.MainWindowHandle, 0, 0, Width, Height, true);
+            }
         }
 
         /* DRAG AND DROP */
@@ -288,6 +309,7 @@ namespace P4GMOdel
             toolStripMenuItem_Save.Enabled = true;
             toolStripMenuItem_SaveAs.Enabled = true;
             toolStripMenuItem_Export.Enabled = true;
+            ModelViewer.CloseProcess();
         }
 
         private void Save_Click(object sender, EventArgs e)

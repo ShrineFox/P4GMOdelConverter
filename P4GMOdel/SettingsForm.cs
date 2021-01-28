@@ -21,7 +21,6 @@ namespace P4GMOdel
         public SettingsForm()
         {
             InitializeComponent();
-            comboBox_PreviewWith.SelectedIndex = 0;
             //Load settings
             if (File.Exists("settings.yml"))
             {
@@ -39,8 +38,6 @@ namespace P4GMOdel
                 chkBox_LoadAnimations.Checked = settings.LoadAnimations;
                 txt_WeaponBoneName.Text = settings.WeaponBoneName;
                 chkBox_FixForPC.Checked = settings.FixForPC;
-                chkBox_PreviewOutputGMO.Checked = settings.PreviewOutputGMO;
-                comboBox_PreviewWith.SelectedIndex = comboBox_PreviewWith.Items.IndexOf(settings.PreviewWith);
             }
             else
             {
@@ -86,8 +83,6 @@ namespace P4GMOdel
             settings.WeaponBoneName = txt_WeaponBoneName.Text;
 
             settings.FixForPC = chkBox_FixForPC.Checked;
-            settings.PreviewOutputGMO = chkBox_PreviewOutputGMO.Checked;
-            settings.PreviewWith = comboBox_PreviewWith.SelectedItem.ToString();
 
             var serializer = new SerializerBuilder().WithNamingConvention(PascalCaseNamingConvention.Instance).Build();
             var yaml = serializer.Serialize(settings);
@@ -108,14 +103,6 @@ namespace P4GMOdel
                 chkBox_AsciiFBX.Enabled = false;
                 txtBox_AdditionalFBXOptions.Enabled = false;
             }
-        }
-
-        private void PreviewOutputGMO_Checked(object sender, EventArgs e)
-        {
-            if (chkBox_PreviewOutputGMO.Checked)
-                comboBox_PreviewWith.Enabled = true;
-            else
-                comboBox_PreviewWith.Enabled = false;
         }
     }
 }

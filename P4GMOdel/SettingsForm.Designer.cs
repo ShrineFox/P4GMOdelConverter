@@ -45,8 +45,6 @@ namespace P4GMOdel
             this.txt_WeaponBoneName = new DarkUI.Controls.DarkTextBox();
             this.chkBox_RenameBones = new DarkUI.Controls.DarkCheckBox();
             this.groupBox_Output = new DarkUI.Controls.DarkGroupBox();
-            this.comboBox_PreviewWith = new System.Windows.Forms.ComboBox();
-            this.chkBox_PreviewOutputGMO = new DarkUI.Controls.DarkCheckBox();
             this.chkBox_FixForPC = new DarkUI.Controls.DarkCheckBox();
             this.btn_Save = new DarkUI.Controls.DarkButton();
             this.btn_Cancel = new DarkUI.Controls.DarkButton();
@@ -229,8 +227,6 @@ namespace P4GMOdel
             // groupBox_Output
             // 
             this.groupBox_Output.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(51)))), ((int)(((byte)(51)))), ((int)(((byte)(51)))));
-            this.groupBox_Output.Controls.Add(this.comboBox_PreviewWith);
-            this.groupBox_Output.Controls.Add(this.chkBox_PreviewOutputGMO);
             this.groupBox_Output.Controls.Add(this.chkBox_FixForPC);
             this.groupBox_Output.Location = new System.Drawing.Point(424, 12);
             this.groupBox_Output.Name = "groupBox_Output";
@@ -238,33 +234,6 @@ namespace P4GMOdel
             this.groupBox_Output.TabIndex = 16;
             this.groupBox_Output.TabStop = false;
             this.groupBox_Output.Text = "Output Settings";
-            // 
-            // comboBox_PreviewWith
-            // 
-            this.comboBox_PreviewWith.AutoCompleteCustomSource.AddRange(new string[] {
-            "Noesis",
-            "GMOView"});
-            this.comboBox_PreviewWith.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboBox_PreviewWith.Enabled = false;
-            this.comboBox_PreviewWith.FormattingEnabled = true;
-            this.comboBox_PreviewWith.Items.AddRange(new object[] {
-            "Noesis",
-            "GMOView"});
-            this.comboBox_PreviewWith.Location = new System.Drawing.Point(30, 76);
-            this.comboBox_PreviewWith.Name = "comboBox_PreviewWith";
-            this.comboBox_PreviewWith.Size = new System.Drawing.Size(124, 24);
-            this.comboBox_PreviewWith.TabIndex = 19;
-            // 
-            // chkBox_PreviewOutputGMO
-            // 
-            this.chkBox_PreviewOutputGMO.AutoSize = true;
-            this.chkBox_PreviewOutputGMO.Location = new System.Drawing.Point(7, 56);
-            this.chkBox_PreviewOutputGMO.Margin = new System.Windows.Forms.Padding(4);
-            this.chkBox_PreviewOutputGMO.Name = "chkBox_PreviewOutputGMO";
-            this.chkBox_PreviewOutputGMO.Size = new System.Drawing.Size(164, 21);
-            this.chkBox_PreviewOutputGMO.TabIndex = 18;
-            this.chkBox_PreviewOutputGMO.Text = "Preview New GMO w/";
-            this.chkBox_PreviewOutputGMO.CheckedChanged += new System.EventHandler(this.PreviewOutputGMO_Checked);
             // 
             // chkBox_FixForPC
             // 
@@ -339,8 +308,6 @@ namespace P4GMOdel
         public DarkUI.Controls.DarkCheckBox chkBox_LoadAnimations;
         public DarkUI.Controls.DarkTextBox txt_WeaponBoneName;
         public DarkUI.Controls.DarkCheckBox chkBox_RenameBones;
-        public System.Windows.Forms.ComboBox comboBox_PreviewWith;
-        public DarkUI.Controls.DarkCheckBox chkBox_PreviewOutputGMO;
         public DarkUI.Controls.DarkCheckBox chkBox_FixForPC;
         public DarkUI.Controls.DarkButton btn_Cancel;
     }

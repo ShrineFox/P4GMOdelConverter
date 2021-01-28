@@ -69,6 +69,7 @@
     <Reference Include="Microsoft.WindowsAPICodePack.ShellExtensions, Version=1.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\WindowsAPICodePack.1.1.1\lib\Microsoft.WindowsAPICodePack.ShellExtensions.dll</HintPath>
     </Reference>
+    <Reference Include="PresentationFramework" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -113,7 +114,6 @@
       <DependentUpon>SettingsForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Tools.cs" />
-    <Compile Include="Treeview.cs" />
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>
