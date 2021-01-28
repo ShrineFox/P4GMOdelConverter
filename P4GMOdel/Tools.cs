@@ -263,7 +263,7 @@ namespace P4GMOdel
                 Directory.Delete(tempDir, true);
             Directory.CreateDirectory(tempDir);
             string tempPath = Path.Combine(tempDir, Path.GetFileNameWithoutExtension(model.Path));
-            File.WriteAllText(Model.Serialize(model, settings), tempPath + ".mds");
+            File.WriteAllText(tempPath + ".mds", Model.Serialize(model, settings));
 
             if (File.Exists(tempPath + ".mds"))
             {
@@ -317,11 +317,11 @@ namespace P4GMOdel
                                     }
                                     amd.Save("temp.amd");
                                     hasAMD = true;
-                                    pak.AddFile("temp.amd", model.Name + ".AMD", ConflictPolicy.Replace);
+                                    pak.AddFile(model.Name + ".AMD", "temp.amd", ConflictPolicy.Replace);
                                 }
                             }
                             if (!hasAMD)
-                                pak.AddFile(tempPath + ".gmo", model.Name + ".gmo", ConflictPolicy.Replace);
+                                pak.AddFile(model.Name + ".gmo", tempPath + ".gmo", ConflictPolicy.Replace);
                             //Save new PAC
                             pak.Save(output);
                         }
@@ -338,10 +338,10 @@ namespace P4GMOdel
                             AmdChunk chunk = new AmdChunk() { Data = File.ReadAllBytes(tempPath + ".gmo") };
                             amd.Chunks.Add(chunk);
                             amd.Save("temp.amd");
-                            pak.AddFile("temp.amd", model.Name + ".AMD", ConflictPolicy.Replace);
+                            pak.AddFile(model.Name + ".AMD", tempPath + ".amd", ConflictPolicy.Replace);
                         }
                         else
-                            pak.AddFile(tempPath + ".gmo", model.Name + ".gmo", ConflictPolicy.Replace); //Add GMO to PAC
+                            pak.AddFile(model.Name + ".gmo", tempPath + ".gmo", ConflictPolicy.Replace); //Add GMO to PAC
                     }
                     //Save PAC
                     pak.Save(output);
