@@ -113,9 +113,8 @@ namespace P4GModelConverter
 
         public static void CloseProcess()
         {
-            if (sessions.Count > 0)
-                foreach (Process p in Process.GetProcessesByName("GMOView"))
-                    p.Kill();
+            foreach (Process p in Process.GetProcessesByName("GMOView"))
+                p.Kill();
             sessions.Clear();
         }
 

@@ -169,6 +169,8 @@ namespace P4GMOdel
             {
                 if (lines[i].StartsWith("BlindData"))
                     model.BlindData = lines[i].Replace("BlindData ", "");
+                else if (lines[i].StartsWith("\tBoundingBox"))
+                    model.BoundingBox = lines[i].Replace("\tBoundingBox ", "");
                 else if (lines[i].StartsWith("\tBone"))
                 {
                     int x = i;
@@ -200,7 +202,7 @@ namespace P4GMOdel
                         if (lines[x].StartsWith("\t\tBlendBones"))
                         {
                             if (settings.RenameBones)
-                                bone.BlendBones = SanitizeBoneName(lines[x]).Replace("\t", "");
+                                bone.BlendBones = SanitizeBoneName(lines[x]).Replace("\t\tBlendBones ", "");
                             else
                                 bone.BlendBones = lines[x].Replace("\t\tBlendBones ", "");
                         }
@@ -212,7 +214,7 @@ namespace P4GMOdel
                             x++;
                             while (lines[x].StartsWith("\t\t\t"))
                             {
-                                blendOffsets += "\n" + lines[x].Replace("\t", "");
+                                blendOffsets += "\n" + lines[x];
                                 x++;
                             }
                             bone.BlendOffsets = blendOffsets;
@@ -238,12 +240,12 @@ namespace P4GMOdel
                             x++;
                             while (!lines[x].Contains("}"))
                             {
-                                if (lines[x].StartsWith("\t\tSetMaterial"))
-                                    mesh.SetMaterial = lines[x].Replace("\t\tSetMaterial ", "").Replace("\"", "");
-                                if (lines[x].StartsWith("\t\tBlendSubset"))
-                                    mesh.BlendSubset = lines[x].Replace("\t\tBlendSubset ", "");
-                                if (lines[x].StartsWith("\t\tDrawArrays"))
-                                    mesh.DrawArrays = lines[x].Replace("\t\tDrawArrays ", "");
+                                if (lines[x].StartsWith("\t\t\tSetMaterial"))
+                                    mesh.SetMaterial = lines[x].Replace("\t\t\tSetMaterial ", "").Replace("\"", "");
+                                if (lines[x].StartsWith("\t\t\tBlendSubset"))
+                                    mesh.BlendSubset = lines[x].Replace("\t\t\tBlendSubset ", "");
+                                if (lines[x].StartsWith("\t\t\tDrawArrays"))
+                                    mesh.DrawArrays = lines[x].Replace("\t\t\tDrawArrays ", "");
                                 x++;
                             }
                             part.Meshes.Add(mesh);
@@ -254,7 +256,7 @@ namespace P4GMOdel
                             x++;
                             while (!lines[x].Contains("}"))
                             {
-                                array += "\n" + lines[x].Replace("\t", "");
+                                array += "\n" + lines[x];
                                 x++;
                             }
                             array += "\n\t\t}";
@@ -291,7 +293,7 @@ namespace P4GMOdel
                         if (lines[x].StartsWith("\t\tRefraction"))
                             mat.Refraction = lines[x].Replace("\t\tRefraction ", "");
                         if (lines[x].StartsWith("\t\tBump"))
-                            mat.Bump = lines[x].Replace("\t", "");
+                            mat.Bump = lines[x].Replace("\t\tBump ", "");
                         if (lines[x].StartsWith("\t\tBlindData"))
                             mat.BlindData = lines[x].Replace("\t\tBlindData ", "");
                         if (lines[x].StartsWith("\t\tLayer"))
@@ -375,9 +377,9 @@ namespace P4GMOdel
                 }
             }
             //Optimize data
-            model = MatchBonesAndDrawParts(model);
-            model = RewriteBones(model, settings);
-            model = RewriteParts(model, settings);
+            //model = MatchBonesAndDrawParts(model);
+            //model = RewriteBones(model, settings);
+            //model = RewriteParts(model, settings);
             if (!settings.UseDummyMaterials) 
             {
                 //model = RewriteMaterials(model);
@@ -397,7 +399,9 @@ namespace P4GMOdel
                 dummy.Layers.Add(new Layer { BlendFunc = "ADD SRC_ALPHA INV_SRC_ALPH" });
                 dummyMaterials.Add(dummy);
                 model.Materials = dummyMaterials;
+                model.Textures = new List<Texture>();
             }
+            model.Name = System.IO.Path.GetFileNameWithoutExtension(model.Path);
             return model;
         }
         public static string Serialize(Model model, SettingsForm.Settings settings)
@@ -447,7 +451,7 @@ namespace P4GMOdel
                                 if (!string.IsNullOrEmpty(mesh.BlendSubset))
                                     lines.Add($"\t\t\tBlendSubset {mesh.BlendSubset}"); //BlendSubset
                                 if (!string.IsNullOrEmpty(mesh.DrawArrays))
-                                    lines.Add($"\t\t\tDrawArrays {mesh.BlendSubset}"); //DrawArrays
+                                    lines.Add($"\t\t\tDrawArrays {mesh.DrawArrays}"); //DrawArrays
                             lines.Add("\t\t}");
                         }
                         foreach (var arrays in part.Arrays)
@@ -476,7 +480,7 @@ namespace P4GMOdel
                         {
                             lines.Add($"\t\tLayer \"{layer.Name}\" {{"); //Layer
                             if (!string.IsNullOrEmpty(layer.SetTexture))
-                                lines.Add($"\t\t\tSetTexture {layer.SetTexture}"); //SetTexture
+                                lines.Add($"\t\t\tSetTexture \"{layer.SetTexture}\""); //SetTexture
                             if (!string.IsNullOrEmpty(layer.MapType))
                                 lines.Add($"\t\t\tMapType {layer.MapType}"); //MapType
                             if (!string.IsNullOrEmpty(layer.MapFactor))
@@ -504,7 +508,8 @@ namespace P4GMOdel
                     lines.Add($"\tMotion \"{animation.Name}\" {{"); //Motion
                     lines.Add($"\t\tFrameLoop {animation.FrameLoop}"); //FrameLoop
                     lines.Add($"\t\tFrameRate {animation.FrameRate}"); //FrameRate
-                    lines.Add($"\t\tAnimate {animation.Animate}"); //Animate
+                    if (animation.Animate.Count > 0)
+                        lines.Add($"\t\tAnimate {String.Join("\n\t\tAnimate ", animation.Animate)}"); //Animate
                     lines.Add("\t}");
                 }
             lines.Add("}");
@@ -607,15 +612,18 @@ namespace P4GMOdel
 
         private static Model RewriteTextures(Model model, SettingsForm.Settings settings)
         {
+            //Set up texture output directory
+            string texFolder = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(model.Path), "textures");
+            Directory.CreateDirectory(texFolder);
             //Rename and convert textures depending on settings
             foreach (var texture in model.Textures)
             {
                 //fix for DAE texture paths
                 if (texture.FileName.StartsWith("\\\\"))
                     texture.FileName = texture.FileName.Replace("\\\\", "").Insert(1, ":");
+                
                 //Set up texture output path
-                string newTexPath = System.IO.Path.Combine(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(model.Path),"textures"), new DirectoryInfo(texture.FileName).Name);
-                Directory.CreateDirectory(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(model.Path), "textures"));
+                string newTexPath = System.IO.Path.Combine(texFolder, new DirectoryInfo(texture.FileName).Name);
 
                 //Convert, move and edit path of non-tm2 textures
                 if (!texture.FileName.ToLower().Contains(".tm2") && settings.AutoConvertTex)
@@ -624,14 +632,14 @@ namespace P4GMOdel
                         Tools.GIMConv(texture.FileName);
                     if (!File.Exists(newTexPath + ".tm2") && File.Exists(texture.FileName))
                         File.Move(texture.FileName + ".tm2", newTexPath + ".tm2");
-                    texture.FileName = System.IO.Path.Combine("textures", new DirectoryInfo(texture.FileName).Name + ".tm2");
+                    texture.FileName = System.IO.Path.Combine(texFolder, new DirectoryInfo(texture.FileName).Name + ".tm2");
                 }
                 else //Move and edit path of tm2 textures
                 {
                     if (!File.Exists(newTexPath))
                         if (File.Exists(texture.FileName))
                             File.Move(texture.FileName, newTexPath);
-                    texture.FileName = System.IO.Path.Combine("textures", texture.FileName.Split('\\').Last());
+                    texture.FileName = System.IO.Path.Combine(texFolder, System.IO.Path.GetFileName(texture.FileName));
                 }
             }
             return model;
