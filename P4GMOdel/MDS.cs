@@ -1,7 +1,11 @@
 ﻿using Microsoft.WindowsAPICodePack.Dialogs;
+using Rainbow.ImgLib.Formats.Implementation;
+using Rainbow.ImgLib.Formats.Serialization;
+using Rainbow.ImgLib.Formats.Serialization.Metadata;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -132,6 +136,41 @@ namespace P4GMOdel
         }
         public string Name { get; set; }
         public string FileName { get; set; }
+        public static Texture Import(SettingsForm.Settings settings)
+        {
+            Texture import = new Texture();
+            string importPath = "";
+            //Choose MDS to import from...
+            CommonOpenFileDialog dialog = new CommonOpenFileDialog();
+            dialog.Filters.Add(new CommonFileDialogFilter("All Types", "*.mds, *.png, *.tm2"));
+            dialog.Filters.Add(new CommonFileDialogFilter("GMO Data", "*.mds"));
+            dialog.Filters.Add(new CommonFileDialogFilter("PNG", "*.png"));
+            dialog.Filters.Add(new CommonFileDialogFilter("TIM2", "*.tm2"));
+            dialog.Title = "Choose Texture File...";
+            if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
+                importPath = dialog.FileName;
+            else
+                return import; // return empty texture
+            if (Path.GetExtension(importPath).ToLower() == ".mds")
+            {
+                var deserializedModel = Model.Deserialize(new Model(), File.ReadAllLines(importPath), settings);
+                if (deserializedModel.Textures != null)
+                    import = deserializedModel.Textures[0];
+            }
+            else if (Path.GetExtension(importPath).ToLower() == ".tm2")
+            {
+                string tempPath = Tools.GetTemporaryPath(importPath);
+                File.Copy(importPath, tempPath + ".tm2", true);
+                import.FileName = importPath;
+                import.Name = Path.GetFileNameWithoutExtension(importPath);
+            }
+            else if (Path.GetExtension(importPath).ToLower() == ".png")
+            {
+                // ????
+            }
+
+            return import;
+        }
     }
     public class Animation
     {
@@ -391,10 +430,7 @@ namespace P4GMOdel
             model = RewriteBones(model, settings);
             model = RewriteParts(model, settings);
             if (!settings.UseDummyMaterials) 
-            {
-                //model = RewriteMaterials(model);
-                //model = RewriteTextures(model, settings);
-            }
+                model = RewriteTextures(model, settings);
             else
             {
                 List<Material> dummyMaterials = new List<Material>();
@@ -532,18 +568,19 @@ namespace P4GMOdel
             lines.Add("}");
             return String.Join("\n", lines);
         }
-
         public static Model Import(SettingsForm.Settings settings, string defaultFileName)
         {
             Model import = new Model();
             string importPath = "";
             //Choose MDS to import from...
             CommonOpenFileDialog dialog = new CommonOpenFileDialog();
-            dialog.Filters.Add(new CommonFileDialogFilter("MDS", "*.mds"));
+            dialog.Filters.Add(new CommonFileDialogFilter("GMO Data", "*.mds"));
             dialog.Title = "Choose Replacement MDS...";
             dialog.DefaultFileName = $"{defaultFileName}.mds";
             if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
                 importPath = dialog.FileName;
+            else
+                return import; // return empty model
             //Deserialize imported object
             return Model.Deserialize(import, File.ReadAllLines(importPath), settings);
 
@@ -608,38 +645,6 @@ namespace P4GMOdel
                 }
             }
             model.Parts = newParts; //Replace old parts list with new one
-            return model;
-        }
-        private static Model RewriteMaterials(Model model)
-        {
-            //Format materials so that they all use one layer and map/blend type
-            List<Material> newMaterials = new List<Material>();
-            for (int w = 0; w < model.Materials.Count(); w++)
-            {
-                //BlendFunc
-                if (model.Materials[w].Layers[0] != null && model.Materials[w].Layers[0].BlendFunc.Contains("ADD SRC_ALPHA ONE"))
-                    model.Materials[w].Layers[0].BlendFunc = "\"transAlgo\" 1";
-                else
-                    model.Materials[w].Layers[0].BlendFunc = "\"transAlgo\" 4";
-                //Diffuse
-                if (model.Materials[w].Diffuse != null)
-                    model.Materials[w].Diffuse = "0.800000 0.800000 0.800000 1.000000";
-                //Ambient
-                if (model.Materials[w].Ambient != null)
-                    model.Materials[w].Ambient = "0.800000 0.800000 0.800000 1.000000";
-                //Reflection
-                if (model.Materials[w].Reflection != null)
-                    model.Materials[w].Reflection = "0.000000";
-                //Refraction
-                if (model.Materials[w].Refraction != null)
-                    model.Materials[w].Refraction = "1.000000";
-                //Bump
-                if (model.Materials[w].Bump != null)
-                    model.Materials[w].Bump = "0.000000";
-                //Ambient
-                if (model.Materials[w].Ambient != null)
-                    model.Materials[w].Ambient = "0.800000 0.800000 0.800000 1.000000";
-            }
             return model;
         }
 

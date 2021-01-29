@@ -25,6 +25,8 @@ using AtlusFileSystemLibrary.Common.IO;
 using AmicitiaLibrary.FileSystems.AMD;
 using System.Runtime.InteropServices;
 using System.Collections;
+using Rainbow.ImgLib;
+using Rainbow.ImgLib.Formats.Implementation;
 
 namespace P4GMOdel
 {
@@ -234,11 +236,26 @@ namespace P4GMOdel
             //Update object if changed
             UpdatePropertyGrid();
             //Update modelviewer and treeview if "Model" clicked
-            if (lastSelectedTreeNode.Text == "Model" && dataChanged)
+            if (lastSelectedTreeNode.Text == "Model" && (dataChanged || !viewerUpdated))
             {
-                RefreshTreeview();
+                if (dataChanged)
+                    RefreshTreeview();
                 if (!viewerUpdated)
                     ModelViewer.Update(model, settings);
+            }
+            //Replace modelviewer with texture view if "Texture" subnode clicked
+            if (lastSelectedTreeNode.ParentNode != null && lastSelectedTreeNode.ParentNode.Text == "Textures")
+            {
+                Texture texture = (Texture)lastSelectedTreeNode.Tag;
+                using (Stream s = File.Open(texture.FileName, FileMode.Open))
+                {
+                    TIM2TextureSerializer serializer = new TIM2TextureSerializer();
+                    ModelViewer.CloseProcess(); //Hide model viewer
+                    panel_GMOView.BackgroundImageLayout = ImageLayout.Zoom;
+                    panel_GMOView.BackgroundImage = serializer.Open(s).GetImage(); //Decode TM2 to viewer
+                    viewerUpdated = false; //Reload model viewer next chance we get
+                }
+
             }
             //Show context menu if right clicked
             if (e.Button.Equals(MouseButtons.Right))
@@ -341,7 +358,7 @@ namespace P4GMOdel
         private void SaveAs_Click(object sender, EventArgs e)
         {
             CommonSaveFileDialog dialog = new CommonSaveFileDialog();
-            dialog.Filters.Add(new CommonFileDialogFilter("MDS", "*.mds"));
+            dialog.Filters.Add(new CommonFileDialogFilter("GMO Data", "*.mds"));
             dialog.Title = "Save MDS...";
             dialog.DefaultFileName = $"{Path.GetFileNameWithoutExtension(model.Path)}.mds";
             if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
@@ -578,7 +595,7 @@ namespace P4GMOdel
             }
             //Save MDS as...
             CommonSaveFileDialog dialog = new CommonSaveFileDialog();
-            dialog.Filters.Add(new CommonFileDialogFilter("MDS", "*.mds"));
+            dialog.Filters.Add(new CommonFileDialogFilter("GMO Data", "*.mds"));
             dialog.Title = "Save MDS...";
             dialog.DefaultFileName = $"{lastSelectedTreeNode.Text}.mds";
             if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
@@ -588,6 +605,8 @@ namespace P4GMOdel
         private void Add_Click(object sender, EventArgs e)
         {
             Model import = Model.Import(settings, lastSelectedTreeNode.Text);
+            if (import == new Model())
+                return;
             //Add selected object
             switch (lastSelectedTreeNode.Text)
             {
@@ -636,6 +655,8 @@ namespace P4GMOdel
         private void Replace_Click(object sender, EventArgs e)
         {
             Model import = Model.Import(settings, lastSelectedTreeNode.Text);
+            if (import == new Model())
+                return;
             //Replace selected object
             int index = 0;
             switch (lastSelectedTreeNode.Text)

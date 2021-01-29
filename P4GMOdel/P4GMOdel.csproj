@@ -169,6 +169,10 @@
       <Project>{9960b785-6207-44e8-ba42-ec7f6f785344}</Project>
       <Name>AtlusFileSystemLibrary</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Dependencies\Rainbow.ImgLib\Rainbow.ImgLib.csproj">
+      <Project>{c4117527-926b-4588-bde3-53ec241e62b4}</Project>
+      <Name>Rainbow.ImgLib</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
