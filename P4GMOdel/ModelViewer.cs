@@ -1,5 +1,4 @@
 ﻿using P4GMOdel;
-using P4GModelConverter;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -15,7 +14,7 @@ using System.Windows.Forms;
 using WindowsInput;
 using WindowsInput.Native;
 
-namespace P4GModelConverter
+namespace P4GMOdel
 {
     class ModelViewer
     {
@@ -58,20 +57,16 @@ namespace P4GModelConverter
         {
             if (model != null && File.Exists(model.Path))
             {
-                //Create temporary directory
-                string tempDir = Path.Combine(Path.GetDirectoryName(model.Path), "temp");
-                if (Directory.Exists(tempDir))
-                    Directory.Delete(tempDir, true);
-                Directory.CreateDirectory(tempDir);
-                string tempPath = Path.Combine(tempDir, Path.GetFileNameWithoutExtension(model.Path));
                 //Save temporary mds
+                string tempPath = Tools.GetTemporaryPath(model.Path);
                 File.WriteAllText(tempPath + ".mds", Model.Serialize(model, settings));
                 using (WaitForFile(tempPath + ".mds", FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
                 //Attempt to generate temporary gmo
-                Tools.GMOTool(tempPath + ".mds", false);
+                Tools.GMOTool(tempPath + ".mds", false, settings);
                 //Reload model viewer with temporary GMO
                 using (WaitForFile(tempPath + ".gmo", FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
                 LoadModel(tempPath + ".gmo");
+                MainForm.viewerUpdated = true;
             }
         }
 

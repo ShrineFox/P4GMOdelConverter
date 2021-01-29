@@ -114,11 +114,12 @@ namespace P4GMOdel
         }
 
         //Run tool to convert between GMO and MDS
-        public static void GMOTool(string path, bool extract)
+        public static void GMOTool(string path, bool extract, SettingsForm.Settings settings)
         {
             Process cmd = new Process();
             cmd.StartInfo.FileName = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Tools\\GMOTool\\GMOTool.exe";
-            //cmd.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+            if (!settings.ShowConsoleWindows)
+                cmd.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             cmd.StartInfo.Arguments = $"\"{path}\"";
             if (extract)
                 cmd.StartInfo.Arguments += " -E";
@@ -134,11 +135,12 @@ namespace P4GMOdel
         }
 
         //Run program to convert FBX to GMO directly
-        public static void GMOConv(string fbx)
+        public static void GMOConv(string fbx, SettingsForm.Settings settings)
         {
             Process cmd = new Process();
             cmd.StartInfo.FileName = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Tools\\GMO\\GmoConv.exe";
-            //cmd.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+            if (!settings.ShowConsoleWindows)
+                cmd.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             cmd.StartInfo.Arguments = $"\"{fbx}\"";
             if (File.Exists(cmd.StartInfo.FileName))
             {
@@ -153,11 +155,12 @@ namespace P4GMOdel
         }
 
         //Run program to convert referenced textures to TM2
-        public static void GIMConv(string texture)
+        public static void GIMConv(string texture, SettingsForm.Settings settings)
         {
             Process cmd = new Process();
             cmd.StartInfo.FileName = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Tools\\GIM\\GimConv.exe";
-            //cmd.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+            if (!settings.ShowConsoleWindows)
+                cmd.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             cmd.StartInfo.Arguments = $"\"{texture}\" -o \"{texture}.tm2\"";
             if (File.Exists(cmd.StartInfo.FileName))
             {
@@ -176,7 +179,6 @@ namespace P4GMOdel
         {
             Process cmd = new Process();
             cmd.StartInfo.FileName = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Tools\\GMO\\GmoView.exe";
-            //cmd.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             cmd.StartInfo.Arguments = $"\"{model}\"";
             if (File.Exists(cmd.StartInfo.FileName))
                 cmd.Start();
@@ -190,7 +192,6 @@ namespace P4GMOdel
         {
             Process process = new Process();
             ProcessStartInfo startInfo = new ProcessStartInfo();
-            startInfo.WindowStyle = ProcessWindowStyle.Hidden;
             startInfo.FileName = $"\"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Tools\\Noesis\\Noesis.exe\"";
             startInfo.Arguments = args;
             process.StartInfo = startInfo;
@@ -202,21 +203,22 @@ namespace P4GMOdel
         }
 
         //Run model through Noesis for optimizing
-        public static void NoesisOptimize(string path, string args)
+        public static void NoesisOptimize(string path, string args, SettingsForm.Settings settings)
         {
             using (var cmdProcess = new Process())
             {
-                string extensionlessPath = Path.Combine(Path.GetDirectoryName(path), Path.GetFileNameWithoutExtension(path));
+                string tempPath = GetTemporaryPath(path);
                 cmdProcess.StartInfo.UseShellExecute = true;
                 cmdProcess.StartInfo.WorkingDirectory = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Tools\\Noesis";
                 cmdProcess.StartInfo.FileName = @"C:\Windows\System32\cmd.exe";
-                cmdProcess.StartInfo.Arguments = "/k " + $"Noesis.exe ?cmode \"{path}\" \"{extensionlessPath}_noesis.fbx\" {args}";
-                cmdProcess.StartInfo.WindowStyle = ProcessWindowStyle.Normal;
+                cmdProcess.StartInfo.Arguments = "/k " + $"Noesis.exe ?cmode \"{path}\" \"{tempPath}.fbx\" {args}";
+                if (!settings.ShowConsoleWindows)
+                    cmdProcess.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
                 if (File.Exists(Path.Combine(cmdProcess.StartInfo.WorkingDirectory, "Noesis.exe")))
                 {
                     cmdProcess.Start();
                     int x = 0;
-                    while (!File.Exists($"{extensionlessPath}_noesis.fbx")) { Thread.Sleep(1000); x++; if (x == 15) return; }
+                    while (!File.Exists($"{tempPath}.fbx")) { Thread.Sleep(1000); x++; if (x == 15) return; }
                     cmdProcess.Kill();
                 }
                 else
@@ -225,11 +227,12 @@ namespace P4GMOdel
         }
 
         //Run TGE's tool to fix GMO files for PC
-        public static void GMOFixTool(string path)
+        public static void GMOFixTool(string path, SettingsForm.Settings settings)
         {
             Process cmd = new Process();
             cmd.StartInfo.FileName = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Tools\\p4gpc-gmofix\\p4gpc-gmofix.exe";
-            //cmd.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+            if (!settings.ShowConsoleWindows)
+                cmd.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             cmd.StartInfo.Arguments = $"\"{path}\"";
             if (File.Exists(cmd.StartInfo.FileName))
             {
@@ -249,28 +252,22 @@ namespace P4GMOdel
                 args += "-fbxoldexport ";
             if (settings.AsciiFBX)
                 args += "-fbxascii ";
-            NoesisOptimize(path, $"{args} {settings.AdditionalFBXOptions}");
-            extensionlessPath += "_noesis";
+            NoesisOptimize(path, $"{args} {settings.AdditionalFBXOptions}", settings);
             return $"{extensionlessPath}.fbx";
         }
 
         //Create GMO from MDS
         public static void CreateGMO(string output, Model model, SettingsForm.Settings settings)
         {
-            //Create temporary directory
-            string tempDir = Path.Combine(Path.GetDirectoryName(model.Path), "temp");
-            if (Directory.Exists(tempDir))
-                Directory.Delete(tempDir, true);
-            Directory.CreateDirectory(tempDir);
-            string tempPath = Path.Combine(tempDir, Path.GetFileNameWithoutExtension(model.Path));
+            string tempPath = GetTemporaryPath(model.Path);
             File.WriteAllText(tempPath + ".mds", Model.Serialize(model, settings));
 
             if (File.Exists(tempPath + ".mds"))
             {
                 //Create new GMO
-                GMOTool(tempPath + ".mds", false);
+                GMOTool(tempPath + ".mds", false, settings);
                 if (settings.FixForPC)
-                    GMOFixTool(tempPath + ".gmo");
+                    GMOFixTool(tempPath + ".gmo", settings);
 
                 if (output.ToLower().EndsWith(".amd"))
                 {
@@ -365,5 +362,15 @@ namespace P4GMOdel
             new List<string>{ "Physical Attack", "Magic Attack", "Idle", "Magic attack" },
             new List<string>{ "Idle", "Low HP", "Damaged", "Run", "Attack", "Placeholder 4", "Killed", "Miss Attack", "Knocked Down", "Down", "Get Back Up", "Persona Summon 1", "Persona Summon 2", "Persona Summon 3", "Persona Summon 4", "Idle 2", "Placeholder 15", "Low HP (Duplicate)", "Dodge" }
         };
+
+        public static string GetTemporaryPath(string path)
+        {
+            //Create temporary directory
+            string tempDir = Path.Combine(Path.GetDirectoryName(path), "temp");
+            if (Directory.Exists(tempDir))
+                Directory.Delete(tempDir, true);
+            Directory.CreateDirectory(tempDir);
+            return Path.Combine(tempDir, Path.GetFileNameWithoutExtension(path));
+        }
     }
 }

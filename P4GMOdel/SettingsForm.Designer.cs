@@ -48,6 +48,7 @@ namespace P4GMOdel
             this.chkBox_FixForPC = new DarkUI.Controls.DarkCheckBox();
             this.btn_Save = new DarkUI.Controls.DarkButton();
             this.btn_Cancel = new DarkUI.Controls.DarkButton();
+            this.chkBox_ShowConsoleWindows = new DarkUI.Controls.DarkCheckBox();
             this.groupBox_Import.SuspendLayout();
             this.groupBox_Conversion.SuspendLayout();
             this.groupBox_Output.SuspendLayout();
@@ -227,6 +228,7 @@ namespace P4GMOdel
             // groupBox_Output
             // 
             this.groupBox_Output.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(51)))), ((int)(((byte)(51)))), ((int)(((byte)(51)))));
+            this.groupBox_Output.Controls.Add(this.chkBox_ShowConsoleWindows);
             this.groupBox_Output.Controls.Add(this.chkBox_FixForPC);
             this.groupBox_Output.Location = new System.Drawing.Point(424, 12);
             this.groupBox_Output.Name = "groupBox_Output";
@@ -265,6 +267,16 @@ namespace P4GMOdel
             this.btn_Cancel.Size = new System.Drawing.Size(75, 30);
             this.btn_Cancel.TabIndex = 20;
             this.btn_Cancel.Text = "Cancel";
+            // 
+            // chkBox_ShowConsoleWindows
+            // 
+            this.chkBox_ShowConsoleWindows.AutoSize = true;
+            this.chkBox_ShowConsoleWindows.Location = new System.Drawing.Point(7, 56);
+            this.chkBox_ShowConsoleWindows.Margin = new System.Windows.Forms.Padding(4);
+            this.chkBox_ShowConsoleWindows.Name = "chkBox_ShowConsoleWindows";
+            this.chkBox_ShowConsoleWindows.Size = new System.Drawing.Size(179, 21);
+            this.chkBox_ShowConsoleWindows.TabIndex = 18;
+            this.chkBox_ShowConsoleWindows.Text = "Show Console Windows";
             // 
             // SettingsForm
             // 
@@ -310,5 +322,6 @@ namespace P4GMOdel
         public DarkUI.Controls.DarkCheckBox chkBox_RenameBones;
         public DarkUI.Controls.DarkCheckBox chkBox_FixForPC;
         public DarkUI.Controls.DarkButton btn_Cancel;
+        public DarkUI.Controls.DarkCheckBox chkBox_ShowConsoleWindows;
     }
 }

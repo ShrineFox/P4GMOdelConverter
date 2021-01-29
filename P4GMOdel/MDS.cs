@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.WindowsAPICodePack.Dialogs;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -392,7 +393,7 @@ namespace P4GMOdel
             if (!settings.UseDummyMaterials) 
             {
                 //model = RewriteMaterials(model);
-                model = RewriteTextures(model, settings);
+                //model = RewriteTextures(model, settings);
             }
             else
             {
@@ -532,6 +533,22 @@ namespace P4GMOdel
             return String.Join("\n", lines);
         }
 
+        public static Model Import(SettingsForm.Settings settings, string defaultFileName)
+        {
+            Model import = new Model();
+            string importPath = "";
+            //Choose MDS to import from...
+            CommonOpenFileDialog dialog = new CommonOpenFileDialog();
+            dialog.Filters.Add(new CommonFileDialogFilter("MDS", "*.mds"));
+            dialog.Title = "Choose Replacement MDS...";
+            dialog.DefaultFileName = $"{defaultFileName}.mds";
+            if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
+                importPath = dialog.FileName;
+            //Deserialize imported object
+            return Model.Deserialize(import, File.ReadAllLines(importPath), settings);
+
+        }
+
         private static string SanitizeBoneName(string name)
         {
             name = name.Replace("_", " ");
@@ -645,7 +662,7 @@ namespace P4GMOdel
                 if (!texture.FileName.ToLower().Contains(".tm2") && settings.AutoConvertTex)
                 {
                     if (File.Exists(texture.FileName))
-                        Tools.GIMConv(texture.FileName);
+                        Tools.GIMConv(texture.FileName, settings);
                     if (!File.Exists(newTexPath + ".tm2") && File.Exists(texture.FileName))
                         File.Move(texture.FileName + ".tm2", newTexPath + ".tm2");
                     texture.FileName = System.IO.Path.Combine(texFolder, new DirectoryInfo(texture.FileName).Name + ".tm2");

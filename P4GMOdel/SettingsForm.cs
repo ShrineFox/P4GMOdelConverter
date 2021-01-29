@@ -38,6 +38,7 @@ namespace P4GMOdel
                 chkBox_LoadAnimations.Checked = settings.LoadAnimations;
                 txt_WeaponBoneName.Text = settings.WeaponBoneName;
                 chkBox_FixForPC.Checked = settings.FixForPC;
+                chkBox_ShowConsoleWindows.Checked = settings.ShowConsoleWindows;
             }
             else
             {
@@ -62,8 +63,7 @@ namespace P4GMOdel
             public string WeaponBoneName { get; set; } = "Bip01_L_Hand_Bone";
             // Output
             public bool FixForPC { get; set; } = true;
-            public bool PreviewOutputGMO { get; set; } = false;
-            public string PreviewWith { get; set; } = "GMOView";
+            public bool ShowConsoleWindows { get; set; } = false;
         }
 
 
@@ -83,6 +83,7 @@ namespace P4GMOdel
             settings.WeaponBoneName = txt_WeaponBoneName.Text;
 
             settings.FixForPC = chkBox_FixForPC.Checked;
+            settings.ShowConsoleWindows = chkBox_ShowConsoleWindows.Checked;
 
             var serializer = new SerializerBuilder().WithNamingConvention(PascalCaseNamingConvention.Instance).Build();
             var yaml = serializer.Serialize(settings);
