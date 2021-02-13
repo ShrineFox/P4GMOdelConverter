@@ -57,14 +57,16 @@ namespace P4GMOdel
         {
             if (model != null && File.Exists(model.Path))
             {
+                int x = 0;
                 //Save temporary mds
                 string tempPath = Tools.GetTemporaryPath(model.Path);
                 File.WriteAllText(tempPath + ".mds", Model.Serialize(model, settings));
-                using (WaitForFile(tempPath + ".mds", FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
+                using (Tools.WaitForFile(tempPath + ".mds", FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
                 //Attempt to generate temporary gmo
                 Tools.GMOTool(tempPath + ".mds", false, settings);
+                while (!File.Exists($"{tempPath}.mds")) { Thread.Sleep(1000); x++; if (x == 15) return; }
                 //Reload model viewer with temporary GMO
-                using (WaitForFile(tempPath + ".gmo", FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
+                using (Tools.WaitForFile(tempPath + ".gmo", FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
                 LoadModel(tempPath + ".gmo");
                 MainForm.viewerUpdated = true;
             }
@@ -165,28 +167,5 @@ namespace P4GMOdel
         public static uint MF_REMOVE = 0x1000;
         const uint WS_VISIBLE = 0x10000000;
         public static Hashtable sessions = new Hashtable();
-
-        public static FileStream WaitForFile(string fullPath, FileMode mode, FileAccess access, FileShare share)
-        {
-            for (int numTries = 0; numTries < 10; numTries++)
-            {
-                FileStream fs = null;
-                try
-                {
-                    fs = new FileStream(fullPath, mode, access, share);
-                    return fs;
-                }
-                catch (IOException)
-                {
-                    if (fs != null)
-                    {
-                        fs.Dispose();
-                    }
-                    Thread.Sleep(200);
-                }
-            }
-
-            return null;
-        }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.WindowsAPICodePack.Dialogs;
+using OpenKh.Imaging;
 using Rainbow.ImgLib.Formats.Implementation;
 using Rainbow.ImgLib.Formats.Serialization;
 using Rainbow.ImgLib.Formats.Serialization.Metadata;
@@ -11,6 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace P4GMOdel
 {
@@ -136,10 +138,10 @@ namespace P4GMOdel
         }
         public string Name { get; set; }
         public string FileName { get; set; }
-        public static Texture Import(SettingsForm.Settings settings)
+        public static List<Texture> Import(SettingsForm.Settings settings, bool multiSelect)
         {
-            Texture import = new Texture();
-            string importPath = "";
+            List<Texture> import = new List<Texture>();
+            List<string> importPaths = new List<string>();
             //Choose MDS to import from...
             CommonOpenFileDialog dialog = new CommonOpenFileDialog();
             dialog.Filters.Add(new CommonFileDialogFilter("All Types", "*.mds, *.png, *.tm2"));
@@ -147,26 +149,51 @@ namespace P4GMOdel
             dialog.Filters.Add(new CommonFileDialogFilter("PNG", "*.png"));
             dialog.Filters.Add(new CommonFileDialogFilter("TIM2", "*.tm2"));
             dialog.Title = "Choose Texture File...";
+            if (multiSelect)
+                dialog.Multiselect = true;
             if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
-                importPath = dialog.FileName;
-            else
-                return import; // return empty texture
-            if (Path.GetExtension(importPath).ToLower() == ".mds")
+                importPaths = dialog.FileNames.ToList();
+
+            foreach(var path in importPaths)
             {
-                var deserializedModel = Model.Deserialize(new Model(), File.ReadAllLines(importPath), settings);
-                if (deserializedModel.Textures != null)
-                    import = deserializedModel.Textures[0];
-            }
-            else if (Path.GetExtension(importPath).ToLower() == ".tm2")
-            {
-                string tempPath = Tools.GetTemporaryPath(importPath);
-                File.Copy(importPath, tempPath + ".tm2", true);
-                import.FileName = importPath;
-                import.Name = Path.GetFileNameWithoutExtension(importPath);
-            }
-            else if (Path.GetExtension(importPath).ToLower() == ".png")
-            {
-                // ????
+                if (Path.GetExtension(path).ToLower() == ".mds")
+                {
+                    var deserializedModel = Model.Deserialize(new Model(), File.ReadAllLines(path), settings);
+                    if (deserializedModel.Textures != null) //If mds contains textures...
+                        foreach (var texture in deserializedModel.Textures)
+                            if(!import.Contains(texture)) //and new collection doesn't already contain same one...
+                                import.Add(texture);
+                }
+                else if (Path.GetExtension(path).ToLower() == ".tm2")
+                {
+                    Texture tex = new Texture();
+                    tex.FileName = path;
+                    tex.Name = Path.GetFileNameWithoutExtension(path);
+                    import.Add(tex);
+                }
+                else if (Path.GetExtension(path).ToLower() == ".png")
+                {
+                    string outputPath = Path.GetFileNameWithoutExtension(path) + ".tm2";
+                    //Tools.GIMConv(path, settings);
+                    using (Stream s = File.Open(path, FileMode.Open))
+                    {
+                        PngImage png = new PngImage(s);
+                        Tm2 tmImage = Tm2.Create(png);
+                        using (FileStream fs = new FileStream(outputPath, FileMode.Create))
+                            Tm2.Write(fs, new List<Tm2>() { tmImage });
+                    }
+                    if (File.Exists(outputPath))
+                    {
+                        Texture tex = new Texture();
+                        tex.FileName = outputPath;
+                        tex.Name = Path.GetFileNameWithoutExtension(outputPath);
+                        import.Add(tex);
+                    }
+                    else
+                    {
+                        MessageBox.Show("Error: TM2 was not created!");
+                    }
+                }
             }
 
             return import;
@@ -301,7 +328,7 @@ namespace P4GMOdel
                         }
                         else if (lines[x].StartsWith("\t\tArrays"))
                         {
-                            string array = lines[x].Replace("\t\tArrays ", "");
+                            string array = lines[x].Replace("\t\tArrays ", "").Replace("VERTEX|NORMAL|TEXCOORD|WEIGHT6 {", "0 {").Replace("VERTEX|NORMAL|TEXCOORD|WEIGHT5 {", "0 {"); //Why does this happen??
                             x++;
                             while (!lines[x].Contains("}"))
                             {
@@ -426,9 +453,9 @@ namespace P4GMOdel
                 }
             }
             //Optimize data
-            model = MatchBonesAndDrawParts(model);
-            model = RewriteBones(model, settings);
-            model = RewriteParts(model, settings);
+            //model = MatchBonesAndDrawParts(model);
+            //model = RewriteBones(model, settings);
+            //model = RewriteParts(model, settings);
             if (!settings.UseDummyMaterials) 
                 model = RewriteTextures(model, settings);
             else
@@ -606,7 +633,7 @@ namespace P4GMOdel
                 for (int z = 0; z < model.Parts[w].Meshes.Count; z++)
                 {
                     string splitName = $"{model.Parts[w].Name}_{z}";
-                    string firstBone = model.Bones.First(b => b.DrawParts.Any(a => a.Contains(model.Parts[w].Name.Trim()))).Name; //TODO: figure out where that space is coming from
+                    string firstBone = model.Bones.First(b => b.DrawParts.Any(a => a.Contains(model.Parts[w].Name.Trim()))).Name;
                     Tuple<string, string> boneDrawPartPair = new Tuple<string, string>(firstBone, splitName);
                     model.BoneDrawPartPairs.Add(boneDrawPartPair);
                 }
@@ -656,12 +683,12 @@ namespace P4GMOdel
             //Rename and convert textures depending on settings
             foreach (var texture in model.Textures)
             {
+                //Set up texture output path
+                string newTexPath = System.IO.Path.Combine(texFolder, new DirectoryInfo(texture.FileName).Name);
+
                 //fix for DAE texture paths
                 if (texture.FileName.StartsWith("\\\\"))
                     texture.FileName = texture.FileName.Replace("\\\\", "").Insert(1, ":");
-                
-                //Set up texture output path
-                string newTexPath = System.IO.Path.Combine(texFolder, new DirectoryInfo(texture.FileName).Name);
 
                 //Convert, move and edit path of non-tm2 textures
                 if (!texture.FileName.ToLower().Contains(".tm2") && settings.AutoConvertTex)

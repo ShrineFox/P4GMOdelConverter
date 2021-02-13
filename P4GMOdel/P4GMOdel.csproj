@@ -84,6 +84,9 @@
     <Reference Include="WindowsInput, Version=1.0.4.0, Culture=neutral, PublicKeyToken=9b287f7dc5073cad, processorArchitecture=MSIL">
       <HintPath>..\packages\InputSimulator.1.0.4.0\lib\net20\WindowsInput.dll</HintPath>
     </Reference>
+    <Reference Include="Xe.BinaryMapper, Version=1.5.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Xe.BinaryMapper.1.5.2\lib\net45\Xe.BinaryMapper.dll</HintPath>
+    </Reference>
     <Reference Include="YamlDotNet, Version=9.0.0.0, Culture=neutral, PublicKeyToken=ec19458f3c15af5e, processorArchitecture=MSIL">
       <HintPath>..\packages\YamlDotNet.9.1.1\lib\net45\YamlDotNet.dll</HintPath>
     </Reference>
@@ -169,7 +172,11 @@
       <Project>{9960b785-6207-44e8-ba42-ec7f6f785344}</Project>
       <Name>AtlusFileSystemLibrary</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Dependencies\Rainbow.ImgLib\Rainbow.ImgLib.csproj">
+    <ProjectReference Include="..\..\OpenKh\OpenKh.Imaging\OpenKh.Imaging.csproj">
+      <Project>{c139219b-4bdf-485e-9fc5-a2f8cb1a7c34}</Project>
+      <Name>OpenKh.Imaging</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Rainbow\Rainbow.ImgLib\Rainbow.ImgLib.csproj">
       <Project>{c4117527-926b-4588-bde3-53ec241e62b4}</Project>
       <Name>Rainbow.ImgLib</Name>
     </ProjectReference>

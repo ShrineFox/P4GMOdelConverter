@@ -53,6 +53,7 @@ namespace P4GMOdel
             else
                 settings = new SettingsForm.Settings();
             panelHandle = panel_GMOView.Handle;
+            ModelViewer.CloseProcess();
             viewerUpdated = false;
             DataChanged(false);
             AppDomain.CurrentDomain.ProcessExit += new EventHandler(OnProcessExit);
@@ -206,9 +207,16 @@ namespace P4GMOdel
                 foreach (Animation animation in model.Animations)
                     darkTreeView_Main.Nodes.First().Nodes.First(x => x.Text == "Animations").Nodes.Add(new DarkTreeNode() { Text = animation.Name, Tag = animation });
             }
-            //Expand Model node
+
+            RestoreNodeSelection();
+        }
+
+        private void RestoreNodeSelection()
+        {
             if (darkTreeView_Main.Nodes.Count > 0)
             {
+                //Expand Model node and focus on treeview to show highlight
+                darkTreeView_Main.Focus();
                 darkTreeView_Main.Nodes[0].Expanded = true;
                 //Set last selected node to Model by default
                 if (lastSelectedTreeNode == null)
@@ -217,12 +225,11 @@ namespace P4GMOdel
                 var node = GetNodeFromPath(darkTreeView_Main.Nodes[0], lastSelectedTreeNode.FullPath);
                 if (node != null)
                 {
-                    if (node.ParentNode != null)
-                        node.ParentNode.Expanded = true;
-                    if (node.ParentNode.ParentNode != null)
-                        node.ParentNode.ParentNode.Expanded = true;
                     //Reselect and scroll to it
                     darkTreeView_Main.SelectedNodes[0] = node;
+                    if (darkTreeView_Main.SelectedNodes[0].ParentNode != null)
+                        darkTreeView_Main.SelectedNodes[0].ParentNode.Expanded = true;
+                    darkTreeView_Main.SelectedNodes[0].Expanded = true;
                     darkTreeView_Main.SelectedNodes[0].EnsureVisible();
                     //Update PropertyGrid
                     propertyGrid_Main.SelectedObject = node.Tag;
@@ -255,7 +262,6 @@ namespace P4GMOdel
                     panel_GMOView.BackgroundImage = serializer.Open(s).GetImage(); //Decode TM2 to viewer
                     viewerUpdated = false; //Reload model viewer next chance we get
                 }
-
             }
             //Show context menu if right clicked
             if (e.Button.Equals(MouseButtons.Right))
@@ -545,7 +551,7 @@ namespace P4GMOdel
         private void ExportElement_Click(object sender, EventArgs e)
         {
             Model export = new Model();
-            //Export model object as MDS
+            //Export model object
             switch (lastSelectedTreeNode.Text)
             {
                 case "Model":
@@ -593,13 +599,47 @@ namespace P4GMOdel
                     }
                     break;
             }
-            //Save MDS as...
+
             CommonSaveFileDialog dialog = new CommonSaveFileDialog();
+            dialog.Title = "Save Data as...";
             dialog.Filters.Add(new CommonFileDialogFilter("GMO Data", "*.mds"));
-            dialog.Title = "Save MDS...";
-            dialog.DefaultFileName = $"{lastSelectedTreeNode.Text}.mds";
-            if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
-                File.WriteAllText(dialog.FileName, Model.Serialize(export, settings));
+            if (lastSelectedTreeNode.Text == "Textures" || lastSelectedTreeNode.ParentNode.Text == "Textures")
+            {
+                dialog.Filters.Add(new CommonFileDialogFilter("TM2", "*.tm2"));
+                dialog.Filters.Add(new CommonFileDialogFilter("PNG", "*.png"));
+                if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
+                {
+                    if (Path.GetExtension(dialog.FileName).ToLower() == ".mds")
+                        File.WriteAllText(dialog.FileName, Model.Serialize(export, settings));
+                    else if (Path.GetExtension(dialog.FileName).ToLower() == ".tm2")
+                    {
+                        if (export.Textures.Count > 1)
+                            foreach (var texture in export.Textures)
+                                File.Copy(texture.FileName, Path.Combine(Path.GetDirectoryName(dialog.FileName), Path.GetFileName(texture.FileName)));
+                        else if (export.Textures.Count == 1)
+                            File.Copy(export.Textures[0].FileName, dialog.FileName);
+                    }
+                    else if (Path.GetExtension(dialog.FileName).ToLower() == ".png")
+                    {
+                        foreach (var texture in export.Textures)
+                        {
+                            TIM2TextureSerializer serializer = new TIM2TextureSerializer();
+                            using (Stream s = File.Open(texture.FileName, FileMode.Open))
+                            {
+                                Image newImage = serializer.Open(s).GetImage();
+                                newImage.Save(dialog.FileName);
+                            }
+                        }
+                            
+                    }
+                }
+            }
+            else
+            {
+                dialog.DefaultFileName = $"{lastSelectedTreeNode.Text}.mds";
+                if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
+                    File.WriteAllText(dialog.FileName, Model.Serialize(export, settings));
+            }
         }
 
         private void Add_Click(object sender, EventArgs e)
@@ -654,70 +694,91 @@ namespace P4GMOdel
 
         private void Replace_Click(object sender, EventArgs e)
         {
-            Model import = Model.Import(settings, lastSelectedTreeNode.Text);
-            if (import == new Model())
-                return;
-            //Replace selected object
+            List<Texture> importTex = new List<Texture>();
             int index = 0;
-            switch (lastSelectedTreeNode.Text)
+            if (lastSelectedTreeNode.Text == "Textures")
             {
-                case "Model":
-                    model = import;
-                    break;
-                case "BlindData":
-                    model.BlindData = import.BlindData;
-                    break;
-                case "Bones":
-                    model.Bones = import.Bones;
-                    break;
-                case "Parts":
-                    model.Parts = import.Parts;
-                    break;
-                case "Materials":
-                    model.Materials = import.Materials;
-                    break;
-                case "Textures":
-                    model.Textures = import.Textures;
-                    break;
-                case "Animations":
-                    model.Animations = import.Animations;
-                    break;
-                default:
-                    //Replace individual element
-                    switch (lastSelectedTreeNode.ParentNode.Text)
-                    {
-                        case "Bones":
-                            index = model.Bones.IndexOf((Bone)lastSelectedTreeNode.Tag);
-                            model.Bones.RemoveAt(index);
-                            model.Bones.Insert(index, import.Bones.First());
-                            break;
-                        case "Parts":
-                            index = model.Parts.IndexOf((Part)lastSelectedTreeNode.Tag);
-                            model.Parts.RemoveAt(index);
-                            model.Parts.Insert(index, import.Parts.First());
-                            break;
-                        case "Materials":
-                            index = model.Materials.IndexOf((Material)lastSelectedTreeNode.Tag);
-                            model.Materials.RemoveAt(index);
-                            model.Materials.Insert(index, import.Materials.First());
-                            break;
-                        case "Textures":
-                            index = model.Textures.IndexOf((Texture)lastSelectedTreeNode.Tag);
-                            model.Textures.RemoveAt(index);
-                            model.Textures.Insert(index, import.Textures.First());
-                            break;
-                        case "Animations":
-                            index = model.Animations.IndexOf((Animation)lastSelectedTreeNode.Tag);
-                            model.Animations.RemoveAt(index);
-                            model.Animations.Insert(index, import.Animations.First());
-                            break;
-                        default:
-                            return;
-                    }
-                    break;
+                importTex = Texture.Import(settings, false);
+                if (importTex == new List<Texture>())
+                    return;
+
+                //Replace textures node with selected replacement
+                model.Textures = importTex;
             }
-            RefreshTreeview();
-            DataChanged(true);
+            else if (lastSelectedTreeNode.ParentNode.Text == "Textures")
+            {
+                importTex = Texture.Import(settings, true);
+                if (importTex == new List<Texture>())
+                    return;
+
+                //Add each texture from import in place of the selected one
+                index = model.Textures.IndexOf((Texture)lastSelectedTreeNode.Tag);
+                model.Textures.RemoveAt(index);
+                foreach(var texture in importTex)
+                    model.Textures.Insert(index, texture);
+            }
+            else
+            {
+                Model import = Model.Import(settings, lastSelectedTreeNode.Text);
+                if (import == new Model())
+                    return;
+
+                //Replace selected node
+                switch (lastSelectedTreeNode.Text)
+                {
+                    case "Model":
+                        model = import;
+                        break;
+                    case "BlindData":
+                        model.BlindData = import.BlindData;
+                        break;
+                    case "Bones":
+                        model.Bones = import.Bones;
+                        break;
+                    case "Parts":
+                        model.Parts = import.Parts;
+                        break;
+                    case "Materials":
+                        model.Materials = import.Materials;
+                        break;
+                    case "Textures":
+                        model.Textures = import.Textures;
+                        break;
+                    case "Animations":
+                        model.Animations = import.Animations;
+                        break;
+                    default:
+                        //Replace individual item
+                        switch (lastSelectedTreeNode.ParentNode.Text)
+                        {
+                            case "Bones":
+                                index = model.Bones.IndexOf((Bone)lastSelectedTreeNode.Tag);
+                                model.Bones.RemoveAt(index);
+                                model.Bones.Insert(index, import.Bones.First());
+                                break;
+                            case "Parts":
+                                index = model.Parts.IndexOf((Part)lastSelectedTreeNode.Tag);
+                                model.Parts.RemoveAt(index);
+                                model.Parts.Insert(index, import.Parts.First());
+                                break;
+                            case "Materials":
+                                index = model.Materials.IndexOf((Material)lastSelectedTreeNode.Tag);
+                                model.Materials.RemoveAt(index);
+                                model.Materials.Insert(index, import.Materials.First());
+                                break;
+                            case "Animations":
+                                index = model.Animations.IndexOf((Animation)lastSelectedTreeNode.Tag);
+                                model.Animations.RemoveAt(index);
+                                model.Animations.Insert(index, import.Animations.First());
+                                break;
+                            default:
+                                return;
+                        }
+                        break;
+                }
+                RefreshTreeview();
+                DataChanged(true);
+            }
         }
 
         private void Delete_Click(object sender, EventArgs e)

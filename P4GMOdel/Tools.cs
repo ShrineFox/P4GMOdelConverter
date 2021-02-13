@@ -171,7 +171,6 @@ namespace P4GMOdel
             }
             else
                 MessageBox.Show($"Error: Could not find .\\Tools\\GIM\\GIMConv.exe!");
-
         }
 
         //Run program to view newly generated GMO file
@@ -261,16 +260,18 @@ namespace P4GMOdel
         {
             string tempPath = GetTemporaryPath(model.Path);
             File.WriteAllText(tempPath + ".mds", Model.Serialize(model, settings));
-
+            using (WaitForFile(tempPath + ".mds", FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
             if (File.Exists(tempPath + ".mds"))
             {
                 //Create new GMO
                 GMOTool(tempPath + ".mds", false, settings);
+                using (WaitForFile(tempPath + ".gmo", FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
                 if (settings.FixForPC)
                     GMOFixTool(tempPath + ".gmo", settings);
 
                 if (output.ToLower().EndsWith(".amd"))
                 {
+                    using (WaitForFile(tempPath + ".gmo", FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
                     if (File.Exists(output))
                     {
                         //Replace GMO data in AMD if it already exists
@@ -286,7 +287,7 @@ namespace P4GMOdel
                     {
                         //Create new AMD containing new GMO
                         AmdFile amd = new AmdFile();
-                        AmdChunk chunk = new AmdChunk() { Data = File.ReadAllBytes(tempPath + ".gmo") };
+                        AmdChunk chunk = new AmdChunk() { Data = File.ReadAllBytes(tempPath + ".gmo"), Flags = 257, Tag = "MODEL_DATA" };
                         amd.Chunks.Add(chunk);
                         amd.Save(output);
                     }
@@ -301,7 +302,7 @@ namespace P4GMOdel
                         {
                             //If PAC already contains AMD...
                             bool hasAMD = false;
-                            foreach (var pakFile in pak.EnumerateFiles())
+                            foreach (var pakFile in pak.EnumerateFiles().ToList())
                             {
                                 if (pakFile.ToLower().EndsWith(".amd"))
                                 {
@@ -312,15 +313,17 @@ namespace P4GMOdel
                                         if (chunk.Tag.ToUpper().Equals("MODEL_DATA"))
                                             chunk.Data = File.ReadAllBytes(tempPath + ".gmo");
                                     }
-                                    amd.Save("temp.amd");
+                                    amd.Save($"{tempPath}.amd");
+                                    using (WaitForFile(tempPath + ".amd", FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
                                     hasAMD = true;
-                                    pak.AddFile(model.Name + ".AMD", "temp.amd", ConflictPolicy.Replace);
+                                    pak.AddFile(model.Name + ".AMD", $"{tempPath}.amd", ConflictPolicy.Replace);
                                 }
                             }
                             if (!hasAMD)
                                 pak.AddFile(model.Name + ".gmo", tempPath + ".gmo", ConflictPolicy.Replace);
                             //Save new PAC
                             pak.Save(output);
+                            using (WaitForFile(output, FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
                         }
                         else
                             MessageBox.Show("Failed to open PAC for GMO replacement!");
@@ -332,9 +335,10 @@ namespace P4GMOdel
                         {
                             //If GMO is for P4G put it in new AMD inside PAC
                             AmdFile amd = new AmdFile();
-                            AmdChunk chunk = new AmdChunk() { Data = File.ReadAllBytes(tempPath + ".gmo") };
+                            AmdChunk chunk = new AmdChunk() { Data = File.ReadAllBytes(tempPath + ".gmo"), Flags = 257, Tag = "MODEL_DATA" };
                             amd.Chunks.Add(chunk);
-                            amd.Save("temp.amd");
+                            amd.Save($"{tempPath}.amd");
+                            using (WaitForFile(tempPath + ".amd", FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
                             pak.AddFile(model.Name + ".AMD", tempPath + ".amd", ConflictPolicy.Replace);
                         }
                         else
@@ -342,6 +346,7 @@ namespace P4GMOdel
                     }
                     //Save PAC
                     pak.Save(output);
+                    using (WaitForFile(output, FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
                 }
                 else
                     File.Copy(tempPath + ".gmo", output, true); //Save GMO (overwrite)
@@ -371,6 +376,29 @@ namespace P4GMOdel
                 Directory.Delete(tempDir, true);
             Directory.CreateDirectory(tempDir);
             return Path.Combine(tempDir, Path.GetFileNameWithoutExtension(path));
+        }
+
+        public static FileStream WaitForFile(string fullPath, FileMode mode, FileAccess access, FileShare share)
+        {
+            for (int numTries = 0; numTries < 10; numTries++)
+            {
+                FileStream fs = null;
+                try
+                {
+                    fs = new FileStream(fullPath, mode, access, share);
+                    return fs;
+                }
+                catch (IOException)
+                {
+                    if (fs != null)
+                    {
+                        fs.Dispose();
+                    }
+                    Thread.Sleep(200);
+                }
+            }
+
+            return null;
         }
     }
 }
