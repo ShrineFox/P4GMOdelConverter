@@ -24,7 +24,7 @@ namespace P4GMOdel
         public static void ExtractTextures(string path)
         {
             //Get texture names
-            List<string> textureNames = new List<string>();
+            List<Tuple<int, string>> textureNames = new List<Tuple<int, string>>();
             byte[] fileBytes = File.ReadAllBytes(path);
             int offset = 0;
 
@@ -41,7 +41,7 @@ namespace P4GMOdel
                         reader.BaseStream.Position = i - dim;
                         byte[] nameBytes = reader.ReadBytes(dim + 4);
                         string name = Encoding.UTF8.GetString(nameBytes);
-                        textureNames.Add(name.Substring(name.LastIndexOf('\0') + 1));
+                        textureNames.Add(new Tuple<int, string>(offset, name.Substring(name.LastIndexOf('\0') + 1)));
                     }
                 }
                 catch
@@ -52,32 +52,34 @@ namespace P4GMOdel
 
             if (textureNames.Count > 0)
             {
-                if (File.Exists($"{Path.GetDirectoryName(path)}\\textures\\{textureNames[0]}"))
-                    return;
-
-                //Get textures and write files
+                //Get textures and write new files
                 offset = 0;
                 for (int i = 0; i < textureNames.Count(); i++)
                 {
-                    try
+                    if (!File.Exists($"{Path.GetDirectoryName(path)}\\textures\\{textureNames[i].Item2}"))
                     {
-                        offset = FindSequence(File.ReadAllBytes(path), offset, Encoding.ASCII.GetBytes("TIM2"));
-                        Directory.CreateDirectory($"{Path.GetDirectoryName(path)}\\textures");
-                        string newFile = $"{Path.GetDirectoryName(path)}\\textures\\{textureNames[i]}";
-                        using (TGE.IO.EndianBinaryReader reader = new TGE.IO.EndianBinaryReader(File.OpenRead(path), TGE.IO.Endianness.BigEndian))
+                        try
                         {
-                            reader.BaseStream.Position = offset;
-                            reader.ReadBytes(16);
-                            int size = reader.ReadInt32() + 16;
-
-                            reader.BaseStream.Position = offset;
-                            File.WriteAllBytes(newFile, reader.ReadBytes(size));
-                            offset++;
+                            
+                            int size = 0;
+                            offset = FindSequence(File.ReadAllBytes(path), textureNames[i].Item1, Encoding.ASCII.GetBytes("TIM2"));
+                            using (TGE.IO.EndianBinaryReader reader = new TGE.IO.EndianBinaryReader(File.OpenRead(path), TGE.IO.Endianness.LittleEndian))
+                            {
+                                //Get Size
+                                reader.BaseStream.Position = offset - 8;
+                                size = reader.ReadInt32();
+                                reader.BaseStream.Position = offset + 4;
+                                //Get Image Data
+                                Directory.CreateDirectory($"{Path.GetDirectoryName(path)}\\textures");
+                                string newFile = $"{Path.GetDirectoryName(path)}\\textures\\{textureNames[i].Item2}";
+                                reader.BaseStream.Position = offset;
+                                File.WriteAllBytes(newFile, reader.ReadBytes(size));
+                            }                            
                         }
-                    }
-                    catch
-                    {
-                        break;
+                        catch
+                        {
+                            break;
+                        }
                     }
                 }
             }

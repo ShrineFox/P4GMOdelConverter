@@ -240,32 +240,35 @@ namespace P4GMOdel
 
         private void TreeView_MouseClick(object sender, MouseEventArgs e)
         {
-            //Update object if changed
-            UpdatePropertyGrid();
-            //Update modelviewer and treeview if "Model" clicked
-            if (lastSelectedTreeNode.Text == "Model" && (dataChanged || !viewerUpdated))
+            if (lastSelectedTreeNode != null)
             {
-                if (dataChanged)
-                    RefreshTreeview();
-                if (!viewerUpdated)
-                    ModelViewer.Update(model, settings);
-            }
-            //Replace modelviewer with texture view if "Texture" subnode clicked
-            if (lastSelectedTreeNode.ParentNode != null && lastSelectedTreeNode.ParentNode.Text == "Textures")
-            {
-                Texture texture = (Texture)lastSelectedTreeNode.Tag;
-                using (Stream s = File.Open(texture.FileName, FileMode.Open))
+                //Update object if changed
+                UpdatePropertyGrid();
+                //Update modelviewer and treeview if "Model" clicked
+                if (lastSelectedTreeNode.Text == "Model" && (dataChanged || !viewerUpdated))
                 {
-                    TIM2TextureSerializer serializer = new TIM2TextureSerializer();
-                    ModelViewer.CloseProcess(); //Hide model viewer
-                    panel_GMOView.BackgroundImageLayout = ImageLayout.Zoom;
-                    panel_GMOView.BackgroundImage = serializer.Open(s).GetImage(); //Decode TM2 to viewer
-                    viewerUpdated = false; //Reload model viewer next chance we get
+                    if (dataChanged)
+                        RefreshTreeview();
+                    if (!viewerUpdated)
+                        ModelViewer.Update(model, settings);
                 }
+                //Replace modelviewer with texture view if "Texture" subnode clicked
+                if (lastSelectedTreeNode.ParentNode != null && lastSelectedTreeNode.ParentNode.Text == "Textures")
+                {
+                    Texture texture = (Texture)lastSelectedTreeNode.Tag;
+                    using (Stream s = File.Open(texture.FileName, FileMode.Open))
+                    {
+                        TIM2TextureSerializer serializer = new TIM2TextureSerializer();
+                        ModelViewer.CloseProcess(); //Hide model viewer
+                        panel_GMOView.BackgroundImageLayout = ImageLayout.Zoom;
+                        panel_GMOView.BackgroundImage = serializer.Open(s).GetImage(); //Decode TM2 to viewer
+                        viewerUpdated = false; //Reload model viewer next chance we get
+                    }
+                }
+                //Show context menu if right clicked
+                if (e.Button.Equals(MouseButtons.Right))
+                    darkContextMenu_RightClick.Show(this, new Point(e.X + ((Control)sender).Left + 4, e.Y + ((Control)sender).Top + 4));
             }
-            //Show context menu if right clicked
-            if (e.Button.Equals(MouseButtons.Right))
-                darkContextMenu_RightClick.Show(this, new Point(e.X + ((Control)sender).Left + 4, e.Y + ((Control)sender).Top + 4));
         }
 
         private void UpdatePropertyGrid()
