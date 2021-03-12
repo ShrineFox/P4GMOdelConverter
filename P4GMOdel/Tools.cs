@@ -323,12 +323,12 @@ namespace P4GMOdel
                             }
                             if (!hasAMD)
                                 pak.AddFile(model.Name + ".gmo", tempPath + ".gmo", ConflictPolicy.Replace);
-                            //Save new PAC
-                            pak.Save(output);
-                            using (WaitForFile(output, FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
                         }
                         else
                             MessageBox.Show("Failed to open PAC for GMO replacement!");
+                        //Save new PAC
+                        pak.Save(output + "_new");
+                        using (WaitForFile(output + "_new", FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
                     }
                     else
                     {

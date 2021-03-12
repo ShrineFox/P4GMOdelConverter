@@ -474,6 +474,12 @@ namespace P4GMOdel
                 dummyMaterials.Add(dummy);
                 model.Materials = dummyMaterials;
                 model.Textures = new List<Texture>();
+                //Set parts to use Dummy material
+                foreach(var part in model.Parts)
+                {
+                    for (int i = 0; i < part.Meshes.Count(); i++)
+                        part.Meshes[i].SetMaterial = "Dummy";
+                }
             }
             model.Name = System.IO.Path.GetFileNameWithoutExtension(model.Path);
             return model;

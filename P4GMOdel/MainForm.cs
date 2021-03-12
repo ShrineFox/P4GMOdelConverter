@@ -309,6 +309,48 @@ namespace P4GMOdel
 
         private void PropertyGrid_ValueChanged(object s, PropertyValueChangedEventArgs e)
         {
+            string newValue = e.ChangedItem.Value.ToString();
+            string oldValue = e.OldValue.ToString();
+            string propertyName = e.ChangedItem.Label;
+
+            //Update all instances of value across model
+            switch (lastSelectedTreeNode.ParentNode.Text)
+            {
+                case "Bones":
+                    if (propertyName == "ParentBone")
+                        foreach (Bone bone in model.Bones)
+                            if (bone.ParentBone == oldValue)
+                                bone.ParentBone = newValue;
+                    if (propertyName == "Name")
+                        foreach (Animation anim in model.Animations)
+                            for (int i = 0; i < anim.Animate.Count; i++)
+                                anim.Animate[i] = anim.Animate[i].Replace($"\"Bone::{oldValue}\"", $"\"Bone::{newValue}\"");
+                    break;
+                case "Parts":
+                    if (propertyName == "Name")
+                        foreach (Bone bone in model.Bones)
+                            for (int i = 0; i < bone.DrawParts.Count; i++)
+                                if (bone.DrawParts[i] == oldValue)
+                                    bone.DrawParts[i] = newValue;
+                    break;
+                case "Materials":
+                    if (propertyName == "Name")
+                        foreach (Part part in model.Parts)
+                            for (int i = 0; i < part.Meshes.Count; i++)
+                                if (part.Meshes[i].SetMaterial == oldValue)
+                                    part.Meshes[i].SetMaterial = newValue;
+                    break;
+                case "Textures":
+                    if (propertyName == "Name")
+                        foreach (Material mat in model.Materials)
+                            for (int i = 0; i < mat.Layers.Count; i++)
+                                if (mat.Layers[i].SetTexture == oldValue)
+                                    mat.Layers[i].SetTexture = newValue;
+                    break;
+                default:
+                    return;
+            }
+
             DataChanged(true);
         }
 
