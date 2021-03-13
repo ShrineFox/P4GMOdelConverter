@@ -105,7 +105,7 @@ namespace P4GMOdel
                     if (!extracted)
                         MessageBox.Show("Could not find AMD or GMO model data in PAC archive!");
                     else
-                        while (!File.Exists(model.Path)) { Thread.Sleep(100); }
+                        using (Tools.WaitForFile(model.Path, FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
                 }
                 else
                     MessageBox.Show("Failed to open PAC archive!");
@@ -129,7 +129,7 @@ namespace P4GMOdel
                     if (!extracted)
                         MessageBox.Show("Could not find GMO model data in AMD archive!");
                     else
-                        while (!File.Exists(model.Path)) { Thread.Sleep(100); }
+                        using (Tools.WaitForFile(model.Path, FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
                 }
                 else
                     MessageBox.Show("Failed to open AMD archive!");

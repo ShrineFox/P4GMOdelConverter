@@ -64,7 +64,7 @@ namespace P4GMOdel
                 using (Tools.WaitForFile(tempPath + ".mds", FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
                 //Attempt to generate temporary gmo
                 Tools.GMOTool(tempPath + ".mds", false, settings);
-                while (!File.Exists($"{tempPath}.mds")) { Thread.Sleep(1000); x++; if (x == 15) return; }
+                using (Tools.WaitForFile($"{tempPath}.mds", FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
                 //Reload model viewer with temporary GMO
                 using (Tools.WaitForFile(tempPath + ".gmo", FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
                 LoadModel(tempPath + ".gmo");

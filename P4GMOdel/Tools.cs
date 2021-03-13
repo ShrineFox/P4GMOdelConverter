@@ -2,9 +2,11 @@
 using AtlusFileSystemLibrary;
 using AtlusFileSystemLibrary.Common.IO;
 using AtlusFileSystemLibrary.FileSystems.PAK;
+using FreeImageAPI;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -148,7 +150,7 @@ namespace P4GMOdel
             {
                 cmd.Start();
                 int x = 0;
-                while (!File.Exists($"{Path.Combine(Path.GetDirectoryName(fbx), Path.GetFileNameWithoutExtension(fbx))}.gmo")) { Thread.Sleep(1000); x++; if (x == 15) return; }
+                using (Tools.WaitForFile($"{Path.Combine(Path.GetDirectoryName(fbx), Path.GetFileNameWithoutExtension(fbx))}.gmo", FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
                 cmd.WaitForExit();
             }
             else
@@ -168,7 +170,7 @@ namespace P4GMOdel
             {
                 cmd.Start();
                 int x = 0;
-                while (!File.Exists($"{texture}.tm2")) { Thread.Sleep(1000); x++; if (x == 15) return; }
+                using (WaitForFile($"{texture}.tm2", FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
                 cmd.WaitForExit();
             }
             else
@@ -219,7 +221,7 @@ namespace P4GMOdel
                 {
                     cmdProcess.Start();
                     int x = 0;
-                    while (!File.Exists($"{tempPath}.fbx")) { Thread.Sleep(1000); x++; if (x == 15) return; }
+                    using (WaitForFile($"{tempPath}.fbx", FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
                     cmdProcess.Kill();
                 }
                 else
@@ -401,6 +403,30 @@ namespace P4GMOdel
             }
 
             return null;
+        }
+
+        public static void Create8bppPng(string input, string output)
+        {
+            FIBITMAP hDIB24bpp = FreeImage.LoadEx(input);
+            if (!hDIB24bpp.IsNull)
+            {
+                FIBITMAP hDIB8bpp = FreeImage.ColorQuantize(hDIB24bpp, FREE_IMAGE_QUANTIZE.FIQ_WUQUANT);
+                Palette palette = new Palette(hDIB8bpp);
+                byte[] transparency = new byte[256];
+                for (int i = 0; i < 256; i++)
+                {
+                    transparency[i] = 0xFF;
+                    if (palette[i].rgbGreen >= 0xFE && palette[i].rgbBlue == 0x00 && palette[i].rgbRed == 0x00)
+                    {
+                        transparency[i] = 0x00;
+                    }
+                }
+                FreeImage.SetTransparencyTable(hDIB8bpp, transparency);
+                FreeImage.SaveEx(hDIB8bpp, output);
+
+                FreeImage.UnloadEx(ref hDIB24bpp);
+                FreeImage.UnloadEx(ref hDIB8bpp);
+            }
         }
     }
 }
