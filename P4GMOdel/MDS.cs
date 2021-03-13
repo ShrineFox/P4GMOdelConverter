@@ -181,8 +181,9 @@ namespace P4GMOdel
                     // Hacky workaround: Make an 8bpp png with transparent pixel so OpenKH will convert to TM2
                     Bitmap bmp = new Bitmap(Image.FromFile(path));
                     bmp = new Bitmap(Image.FromFile(path));
-                    var oldColor = bmp.GetPixel(0, 0); // TODO: Add back to TM2 pallette?
-                    bmp.SetPixel(0,0,Color.FromArgb(0,0,0,0));
+                    var oldColor = bmp.GetPixel(0, 0);
+                    if (oldColor.A > 0)
+                        bmp.SetPixel(0,0,Color.FromArgb(oldColor.A - 1, oldColor.R, oldColor.G, oldColor.B));
                     bmp.Save(tempPng);
                     Tools.Create8bppPng(tempPng, tempPng2);
                     using (Tools.WaitForFile(tempPng2, FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
