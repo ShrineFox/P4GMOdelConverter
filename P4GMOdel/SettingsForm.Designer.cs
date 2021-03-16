@@ -45,10 +45,10 @@ namespace P4GMOdel
             this.txt_WeaponBoneName = new DarkUI.Controls.DarkTextBox();
             this.chkBox_RenameBones = new DarkUI.Controls.DarkCheckBox();
             this.groupBox_Output = new DarkUI.Controls.DarkGroupBox();
+            this.chkBox_ShowConsoleWindows = new DarkUI.Controls.DarkCheckBox();
             this.chkBox_FixForPC = new DarkUI.Controls.DarkCheckBox();
             this.btn_Save = new DarkUI.Controls.DarkButton();
             this.btn_Cancel = new DarkUI.Controls.DarkButton();
-            this.chkBox_ShowConsoleWindows = new DarkUI.Controls.DarkCheckBox();
             this.groupBox_Import.SuspendLayout();
             this.groupBox_Conversion.SuspendLayout();
             this.groupBox_Output.SuspendLayout();
@@ -165,12 +165,14 @@ namespace P4GMOdel
             // chkBox_AutoConvertTex
             // 
             this.chkBox_AutoConvertTex.AutoSize = true;
-            this.chkBox_AutoConvertTex.Location = new System.Drawing.Point(10, 36);
+            this.chkBox_AutoConvertTex.Enabled = false;
+            this.chkBox_AutoConvertTex.Location = new System.Drawing.Point(10, 98);
             this.chkBox_AutoConvertTex.Margin = new System.Windows.Forms.Padding(4);
             this.chkBox_AutoConvertTex.Name = "chkBox_AutoConvertTex";
             this.chkBox_AutoConvertTex.Size = new System.Drawing.Size(186, 21);
             this.chkBox_AutoConvertTex.TabIndex = 10;
             this.chkBox_AutoConvertTex.Text = "Convert Textures to TM2";
+            this.chkBox_AutoConvertTex.Visible = false;
             // 
             // lbl_WpnBone
             // 
@@ -187,7 +189,7 @@ namespace P4GMOdel
             // chkBox_UseDummyMaterials
             // 
             this.chkBox_UseDummyMaterials.AutoSize = true;
-            this.chkBox_UseDummyMaterials.Location = new System.Drawing.Point(10, 76);
+            this.chkBox_UseDummyMaterials.Location = new System.Drawing.Point(10, 56);
             this.chkBox_UseDummyMaterials.Margin = new System.Windows.Forms.Padding(4);
             this.chkBox_UseDummyMaterials.Name = "chkBox_UseDummyMaterials";
             this.chkBox_UseDummyMaterials.Size = new System.Drawing.Size(167, 21);
@@ -197,7 +199,7 @@ namespace P4GMOdel
             // chkBox_LoadAnimations
             // 
             this.chkBox_LoadAnimations.AutoSize = true;
-            this.chkBox_LoadAnimations.Location = new System.Drawing.Point(10, 97);
+            this.chkBox_LoadAnimations.Location = new System.Drawing.Point(10, 77);
             this.chkBox_LoadAnimations.Margin = new System.Windows.Forms.Padding(4);
             this.chkBox_LoadAnimations.Name = "chkBox_LoadAnimations";
             this.chkBox_LoadAnimations.Size = new System.Drawing.Size(135, 21);
@@ -218,7 +220,7 @@ namespace P4GMOdel
             // chkBox_RenameBones
             // 
             this.chkBox_RenameBones.AutoSize = true;
-            this.chkBox_RenameBones.Location = new System.Drawing.Point(10, 56);
+            this.chkBox_RenameBones.Location = new System.Drawing.Point(10, 36);
             this.chkBox_RenameBones.Margin = new System.Windows.Forms.Padding(4);
             this.chkBox_RenameBones.Name = "chkBox_RenameBones";
             this.chkBox_RenameBones.Size = new System.Drawing.Size(173, 21);
@@ -236,6 +238,16 @@ namespace P4GMOdel
             this.groupBox_Output.TabIndex = 16;
             this.groupBox_Output.TabStop = false;
             this.groupBox_Output.Text = "Output Settings";
+            // 
+            // chkBox_ShowConsoleWindows
+            // 
+            this.chkBox_ShowConsoleWindows.AutoSize = true;
+            this.chkBox_ShowConsoleWindows.Location = new System.Drawing.Point(7, 56);
+            this.chkBox_ShowConsoleWindows.Margin = new System.Windows.Forms.Padding(4);
+            this.chkBox_ShowConsoleWindows.Name = "chkBox_ShowConsoleWindows";
+            this.chkBox_ShowConsoleWindows.Size = new System.Drawing.Size(179, 21);
+            this.chkBox_ShowConsoleWindows.TabIndex = 18;
+            this.chkBox_ShowConsoleWindows.Text = "Show Console Windows";
             // 
             // chkBox_FixForPC
             // 
@@ -267,16 +279,6 @@ namespace P4GMOdel
             this.btn_Cancel.Size = new System.Drawing.Size(75, 30);
             this.btn_Cancel.TabIndex = 20;
             this.btn_Cancel.Text = "Cancel";
-            // 
-            // chkBox_ShowConsoleWindows
-            // 
-            this.chkBox_ShowConsoleWindows.AutoSize = true;
-            this.chkBox_ShowConsoleWindows.Location = new System.Drawing.Point(7, 56);
-            this.chkBox_ShowConsoleWindows.Margin = new System.Windows.Forms.Padding(4);
-            this.chkBox_ShowConsoleWindows.Name = "chkBox_ShowConsoleWindows";
-            this.chkBox_ShowConsoleWindows.Size = new System.Drawing.Size(179, 21);
-            this.chkBox_ShowConsoleWindows.TabIndex = 18;
-            this.chkBox_ShowConsoleWindows.Text = "Show Console Windows";
             // 
             // SettingsForm
             // 

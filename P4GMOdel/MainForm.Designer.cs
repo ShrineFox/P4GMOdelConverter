@@ -52,6 +52,25 @@
             this.replaceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.panel_GMOView = new System.Windows.Forms.Panel();
+            this.animationPresetsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem_ReorderP3P = new System.Windows.Forms.ToolStripMenuItem();
+            this.applyNamesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem_ApplyP4GProtag = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem_ApplyP4GParty = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem_ApplyP4GPersona = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem_ApplyP4GCulprit = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem_ApplyP3PProtag = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem_ApplyP3PParty = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem_ApplyP3PPersona = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem_ApplyP3PStrega = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem_ReorderP4GProtag = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem_ReorderP4GParty = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem_ReorderP4GPersona = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem_ReorderP4GCulprit = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem_ReorderP3PProtag = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem_ReorderP3PParty = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem_ReorderP3PPersona = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem_ReorderP3PStrega = new System.Windows.Forms.ToolStripMenuItem();
             this.darkMenuStrip_Main.SuspendLayout();
             this.darkContextMenu_RightClick.SuspendLayout();
             this.SuspendLayout();
@@ -106,7 +125,8 @@
             this.toolStripMenuItem_File,
             this.toolStripMenuItem_Settings,
             this.toolStripMenuItem_Refresh,
-            this.toolStripMenuItem_Help});
+            this.toolStripMenuItem_Help,
+            this.animationPresetsToolStripMenuItem});
             this.darkMenuStrip_Main.Location = new System.Drawing.Point(0, 0);
             this.darkMenuStrip_Main.Name = "darkMenuStrip_Main";
             this.darkMenuStrip_Main.Padding = new System.Windows.Forms.Padding(3, 2, 0, 2);
@@ -220,7 +240,7 @@
             this.toolStripMenuItem_About.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(63)))), ((int)(((byte)(65)))));
             this.toolStripMenuItem_About.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
             this.toolStripMenuItem_About.Name = "toolStripMenuItem_About";
-            this.toolStripMenuItem_About.Size = new System.Drawing.Size(143, 26);
+            this.toolStripMenuItem_About.Size = new System.Drawing.Size(224, 26);
             this.toolStripMenuItem_About.Text = "About";
             // 
             // toolStripMenuItem_Tutorial
@@ -228,7 +248,7 @@
             this.toolStripMenuItem_Tutorial.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(63)))), ((int)(((byte)(65)))));
             this.toolStripMenuItem_Tutorial.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
             this.toolStripMenuItem_Tutorial.Name = "toolStripMenuItem_Tutorial";
-            this.toolStripMenuItem_Tutorial.Size = new System.Drawing.Size(143, 26);
+            this.toolStripMenuItem_Tutorial.Size = new System.Drawing.Size(224, 26);
             this.toolStripMenuItem_Tutorial.Text = "Tutorial";
             // 
             // darkContextMenu_RightClick
@@ -244,14 +264,14 @@
             this.replaceToolStripMenuItem,
             this.deleteToolStripMenuItem});
             this.darkContextMenu_RightClick.Name = "darkContextMenu_RightClick";
-            this.darkContextMenu_RightClick.Size = new System.Drawing.Size(211, 176);
+            this.darkContextMenu_RightClick.Size = new System.Drawing.Size(159, 148);
             // 
             // moveUpToolStripMenuItem
             // 
             this.moveUpToolStripMenuItem.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(63)))), ((int)(((byte)(65)))));
             this.moveUpToolStripMenuItem.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
             this.moveUpToolStripMenuItem.Name = "moveUpToolStripMenuItem";
-            this.moveUpToolStripMenuItem.Size = new System.Drawing.Size(210, 24);
+            this.moveUpToolStripMenuItem.Size = new System.Drawing.Size(158, 24);
             this.moveUpToolStripMenuItem.Text = "Move Up";
             this.moveUpToolStripMenuItem.Visible = false;
             this.moveUpToolStripMenuItem.Click += new System.EventHandler(this.MoveUp_Click);
@@ -261,7 +281,7 @@
             this.moveDownToolStripMenuItem.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(63)))), ((int)(((byte)(65)))));
             this.moveDownToolStripMenuItem.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
             this.moveDownToolStripMenuItem.Name = "moveDownToolStripMenuItem";
-            this.moveDownToolStripMenuItem.Size = new System.Drawing.Size(210, 24);
+            this.moveDownToolStripMenuItem.Size = new System.Drawing.Size(158, 24);
             this.moveDownToolStripMenuItem.Text = "Move Down";
             this.moveDownToolStripMenuItem.Visible = false;
             this.moveDownToolStripMenuItem.Click += new System.EventHandler(this.MoveDown_Click);
@@ -271,7 +291,7 @@
             this.exportToolStripMenuItem.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(63)))), ((int)(((byte)(65)))));
             this.exportToolStripMenuItem.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
             this.exportToolStripMenuItem.Name = "exportToolStripMenuItem";
-            this.exportToolStripMenuItem.Size = new System.Drawing.Size(210, 24);
+            this.exportToolStripMenuItem.Size = new System.Drawing.Size(158, 24);
             this.exportToolStripMenuItem.Text = "Export";
             this.exportToolStripMenuItem.Click += new System.EventHandler(this.ExportElement_Click);
             // 
@@ -280,7 +300,7 @@
             this.addToolStripMenuItem.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(63)))), ((int)(((byte)(65)))));
             this.addToolStripMenuItem.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
             this.addToolStripMenuItem.Name = "addToolStripMenuItem";
-            this.addToolStripMenuItem.Size = new System.Drawing.Size(210, 24);
+            this.addToolStripMenuItem.Size = new System.Drawing.Size(158, 24);
             this.addToolStripMenuItem.Text = "Add";
             this.addToolStripMenuItem.Click += new System.EventHandler(this.Add_Click);
             // 
@@ -289,7 +309,7 @@
             this.replaceToolStripMenuItem.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(63)))), ((int)(((byte)(65)))));
             this.replaceToolStripMenuItem.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
             this.replaceToolStripMenuItem.Name = "replaceToolStripMenuItem";
-            this.replaceToolStripMenuItem.Size = new System.Drawing.Size(210, 24);
+            this.replaceToolStripMenuItem.Size = new System.Drawing.Size(158, 24);
             this.replaceToolStripMenuItem.Text = "Replace";
             this.replaceToolStripMenuItem.Click += new System.EventHandler(this.Replace_Click);
             // 
@@ -298,7 +318,7 @@
             this.deleteToolStripMenuItem.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(63)))), ((int)(((byte)(65)))));
             this.deleteToolStripMenuItem.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
             this.deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
-            this.deleteToolStripMenuItem.Size = new System.Drawing.Size(210, 24);
+            this.deleteToolStripMenuItem.Size = new System.Drawing.Size(158, 24);
             this.deleteToolStripMenuItem.Text = "Delete";
             this.deleteToolStripMenuItem.Click += new System.EventHandler(this.Delete_Click);
             // 
@@ -312,6 +332,195 @@
             this.panel_GMOView.Name = "panel_GMOView";
             this.panel_GMOView.Size = new System.Drawing.Size(576, 413);
             this.panel_GMOView.TabIndex = 3;
+            // 
+            // animationPresetsToolStripMenuItem
+            // 
+            this.animationPresetsToolStripMenuItem.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(63)))), ((int)(((byte)(65)))));
+            this.animationPresetsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.applyNamesToolStripMenuItem,
+            this.toolStripMenuItem_ReorderP3P});
+            this.animationPresetsToolStripMenuItem.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
+            this.animationPresetsToolStripMenuItem.Name = "animationPresetsToolStripMenuItem";
+            this.animationPresetsToolStripMenuItem.Size = new System.Drawing.Size(142, 24);
+            this.animationPresetsToolStripMenuItem.Text = "Animation Presets";
+            // 
+            // toolStripMenuItem_ReorderP3P
+            // 
+            this.toolStripMenuItem_ReorderP3P.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(63)))), ((int)(((byte)(65)))));
+            this.toolStripMenuItem_ReorderP3P.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripMenuItem_ReorderP4GProtag,
+            this.toolStripMenuItem_ReorderP4GParty,
+            this.toolStripMenuItem_ReorderP4GPersona,
+            this.toolStripMenuItem_ReorderP4GCulprit,
+            this.toolStripMenuItem_ReorderP3PProtag,
+            this.toolStripMenuItem_ReorderP3PParty,
+            this.toolStripMenuItem_ReorderP3PPersona,
+            this.toolStripMenuItem_ReorderP3PStrega});
+            this.toolStripMenuItem_ReorderP3P.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
+            this.toolStripMenuItem_ReorderP3P.Name = "toolStripMenuItem_ReorderP3P";
+            this.toolStripMenuItem_ReorderP3P.Size = new System.Drawing.Size(224, 26);
+            this.toolStripMenuItem_ReorderP3P.Text = "Reorder To...";
+            // 
+            // applyNamesToolStripMenuItem
+            // 
+            this.applyNamesToolStripMenuItem.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(63)))), ((int)(((byte)(65)))));
+            this.applyNamesToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripMenuItem_ApplyP4GProtag,
+            this.toolStripMenuItem_ApplyP4GParty,
+            this.toolStripMenuItem_ApplyP4GPersona,
+            this.toolStripMenuItem_ApplyP4GCulprit,
+            this.toolStripMenuItem_ApplyP3PProtag,
+            this.toolStripMenuItem_ApplyP3PParty,
+            this.toolStripMenuItem_ApplyP3PPersona,
+            this.toolStripMenuItem_ApplyP3PStrega});
+            this.applyNamesToolStripMenuItem.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
+            this.applyNamesToolStripMenuItem.Name = "applyNamesToolStripMenuItem";
+            this.applyNamesToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.applyNamesToolStripMenuItem.Text = "Apply Names...";
+            // 
+            // toolStripMenuItem_ApplyP4GProtag
+            // 
+            this.toolStripMenuItem_ApplyP4GProtag.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(63)))), ((int)(((byte)(65)))));
+            this.toolStripMenuItem_ApplyP4GProtag.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
+            this.toolStripMenuItem_ApplyP4GProtag.Name = "toolStripMenuItem_ApplyP4GProtag";
+            this.toolStripMenuItem_ApplyP4GProtag.Size = new System.Drawing.Size(224, 26);
+            this.toolStripMenuItem_ApplyP4GProtag.Text = "P4G Protag";
+            this.toolStripMenuItem_ApplyP4GProtag.Click += new System.EventHandler(this.ApplyP4GProtag_Click);
+            // 
+            // toolStripMenuItem_ApplyP4GParty
+            // 
+            this.toolStripMenuItem_ApplyP4GParty.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(63)))), ((int)(((byte)(65)))));
+            this.toolStripMenuItem_ApplyP4GParty.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
+            this.toolStripMenuItem_ApplyP4GParty.Name = "toolStripMenuItem_ApplyP4GParty";
+            this.toolStripMenuItem_ApplyP4GParty.Size = new System.Drawing.Size(224, 26);
+            this.toolStripMenuItem_ApplyP4GParty.Text = "P4G Party";
+            this.toolStripMenuItem_ApplyP4GParty.Click += new System.EventHandler(this.ApplyP4GParty_Click);
+            // 
+            // toolStripMenuItem_ApplyP4GPersona
+            // 
+            this.toolStripMenuItem_ApplyP4GPersona.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(63)))), ((int)(((byte)(65)))));
+            this.toolStripMenuItem_ApplyP4GPersona.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
+            this.toolStripMenuItem_ApplyP4GPersona.Name = "toolStripMenuItem_ApplyP4GPersona";
+            this.toolStripMenuItem_ApplyP4GPersona.Size = new System.Drawing.Size(224, 26);
+            this.toolStripMenuItem_ApplyP4GPersona.Text = "P4G Persona";
+            this.toolStripMenuItem_ApplyP4GPersona.Click += new System.EventHandler(this.ApplyP4GPersona_Click);
+            // 
+            // toolStripMenuItem_ApplyP4GCulprit
+            // 
+            this.toolStripMenuItem_ApplyP4GCulprit.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(63)))), ((int)(((byte)(65)))));
+            this.toolStripMenuItem_ApplyP4GCulprit.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
+            this.toolStripMenuItem_ApplyP4GCulprit.Name = "toolStripMenuItem_ApplyP4GCulprit";
+            this.toolStripMenuItem_ApplyP4GCulprit.Size = new System.Drawing.Size(224, 26);
+            this.toolStripMenuItem_ApplyP4GCulprit.Text = "P4G Culprit";
+            this.toolStripMenuItem_ApplyP4GCulprit.Click += new System.EventHandler(this.ApplyP4GCulprit_Click);
+            // 
+            // toolStripMenuItem_ApplyP3PProtag
+            // 
+            this.toolStripMenuItem_ApplyP3PProtag.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(63)))), ((int)(((byte)(65)))));
+            this.toolStripMenuItem_ApplyP3PProtag.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
+            this.toolStripMenuItem_ApplyP3PProtag.Name = "toolStripMenuItem_ApplyP3PProtag";
+            this.toolStripMenuItem_ApplyP3PProtag.Size = new System.Drawing.Size(224, 26);
+            this.toolStripMenuItem_ApplyP3PProtag.Text = "P3P Protag";
+            this.toolStripMenuItem_ApplyP3PProtag.Click += new System.EventHandler(this.ApplyP3PProtag_Click);
+            // 
+            // toolStripMenuItem_ApplyP3PParty
+            // 
+            this.toolStripMenuItem_ApplyP3PParty.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(63)))), ((int)(((byte)(65)))));
+            this.toolStripMenuItem_ApplyP3PParty.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
+            this.toolStripMenuItem_ApplyP3PParty.Name = "toolStripMenuItem_ApplyP3PParty";
+            this.toolStripMenuItem_ApplyP3PParty.Size = new System.Drawing.Size(224, 26);
+            this.toolStripMenuItem_ApplyP3PParty.Text = "P3P Party";
+            this.toolStripMenuItem_ApplyP3PParty.Click += new System.EventHandler(this.ApplyP3PParty_Click);
+            // 
+            // toolStripMenuItem_ApplyP3PPersona
+            // 
+            this.toolStripMenuItem_ApplyP3PPersona.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(63)))), ((int)(((byte)(65)))));
+            this.toolStripMenuItem_ApplyP3PPersona.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
+            this.toolStripMenuItem_ApplyP3PPersona.Name = "toolStripMenuItem_ApplyP3PPersona";
+            this.toolStripMenuItem_ApplyP3PPersona.Size = new System.Drawing.Size(224, 26);
+            this.toolStripMenuItem_ApplyP3PPersona.Text = "P3P Persona";
+            this.toolStripMenuItem_ApplyP3PPersona.Click += new System.EventHandler(this.ApplyP3PPersona_Click);
+            // 
+            // toolStripMenuItem_ApplyP3PStrega
+            // 
+            this.toolStripMenuItem_ApplyP3PStrega.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(63)))), ((int)(((byte)(65)))));
+            this.toolStripMenuItem_ApplyP3PStrega.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
+            this.toolStripMenuItem_ApplyP3PStrega.Name = "toolStripMenuItem_ApplyP3PStrega";
+            this.toolStripMenuItem_ApplyP3PStrega.Size = new System.Drawing.Size(224, 26);
+            this.toolStripMenuItem_ApplyP3PStrega.Text = "P3P Strega";
+            this.toolStripMenuItem_ApplyP3PStrega.Click += new System.EventHandler(this.ApplyP3PStrega_Click);
+            // 
+            // toolStripMenuItem_ReorderP4GProtag
+            // 
+            this.toolStripMenuItem_ReorderP4GProtag.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(63)))), ((int)(((byte)(65)))));
+            this.toolStripMenuItem_ReorderP4GProtag.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
+            this.toolStripMenuItem_ReorderP4GProtag.Name = "toolStripMenuItem_ReorderP4GProtag";
+            this.toolStripMenuItem_ReorderP4GProtag.Size = new System.Drawing.Size(224, 26);
+            this.toolStripMenuItem_ReorderP4GProtag.Text = "P4G Protag";
+            this.toolStripMenuItem_ReorderP4GProtag.Click += new System.EventHandler(this.ReorderP4GProtag_Click);
+            // 
+            // toolStripMenuItem_ReorderP4GParty
+            // 
+            this.toolStripMenuItem_ReorderP4GParty.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(63)))), ((int)(((byte)(65)))));
+            this.toolStripMenuItem_ReorderP4GParty.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
+            this.toolStripMenuItem_ReorderP4GParty.Name = "toolStripMenuItem_ReorderP4GParty";
+            this.toolStripMenuItem_ReorderP4GParty.Size = new System.Drawing.Size(224, 26);
+            this.toolStripMenuItem_ReorderP4GParty.Text = "P4G Party";
+            this.toolStripMenuItem_ReorderP4GParty.Click += new System.EventHandler(this.ReorderP4GParty_Click);
+            // 
+            // toolStripMenuItem_ReorderP4GPersona
+            // 
+            this.toolStripMenuItem_ReorderP4GPersona.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(63)))), ((int)(((byte)(65)))));
+            this.toolStripMenuItem_ReorderP4GPersona.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
+            this.toolStripMenuItem_ReorderP4GPersona.Name = "toolStripMenuItem_ReorderP4GPersona";
+            this.toolStripMenuItem_ReorderP4GPersona.Size = new System.Drawing.Size(224, 26);
+            this.toolStripMenuItem_ReorderP4GPersona.Text = "P4G Persona";
+            this.toolStripMenuItem_ReorderP4GPersona.Click += new System.EventHandler(this.ReorderP4GPersona_Click);
+            // 
+            // toolStripMenuItem_ReorderP4GCulprit
+            // 
+            this.toolStripMenuItem_ReorderP4GCulprit.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(63)))), ((int)(((byte)(65)))));
+            this.toolStripMenuItem_ReorderP4GCulprit.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
+            this.toolStripMenuItem_ReorderP4GCulprit.Name = "toolStripMenuItem_ReorderP4GCulprit";
+            this.toolStripMenuItem_ReorderP4GCulprit.Size = new System.Drawing.Size(224, 26);
+            this.toolStripMenuItem_ReorderP4GCulprit.Text = "P4G Culprpit";
+            this.toolStripMenuItem_ReorderP4GCulprit.Click += new System.EventHandler(this.ReorderP4GCulprit_Click);
+            // 
+            // toolStripMenuItem_ReorderP3PProtag
+            // 
+            this.toolStripMenuItem_ReorderP3PProtag.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(63)))), ((int)(((byte)(65)))));
+            this.toolStripMenuItem_ReorderP3PProtag.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
+            this.toolStripMenuItem_ReorderP3PProtag.Name = "toolStripMenuItem_ReorderP3PProtag";
+            this.toolStripMenuItem_ReorderP3PProtag.Size = new System.Drawing.Size(224, 26);
+            this.toolStripMenuItem_ReorderP3PProtag.Text = "P3P Protag";
+            this.toolStripMenuItem_ReorderP3PProtag.Click += new System.EventHandler(this.ReorderP3PProtag_Click);
+            // 
+            // toolStripMenuItem_ReorderP3PParty
+            // 
+            this.toolStripMenuItem_ReorderP3PParty.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(63)))), ((int)(((byte)(65)))));
+            this.toolStripMenuItem_ReorderP3PParty.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
+            this.toolStripMenuItem_ReorderP3PParty.Name = "toolStripMenuItem_ReorderP3PParty";
+            this.toolStripMenuItem_ReorderP3PParty.Size = new System.Drawing.Size(224, 26);
+            this.toolStripMenuItem_ReorderP3PParty.Text = "P3P Party";
+            this.toolStripMenuItem_ReorderP3PParty.Click += new System.EventHandler(this.ReorderP3PParty_Click);
+            // 
+            // toolStripMenuItem_ReorderP3PPersona
+            // 
+            this.toolStripMenuItem_ReorderP3PPersona.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(63)))), ((int)(((byte)(65)))));
+            this.toolStripMenuItem_ReorderP3PPersona.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
+            this.toolStripMenuItem_ReorderP3PPersona.Name = "toolStripMenuItem_ReorderP3PPersona";
+            this.toolStripMenuItem_ReorderP3PPersona.Size = new System.Drawing.Size(224, 26);
+            this.toolStripMenuItem_ReorderP3PPersona.Text = "P3P Persona";
+            this.toolStripMenuItem_ReorderP3PPersona.Click += new System.EventHandler(this.ReorderP3PPersona_Click);
+            // 
+            // toolStripMenuItem_ReorderP3PStrega
+            // 
+            this.toolStripMenuItem_ReorderP3PStrega.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(63)))), ((int)(((byte)(65)))));
+            this.toolStripMenuItem_ReorderP3PStrega.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
+            this.toolStripMenuItem_ReorderP3PStrega.Name = "toolStripMenuItem_ReorderP3PStrega";
+            this.toolStripMenuItem_ReorderP3PStrega.Size = new System.Drawing.Size(224, 26);
+            this.toolStripMenuItem_ReorderP3PStrega.Text = "P3P Strega";
+            this.toolStripMenuItem_ReorderP3PStrega.Click += new System.EventHandler(this.ReorderP3PStrega_Click);
             // 
             // MainForm
             // 
@@ -381,6 +590,25 @@
         private System.Windows.Forms.ToolStripMenuItem deleteToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_Export;
         private System.Windows.Forms.Panel panel_GMOView;
+        private System.Windows.Forms.ToolStripMenuItem animationPresetsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_ReorderP3P;
+        private System.Windows.Forms.ToolStripMenuItem applyNamesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_ApplyP4GProtag;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_ApplyP4GParty;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_ApplyP4GPersona;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_ApplyP4GCulprit;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_ApplyP3PProtag;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_ApplyP3PParty;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_ApplyP3PPersona;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_ApplyP3PStrega;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_ReorderP4GProtag;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_ReorderP4GParty;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_ReorderP4GPersona;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_ReorderP4GCulprit;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_ReorderP3PProtag;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_ReorderP3PParty;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_ReorderP3PPersona;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_ReorderP3PStrega;
     }
 }
 
