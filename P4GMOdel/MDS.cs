@@ -477,9 +477,12 @@ namespace P4GMOdel
                 }
             }
             //Optimize data
-            //model = MatchBonesAndDrawParts(model);
-            //model = RewriteBones(model, settings);
-            //model = RewriteParts(model, settings);
+            if (settings.OptimizeForVita)
+            {
+                model = MatchBonesAndDrawParts(model);
+                model = RewriteBones(model, settings);
+                model = RewriteParts(model, settings);
+            }
             if (!settings.UseDummyMaterials) 
                 model = RewriteTextures(model, settings);
             else
@@ -721,7 +724,7 @@ namespace P4GMOdel
                     texture.FileName = texture.FileName.Replace("\\\\", "").Insert(1, ":");
 
                 //Convert, move and edit path of non-tm2 textures
-                if (!texture.FileName.ToLower().Contains(".tm2") && settings.AutoConvertTex)
+                if (!texture.FileName.ToLower().Contains(".tm2"))
                 {
                     if (File.Exists(texture.FileName))
                         Tools.GIMConv(texture.FileName, settings);

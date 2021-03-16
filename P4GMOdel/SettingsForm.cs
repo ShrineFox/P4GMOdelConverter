@@ -32,7 +32,7 @@ namespace P4GMOdel
                 txtBox_AdditionalFBXOptions.Text = settings.AdditionalFBXOptions;
                 chkBox_ConvertToGMO.Checked = settings.ConvertToGMO;
                 chkBox_ExtractTextures.Checked = settings.ExtractTextures;
-                chkBox_AutoConvertTex.Checked = settings.AutoConvertTex;
+                chkBox_OptimizeForVita.Checked = settings.OptimizeForVita;
                 chkBox_RenameBones.Checked = settings.RenameBones;
                 chkBox_UseDummyMaterials.Checked = settings.UseDummyMaterials;
                 chkBox_LoadAnimations.Checked = settings.LoadAnimations;
@@ -56,7 +56,7 @@ namespace P4GMOdel
             public bool ConvertToGMO { get; set; } = false;
             public bool ExtractTextures { get; set; } = true;
             // Conversion
-            public bool AutoConvertTex { get; set; } = true;
+            public bool OptimizeForVita { get; set; } = true;
             public bool RenameBones { get; set; } = true;
             public bool UseDummyMaterials { get; set; } = false;
             public bool LoadAnimations { get; set; } = true;
@@ -76,7 +76,7 @@ namespace P4GMOdel
             settings.ConvertToGMO = chkBox_ConvertToGMO.Checked;
             settings.ExtractTextures = chkBox_ExtractTextures.Checked;
 
-            settings.AutoConvertTex = chkBox_AutoConvertTex.Checked;
+            settings.OptimizeForVita = chkBox_OptimizeForVita.Checked;
             settings.RenameBones = chkBox_RenameBones.Checked;
             settings.UseDummyMaterials = chkBox_UseDummyMaterials.Checked;
             settings.LoadAnimations = chkBox_LoadAnimations.Checked;

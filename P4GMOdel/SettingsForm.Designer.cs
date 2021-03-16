@@ -38,7 +38,7 @@ namespace P4GMOdel
             this.chkBox_OldFBXExport = new DarkUI.Controls.DarkCheckBox();
             this.chkBox_ConvertToFBX = new DarkUI.Controls.DarkCheckBox();
             this.groupBox_Conversion = new DarkUI.Controls.DarkGroupBox();
-            this.chkBox_AutoConvertTex = new DarkUI.Controls.DarkCheckBox();
+            this.chkBox_OptimizeForVita = new DarkUI.Controls.DarkCheckBox();
             this.lbl_WpnBone = new DarkUI.Controls.DarkLabel();
             this.chkBox_UseDummyMaterials = new DarkUI.Controls.DarkCheckBox();
             this.chkBox_LoadAnimations = new DarkUI.Controls.DarkCheckBox();
@@ -149,7 +149,7 @@ namespace P4GMOdel
             // groupBox_Conversion
             // 
             this.groupBox_Conversion.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(51)))), ((int)(((byte)(51)))), ((int)(((byte)(51)))));
-            this.groupBox_Conversion.Controls.Add(this.chkBox_AutoConvertTex);
+            this.groupBox_Conversion.Controls.Add(this.chkBox_OptimizeForVita);
             this.groupBox_Conversion.Controls.Add(this.lbl_WpnBone);
             this.groupBox_Conversion.Controls.Add(this.chkBox_UseDummyMaterials);
             this.groupBox_Conversion.Controls.Add(this.chkBox_LoadAnimations);
@@ -162,17 +162,15 @@ namespace P4GMOdel
             this.groupBox_Conversion.TabStop = false;
             this.groupBox_Conversion.Text = "Conversion Settings";
             // 
-            // chkBox_AutoConvertTex
+            // chkBox_OptimizeForVita
             // 
-            this.chkBox_AutoConvertTex.AutoSize = true;
-            this.chkBox_AutoConvertTex.Enabled = false;
-            this.chkBox_AutoConvertTex.Location = new System.Drawing.Point(10, 98);
-            this.chkBox_AutoConvertTex.Margin = new System.Windows.Forms.Padding(4);
-            this.chkBox_AutoConvertTex.Name = "chkBox_AutoConvertTex";
-            this.chkBox_AutoConvertTex.Size = new System.Drawing.Size(186, 21);
-            this.chkBox_AutoConvertTex.TabIndex = 10;
-            this.chkBox_AutoConvertTex.Text = "Convert Textures to TM2";
-            this.chkBox_AutoConvertTex.Visible = false;
+            this.chkBox_OptimizeForVita.AutoSize = true;
+            this.chkBox_OptimizeForVita.Location = new System.Drawing.Point(10, 36);
+            this.chkBox_OptimizeForVita.Margin = new System.Windows.Forms.Padding(4);
+            this.chkBox_OptimizeForVita.Name = "chkBox_OptimizeForVita";
+            this.chkBox_OptimizeForVita.Size = new System.Drawing.Size(134, 21);
+            this.chkBox_OptimizeForVita.TabIndex = 10;
+            this.chkBox_OptimizeForVita.Text = "Optimize for Vita";
             // 
             // lbl_WpnBone
             // 
@@ -189,7 +187,7 @@ namespace P4GMOdel
             // chkBox_UseDummyMaterials
             // 
             this.chkBox_UseDummyMaterials.AutoSize = true;
-            this.chkBox_UseDummyMaterials.Location = new System.Drawing.Point(10, 56);
+            this.chkBox_UseDummyMaterials.Location = new System.Drawing.Point(10, 76);
             this.chkBox_UseDummyMaterials.Margin = new System.Windows.Forms.Padding(4);
             this.chkBox_UseDummyMaterials.Name = "chkBox_UseDummyMaterials";
             this.chkBox_UseDummyMaterials.Size = new System.Drawing.Size(167, 21);
@@ -199,7 +197,7 @@ namespace P4GMOdel
             // chkBox_LoadAnimations
             // 
             this.chkBox_LoadAnimations.AutoSize = true;
-            this.chkBox_LoadAnimations.Location = new System.Drawing.Point(10, 77);
+            this.chkBox_LoadAnimations.Location = new System.Drawing.Point(10, 97);
             this.chkBox_LoadAnimations.Margin = new System.Windows.Forms.Padding(4);
             this.chkBox_LoadAnimations.Name = "chkBox_LoadAnimations";
             this.chkBox_LoadAnimations.Size = new System.Drawing.Size(135, 21);
@@ -220,7 +218,7 @@ namespace P4GMOdel
             // chkBox_RenameBones
             // 
             this.chkBox_RenameBones.AutoSize = true;
-            this.chkBox_RenameBones.Location = new System.Drawing.Point(10, 36);
+            this.chkBox_RenameBones.Location = new System.Drawing.Point(10, 56);
             this.chkBox_RenameBones.Margin = new System.Windows.Forms.Padding(4);
             this.chkBox_RenameBones.Name = "chkBox_RenameBones";
             this.chkBox_RenameBones.Size = new System.Drawing.Size(173, 21);
@@ -316,7 +314,7 @@ namespace P4GMOdel
         public DarkUI.Controls.DarkCheckBox chkBox_ConvertToGMO;
         public DarkUI.Controls.DarkCheckBox chkBox_OldFBXExport;
         public DarkUI.Controls.DarkCheckBox chkBox_ConvertToFBX;
-        public DarkUI.Controls.DarkCheckBox chkBox_AutoConvertTex;
+        public DarkUI.Controls.DarkCheckBox chkBox_OptimizeForVita;
         public DarkUI.Controls.DarkLabel lbl_WpnBone;
         public DarkUI.Controls.DarkCheckBox chkBox_UseDummyMaterials;
         public DarkUI.Controls.DarkCheckBox chkBox_LoadAnimations;
