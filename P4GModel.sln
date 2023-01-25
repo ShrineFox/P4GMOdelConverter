@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30104.148
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33213.308
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "P4GMOdel", "P4GMOdel\P4GMOdel.csproj", "{D7F62AA1-D396-4366-B788-CB4B202F9987}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "P4GMOdel", "P4GMOdel.csproj", "{D7F62AA1-D396-4366-B788-CB4B202F9987}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AtlusFileSystemLibrary", "..\AtlusFileSystemLibrary\Source\AtlusFileSystemLibrary\AtlusFileSystemLibrary.csproj", "{9960B785-6207-44E8-BA42-EC7F6F785344}"
 EndProject
@@ -16,6 +16,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rainbow.ImgLib", "..\Rainbow\Rainbow.ImgLib\Rainbow.ImgLib.csproj", "{C4117527-926B-4588-BDE3-53EC241E62B4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "nQuant.Core", "..\Rainbow\nQuant.Core\nQuant.Core.csproj", "{A59307EA-FCB0-4110-BC42-0417871C24C4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NvTriStripDotNet", "..\Amicitia\Dependencies\NvTriStrip.Net\NvTriStripDotNet\NvTriStripDotNet.csproj", "{66B926EE-FF73-42BE-A27E-CBCB333A4C07}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShrineFox.IO", "..\ShrineFox.IO\ShrineFox.IO.csproj", "{7640412A-7372-4925-B20C-0178D8818A8F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -111,6 +115,30 @@ Global
 		{A59307EA-FCB0-4110-BC42-0417871C24C4}.Release|x64.Build.0 = Release|Any CPU
 		{A59307EA-FCB0-4110-BC42-0417871C24C4}.Release|x86.ActiveCfg = Release|Any CPU
 		{A59307EA-FCB0-4110-BC42-0417871C24C4}.Release|x86.Build.0 = Release|Any CPU
+		{66B926EE-FF73-42BE-A27E-CBCB333A4C07}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{66B926EE-FF73-42BE-A27E-CBCB333A4C07}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{66B926EE-FF73-42BE-A27E-CBCB333A4C07}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{66B926EE-FF73-42BE-A27E-CBCB333A4C07}.Debug|x64.Build.0 = Debug|Any CPU
+		{66B926EE-FF73-42BE-A27E-CBCB333A4C07}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{66B926EE-FF73-42BE-A27E-CBCB333A4C07}.Debug|x86.Build.0 = Debug|Any CPU
+		{66B926EE-FF73-42BE-A27E-CBCB333A4C07}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{66B926EE-FF73-42BE-A27E-CBCB333A4C07}.Release|Any CPU.Build.0 = Release|Any CPU
+		{66B926EE-FF73-42BE-A27E-CBCB333A4C07}.Release|x64.ActiveCfg = Release|Any CPU
+		{66B926EE-FF73-42BE-A27E-CBCB333A4C07}.Release|x64.Build.0 = Release|Any CPU
+		{66B926EE-FF73-42BE-A27E-CBCB333A4C07}.Release|x86.ActiveCfg = Release|Any CPU
+		{66B926EE-FF73-42BE-A27E-CBCB333A4C07}.Release|x86.Build.0 = Release|Any CPU
+		{7640412A-7372-4925-B20C-0178D8818A8F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7640412A-7372-4925-B20C-0178D8818A8F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7640412A-7372-4925-B20C-0178D8818A8F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{7640412A-7372-4925-B20C-0178D8818A8F}.Debug|x64.Build.0 = Debug|Any CPU
+		{7640412A-7372-4925-B20C-0178D8818A8F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{7640412A-7372-4925-B20C-0178D8818A8F}.Debug|x86.Build.0 = Debug|Any CPU
+		{7640412A-7372-4925-B20C-0178D8818A8F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7640412A-7372-4925-B20C-0178D8818A8F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7640412A-7372-4925-B20C-0178D8818A8F}.Release|x64.ActiveCfg = Release|Any CPU
+		{7640412A-7372-4925-B20C-0178D8818A8F}.Release|x64.Build.0 = Release|Any CPU
+		{7640412A-7372-4925-B20C-0178D8818A8F}.Release|x86.ActiveCfg = Release|Any CPU
+		{7640412A-7372-4925-B20C-0178D8818A8F}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
