@@ -3,6 +3,7 @@ using AtlusFileSystemLibrary;
 using AtlusFileSystemLibrary.Common.IO;
 using AtlusFileSystemLibrary.FileSystems.PAK;
 using FreeImageAPI;
+using ShrineFox.IO;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -16,6 +17,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using TGE.IO;
 using static AtlusFileSystemLibrary.ConflictPolicy;
+using static P4GMOdel.MainForm;
 
 namespace P4GMOdel
 {
@@ -118,12 +120,11 @@ namespace P4GMOdel
         }
 
         //Run tool to convert between GMO and MDS
-        public static void GMOTool(string path, bool extract, SettingsForm.Settings settings)
+        public static void GMOTool(string path, bool extract)
         {
             Process cmd = new Process();
             cmd.StartInfo.FileName = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Tools\\GMOTool\\GMOTool.exe";
-            if (!settings.ShowConsoleWindows)
-                cmd.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+            cmd.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             cmd.StartInfo.Arguments = $"\"{path}\"";
             if (extract)
                 cmd.StartInfo.Arguments += " -E";
@@ -139,12 +140,11 @@ namespace P4GMOdel
         }
 
         //Run program to convert FBX to GMO directly
-        public static void GMOConv(string fbx, SettingsForm.Settings settings)
+        public static void GMOConv(string fbx)
         {
             Process cmd = new Process();
             cmd.StartInfo.FileName = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Tools\\GMO\\GmoConv.exe";
-            if (!settings.ShowConsoleWindows)
-                cmd.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+            cmd.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             cmd.StartInfo.Arguments = $"\"{fbx}\"";
             if (File.Exists(cmd.StartInfo.FileName))
             {
@@ -158,13 +158,11 @@ namespace P4GMOdel
 
         }
 
-        //Run program to convert referenced textures to TM2
-        public static void GIMConv(string texture, SettingsForm.Settings settings)
+        // Run program to convert referenced textures to TM2
+        public static void GIMConv(string texture)
         {
             Process cmd = new Process();
             cmd.StartInfo.FileName = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Tools\\GIM\\GimConv.exe";
-            if (!settings.ShowConsoleWindows)
-                cmd.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             cmd.StartInfo.Arguments = $"\"{texture}\" -o \"{texture}.tm2\"";
             if (File.Exists(cmd.StartInfo.FileName))
             {
@@ -177,7 +175,7 @@ namespace P4GMOdel
                 MessageBox.Show($"Error: Could not find .\\Tools\\GIM\\GIMConv.exe!");
         }
 
-        //Run program to view newly generated GMO file
+        // Run program to view newly generated GMO file
         public static void GMOView(string model)
         {
             Process cmd = new Process();
@@ -206,7 +204,7 @@ namespace P4GMOdel
         }
 
         //Run model through Noesis for optimizing
-        public static void NoesisOptimize(string path, string args, SettingsForm.Settings settings)
+        public static void NoesisOptimize(string path, string args)
         {
             using (var cmdProcess = new Process())
             {
@@ -215,8 +213,7 @@ namespace P4GMOdel
                 cmdProcess.StartInfo.WorkingDirectory = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Tools\\Noesis";
                 cmdProcess.StartInfo.FileName = @"C:\Windows\System32\cmd.exe";
                 cmdProcess.StartInfo.Arguments = "/k " + $"Noesis.exe ?cmode \"{path}\" \"{tempPath}.fbx\" {args}";
-                if (!settings.ShowConsoleWindows)
-                    cmdProcess.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+                cmdProcess.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
                 if (File.Exists(Path.Combine(cmdProcess.StartInfo.WorkingDirectory, "Noesis.exe")))
                 {
                     cmdProcess.Start();
@@ -230,12 +227,11 @@ namespace P4GMOdel
         }
 
         //Run TGE's tool to fix GMO files for PC
-        public static void GMOFixTool(string path, SettingsForm.Settings settings)
+        public static void GMOFixTool(string path)
         {
             Process cmd = new Process();
             cmd.StartInfo.FileName = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Tools\\p4gpc-gmofix\\p4gpc-gmofix.exe";
-            if (!settings.ShowConsoleWindows)
-                cmd.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+            cmd.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             cmd.StartInfo.Arguments = $"\"{path}\"";
             if (File.Exists(cmd.StartInfo.FileName))
             {
@@ -247,31 +243,27 @@ namespace P4GMOdel
         }
 
         //Convert model to FBX through Noesis commandline using specified settings
-        public static string CreateOptimizedFBX(string path, SettingsForm.Settings settings)
+        public static string CreateOptimizedFBX(string path, string args = "")
         {
-            string extensionlessPath = Path.Combine(Path.GetDirectoryName(path), Path.GetFileNameWithoutExtension(path));
-            string args = "";
-            if (settings.OldFBXExport)
-                args += "-fbxoldexport ";
-            if (settings.AsciiFBX)
-                args += "-fbxascii ";
-            NoesisOptimize(path, $"{args} {settings.AdditionalFBXOptions}", settings);
-            return $"{extensionlessPath}.fbx";
+            string path_NoExt = FileSys.GetExtensionlessPath(path);
+
+            NoesisOptimize(path, args);
+            return $"{path_NoExt}.fbx";
         }
 
         //Create GMO from MDS
-        public static void CreateGMO(string output, Model model, SettingsForm.Settings settings)
+        public static void CreateGMO(string output, Model model)
         {
             string tempPath = GetTemporaryPath(model.Path);
-            File.WriteAllText(tempPath + ".mds", Model.Serialize(model, settings));
+            File.WriteAllText(tempPath + ".mds", Model.Serialize(model));
             using (WaitForFile(tempPath + ".mds", FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
             if (File.Exists(tempPath + ".mds"))
             {
                 //Create new GMO
-                GMOTool(tempPath + ".mds", false, settings);
+                GMOTool(tempPath + ".mds", false);
                 using (WaitForFile(tempPath + ".gmo", FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
                 if (settings.FixForPC)
-                    GMOFixTool(tempPath + ".gmo", settings);
+                    GMOFixTool(tempPath + ".gmo");
 
                 if (output.ToLower().EndsWith(".amd"))
                 {

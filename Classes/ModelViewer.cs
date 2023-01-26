@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using WindowsInput;
 using WindowsInput.Native;
+using static P4GMOdel.MainForm;
 
 namespace P4GMOdel
 {
@@ -21,38 +22,44 @@ namespace P4GMOdel
     {
         public static void LoadModel(string gmoPath)
         {
-            string gmoView = ".\\Tools\\GMO\\GmoView.exe";
+            if (MainForm.process_GMOView != null)
+                MainForm.process_GMOView.Close();
 
-            // Load and dock in form
-            MainForm.process_GMOView = Window.Mount(gmoView, MainForm.panel_GMOView, gmoPath);
+            if (settings.UseModelViewer)
+            {
+                string gmoView = ".\\Tools\\GMO\\GmoView.exe";
 
-            //Improve GMOView appearance
-            RotateModel();
-            ToggleLighting();
-            //ToggleWireframeBG();
-            ToggleAnimatedBG();
-            IncreaseSize();
-            PositionHigher();
-            FixAspectRatio();
+                // Load and dock in form
+                MainForm.process_GMOView = Window.Mount(gmoView, MainForm.panel_GMOView, gmoPath);
+
+                //Improve GMOView appearance
+                RotateModel();
+                ToggleLighting();
+                //ToggleWireframeBG();
+                ToggleAnimatedBG();
+                IncreaseSize();
+                PositionHigher();
+                FixAspectRatio();
+            }
         }
 
-        public static void Update(Model model, SettingsForm.Settings settings)
+        public static void Update(Model model)
         {
             if (model != null && File.Exists(model.Path))
             {
                 int x = 0;
                 //Save temporary mds
                 string tempPath = Tools.GetTemporaryPath(model.Path);
-                File.WriteAllText(tempPath + ".mds", Model.Serialize(model, settings));
+                File.WriteAllText(tempPath + ".mds", Model.Serialize(model));
                 using (Tools.WaitForFile(tempPath + ".mds", FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
                 //Attempt to generate temporary gmo
-                Tools.GMOTool(tempPath + ".mds", false, settings);
+                Tools.GMOTool(tempPath + ".mds", false);
                 using (Tools.WaitForFile($"{tempPath}.mds", FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
                 //Reload model viewer with temporary GMO
                 using (Tools.WaitForFile(tempPath + ".gmo", FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
                 LoadModel(tempPath + ".gmo");
-                MainForm.viewerUpdated = true;
             }
+            MainForm.viewerUpdated = true;
         }
 
         public static void RotateModel()
