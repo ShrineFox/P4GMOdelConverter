@@ -1,8 +1,4 @@
 ﻿using Microsoft.WindowsAPICodePack.Dialogs;
-using OpenKh.Imaging;
-using Rainbow.ImgLib.Formats.Implementation;
-using Rainbow.ImgLib.Formats.Serialization;
-using Rainbow.ImgLib.Formats.Serialization.Metadata;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -157,68 +153,7 @@ namespace P4GMOdel
 
             foreach(var path in importPaths)
             {
-                if (Path.GetExtension(path).ToLower() == ".mds")
-                {
-                    var deserializedModel = Model.Deserialize(new Model(), File.ReadAllLines(path));
-                    if (deserializedModel.Textures != null) //If mds contains textures...
-                        foreach (var texture in deserializedModel.Textures)
-                            if(!import.Contains(texture)) //and new collection doesn't already contain same one...
-                                import.Add(texture);
-                }
-                else if (Path.GetExtension(path).ToLower() == ".tm2")
-                {
-                    Texture tex = new Texture();
-                    tex.FileName = path;
-                    tex.Name = Path.GetFileNameWithoutExtension(path);
-                    import.Add(tex);
-                }
-                else if (Path.GetExtension(path).ToLower() == ".png")
-                {
-                    // Temp PNG output
-                    Directory.CreateDirectory($"{Path.GetDirectoryName(path)}\\textures");
-                    string tempPng = $"{Path.GetDirectoryName(path)}\\textures\\{Path.GetFileNameWithoutExtension(path)}.png";
-                    string tempPng2 = $"{Path.GetDirectoryName(path)}\\textures\\{Path.GetFileNameWithoutExtension(path)}_converted.png";
-                    string outputPath = $"{Path.GetDirectoryName(path)}\\textures\\{Path.GetFileNameWithoutExtension(path)}.tm2";
-                    // Hacky workaround: Make an 8bpp png with transparent pixel so OpenKH will convert to TM2
-                    Bitmap bmp = new Bitmap(Image.FromFile(path));
-                    bmp = new Bitmap(Image.FromFile(path));
-                    var oldColor = bmp.GetPixel(0, 0);
-                    if (oldColor.A > 0)
-                        bmp.SetPixel(0,0,Color.FromArgb(oldColor.A - 1, oldColor.R, oldColor.G, oldColor.B));
-                    bmp.Save(tempPng);
-                    Tools.Create8bppPng(tempPng, tempPng2);
-                    using (Tools.WaitForFile(tempPng2, FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
-                    // Create Custom TM2
-                    using (Stream s = File.Open(tempPng2, FileMode.Open))
-                    {
-                        PngImage png = new PngImage(s);
-                        Tm2 tmImage = Tm2.Create(png);
-                        using (FileStream fs = new FileStream(outputPath, FileMode.Create))
-                            Tm2.Write(fs, new List<Tm2>() { tmImage });
-                    }
-                    using (Tools.WaitForFile(outputPath, FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
-                    if (File.Exists(outputPath))
-                    {
-                        // Delete temporary PNGs
-                        File.Delete(tempPng);
-                        File.Delete(tempPng2);
-                        // Edit header to show up ingame (breaks GMOView)
-                        using (TGE.IO.EndianBinaryWriter writer = new TGE.IO.EndianBinaryWriter(File.OpenWrite(outputPath), TGE.IO.Endianness.BigEndian))
-                        {
-                            writer.BaseStream.Position = 33;
-                            writer.BaseStream.WriteByte(0x01);
-                        }
-                        // Add texture to import list
-                        Texture tex = new Texture();
-                        tex.FileName = outputPath;
-                        tex.Name = Path.GetFileNameWithoutExtension(outputPath);
-                        import.Add(tex);
-                    }
-                    else
-                    {
-                        MessageBox.Show("Error: TM2 was not created!");
-                    }
-                }
+                // TODO: Implement TM2 Library
             }
 
             return import;

@@ -1,4 +1,5 @@
-﻿using P4GMOdel;
+﻿using DarkUI.Forms;
+using P4GMOdel;
 using ShrineFox.IO;
 using System;
 using System.Collections;
@@ -14,11 +15,10 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using WindowsInput;
 using WindowsInput.Native;
-using static P4GMOdel.MainForm;
 
 namespace P4GMOdel
 {
-    class ModelViewer
+    public partial class MainForm : DarkForm
     {
         public static void LoadModel(string gmoPath)
         {
@@ -43,7 +43,7 @@ namespace P4GMOdel
             }
         }
 
-        public static void Update(Model model)
+        public static void UpdateModelViewer(Model model)
         {
             if (model != null && File.Exists(model.Path))
             {
@@ -59,32 +59,27 @@ namespace P4GMOdel
                 using (Tools.WaitForFile(tempPath + ".gmo", FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
                 LoadModel(tempPath + ".gmo");
             }
-            MainForm.viewerUpdated = true;
         }
 
         public static void RotateModel()
         {
-            InputSimulator s = new InputSimulator();
             for (int i = 0; i < 18; i++)
-                s.Keyboard.KeyPress(VirtualKeyCode.LEFT);
+                Simulate.Events().Click(WindowsInput.Events.KeyCode.Left);
         }
 
         public static void ToggleLighting()
         {
-            InputSimulator s = new InputSimulator();
-            s.Keyboard.KeyPress(VirtualKeyCode.F1);
+            Simulate.Events().Click(WindowsInput.Events.KeyCode.F1);
         }
 
         public static void ToggleWireframeBG()
         {
-            InputSimulator s = new InputSimulator();
-            s.Keyboard.KeyPress(VirtualKeyCode.F7);
+            Simulate.Events().Click(WindowsInput.Events.KeyCode.F7);
         }
 
         public static void ToggleAnimatedBG()
         {
-            InputSimulator s = new InputSimulator();
-            s.Keyboard.KeyPress(VirtualKeyCode.F5);
+            Simulate.Events().Click(WindowsInput.Events.KeyCode.F5);
         }
 
         public static void FixAspectRatio()
@@ -94,28 +89,25 @@ namespace P4GMOdel
                 ShowWindow(MainForm.process_GMOView.MainWindowHandle, SW_MAXIMIZE);
                 SetForegroundWindow(MainForm.process_GMOView.MainWindowHandle);
                 SetFocus(MainForm.process_GMOView.MainWindowHandle);
-                InputSimulator s = new InputSimulator();
-                s.Keyboard.KeyPress(VirtualKeyCode.F8);
-                s.Keyboard.KeyPress(VirtualKeyCode.F8);
+                Simulate.Events().Click(WindowsInput.Events.KeyCode.F8);
+                Simulate.Events().Click(WindowsInput.Events.KeyCode.F8);
             }
         }
 
         public static void IncreaseSize()
         {
-            InputSimulator s = new InputSimulator();
-            s.Keyboard.KeyPress(VirtualKeyCode.VK_3);
+            Simulate.Events().Click(WindowsInput.Events.KeyCode.D3);
             for (int i = 0; i < 12; i++)
-                s.Keyboard.KeyPress(VirtualKeyCode.DOWN);
+                Simulate.Events().Click(WindowsInput.Events.KeyCode.Down);
             for (int i = 0; i < 7; i++)
-                s.Keyboard.KeyPress(VirtualKeyCode.RIGHT);
-            s.Keyboard.KeyPress(VirtualKeyCode.VK_1);
+                Simulate.Events().Click(WindowsInput.Events.KeyCode.Right);
+            Simulate.Events().Click(WindowsInput.Events.KeyCode.D1);
         }
 
         public static void PositionHigher()
         {
-            InputSimulator s = new InputSimulator();
             for (int i = 0; i < 3; i++)
-                s.Keyboard.ModifiedKeyStroke(VirtualKeyCode.SHIFT, VirtualKeyCode.UP);
+                Simulate.Events().ClickChord(WindowsInput.Events.KeyCode.LShift, WindowsInput.Events.KeyCode.Up);
         }
 
         [DllImport("user32.dll", SetLastError = true)]

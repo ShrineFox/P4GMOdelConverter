@@ -12,10 +12,11 @@ using System.IO;
 using AmicitiaLibrary.FileSystems.AMD;
 using AtlusFileSystemLibrary.Common.IO;
 using AtlusFileSystemLibrary.FileSystems.PAK;
+using DarkUI.Forms;
 
 namespace P4GMOdel
 {
-    public partial class MainForm : Form
+    public partial class MainForm : DarkForm
     {
         private void OpenFile(string path)
         {
@@ -49,7 +50,7 @@ namespace P4GMOdel
                     ProcessFile(ConvertToFBX(path));
                     break;
                 case ".fbx":
-                    ProcessFile(ConvertToGMS(path));
+                    ConvertToGMS(path);
                     break;
                 case ".gms":
                     LoadDataIntoEditor(path);
@@ -130,14 +131,14 @@ namespace P4GMOdel
             return outPath;
         }
 
-        private string ConvertToGMS(string path)
+        private void ConvertToGMS(string path)
         {
-            return Tools.GMOTool(path, true);
+            Tools.GMOTool(path, true);
         }
 
-        private string ConvertToGMO(string path)
+        private void ConvertToGMO(string path)
         {
-            return Tools.GMOConv(model.Path);
+            Tools.GMOConv(model.Path);
         }
 
         private string ConvertToFBX(string path)
@@ -152,7 +153,7 @@ namespace P4GMOdel
                 var gmsLines = File.ReadAllLines(path).ToList();
                 model = Model.Deserialize(model, gmsLines.ToArray());
                 RefreshTreeview();
-                ModelViewer.Update(model);
+                UpdateModelViewer(model);
                 this.Text = "P4GMOdel - " + Path.GetFileName(path);
                 toolStripMenuItem_Save.Enabled = true;
                 toolStripMenuItem_SaveAs.Enabled = true;

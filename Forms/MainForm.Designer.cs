@@ -1,6 +1,8 @@
-﻿namespace P4GMOdel
+﻿using DarkUI.Forms;
+
+namespace P4GMOdel
 {
-    partial class MainForm
+    partial class MainForm : DarkForm
     {
         /// <summary>
         /// Required designer variable.

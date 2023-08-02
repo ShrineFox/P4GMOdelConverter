@@ -2,7 +2,6 @@
 using AtlusFileSystemLibrary;
 using AtlusFileSystemLibrary.Common.IO;
 using AtlusFileSystemLibrary.FileSystems.PAK;
-using FreeImageAPI;
 using ShrineFox.IO;
 using System;
 using System.Collections.Generic;
@@ -16,7 +15,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using TGE.IO;
-using static AtlusFileSystemLibrary.ConflictPolicy;
 using static P4GMOdel.MainForm;
 
 namespace P4GMOdel
@@ -395,30 +393,6 @@ namespace P4GMOdel
             }
 
             return null;
-        }
-
-        public static void Create8bppPng(string input, string output)
-        {
-            FIBITMAP hDIB24bpp = FreeImage.LoadEx(input);
-            if (!hDIB24bpp.IsNull)
-            {
-                FIBITMAP hDIB8bpp = FreeImage.ColorQuantize(hDIB24bpp, FREE_IMAGE_QUANTIZE.FIQ_WUQUANT);
-                Palette palette = new Palette(hDIB8bpp);
-                byte[] transparency = new byte[256];
-                for (int i = 0; i < 256; i++)
-                {
-                    transparency[i] = 0xFF;
-                    if (palette[i].rgbGreen >= 0xFE && palette[i].rgbBlue == 0x00 && palette[i].rgbRed == 0x00)
-                    {
-                        transparency[i] = 0x00;
-                    }
-                }
-                FreeImage.SetTransparencyTable(hDIB8bpp, transparency);
-                FreeImage.SaveEx(hDIB8bpp, output);
-
-                FreeImage.UnloadEx(ref hDIB24bpp);
-                FreeImage.UnloadEx(ref hDIB8bpp);
-            }
         }
     }
 }

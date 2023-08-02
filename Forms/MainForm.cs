@@ -25,18 +25,13 @@ using AtlusFileSystemLibrary.Common.IO;
 using AmicitiaLibrary.FileSystems.AMD;
 using System.Runtime.InteropServices;
 using System.Collections;
-using Rainbow.ImgLib;
-using Rainbow.ImgLib.Formats.Implementation;
 using ShrineFox.IO;
+using DarkUI.Forms;
 
 namespace P4GMOdel
 {
-    public partial class MainForm : Form
+    public partial class MainForm : DarkForm
     {
-        Model model;
-        public static Panel panel_GMOView;
-        public static Process process_GMOView;
-
         public MainForm(string[] args)
         {
             InitializeComponent();
@@ -55,17 +50,22 @@ namespace P4GMOdel
             this.Shown += new System.EventHandler(this.Form_Shown);
         }
 
+        Model model;
+        public static Panel panel_GMOView;
+        public static Process process_GMOView;
+
         private void OnProcessExit(object sender, EventArgs e)
         {
             // Attempt to close any open GMOView process on exit
+            // TODO: Check if it's actually running first
             process_GMOView.Close();
         }
 
         private void Form_Shown(object sender, EventArgs e)
         {
             // Open file from arguments once form has finished loading
-            if (!string.IsNullOrEmpty(model.Path))
-                OpenFile(model.Path);
+            //if (!string.IsNullOrEmpty(model.Path))
+                //OpenFile(model.Path);
         }
     }
 }

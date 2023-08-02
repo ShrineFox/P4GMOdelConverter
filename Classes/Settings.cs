@@ -1,4 +1,5 @@
-﻿using P4GMOdel.Properties;
+﻿using DarkUI.Forms;
+using P4GMOdel.Properties;
 using ShrineFox.IO;
 using System;
 using System.Collections.Generic;
@@ -13,7 +14,7 @@ using YamlDotNet.Serialization;
 
 namespace P4GMOdel
 {
-    public partial class MainForm : Form
+    public partial class MainForm : DarkForm
     {
         public static Settings settings = new Settings();
 

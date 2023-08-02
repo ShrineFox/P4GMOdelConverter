@@ -9,10 +9,11 @@ using System.Windows.Forms;
 using YamlDotNet.Serialization.NamingConventions;
 using YamlDotNet.Serialization;
 using System.IO;
+using DarkUI.Forms;
 
 namespace P4GMOdel
 {
-    public partial class MainForm : Form
+    public partial class MainForm : DarkForm
     {
         private void New_Click(object sender, EventArgs e)
         {

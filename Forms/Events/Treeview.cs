@@ -1,6 +1,6 @@
 ﻿using DarkUI.Controls;
+using DarkUI.Forms;
 using Microsoft.WindowsAPICodePack.Dialogs;
-using Rainbow.ImgLib.Formats.Implementation;
 using ShrineFox.IO;
 using System;
 using System.Collections.Generic;
@@ -13,7 +13,7 @@ using System.Windows.Forms;
 
 namespace P4GMOdel
 {
-    public partial class MainForm : Form
+    public partial class MainForm : DarkForm
     {
         DarkTreeNode lastSelectedTreeNode;
         public static bool dataChanged = false;
@@ -106,7 +106,7 @@ namespace P4GMOdel
                     if (dataChanged)
                         RefreshTreeview();
                     if (!viewerUpdated)
-                        ModelViewer.Update(model);
+                        UpdateModelViewer(model);
                 }
                 //Replace modelviewer with texture view if "Texture" subnode clicked
                 if (lastSelectedTreeNode.ParentNode != null && lastSelectedTreeNode.ParentNode.Text == "Textures")
@@ -114,10 +114,10 @@ namespace P4GMOdel
                     Texture texture = (Texture)lastSelectedTreeNode.Tag;
                     using (Stream s = File.Open(texture.FileName, FileMode.Open))
                     {
-                        TIM2TextureSerializer serializer = new TIM2TextureSerializer();
+                        //TIM2TextureSerializer serializer = new TIM2TextureSerializer();
                         Exe.CloseProcess("GMOView"); //Hide model viewer
                         panel_GMOView.BackgroundImageLayout = ImageLayout.Zoom;
-                        panel_GMOView.BackgroundImage = serializer.Open(s).GetImage(); //Decode TM2 to viewer
+                        //panel_GMOView.BackgroundImage = serializer.Open(s).GetImage(); //Decode TM2 to viewer
                         viewerUpdated = false; //Reload model viewer next chance we get
                     }
                 }
@@ -213,8 +213,8 @@ namespace P4GMOdel
 
         private void MainForm_Resize(object sender, EventArgs e)
         {
-            if (process_GMOView != null)
-                ModelViewer.MoveWindow(process_GMOView.MainWindowHandle, 0, 0, panel_GMOView.Width, panel_GMOView.Height, true);
+            //if (process_GMOView != null)
+                //ModelViewer.MoveWindow(process_GMOView.MainWindowHandle, 0, 0, panel_GMOView.Width, panel_GMOView.Height, true);
         }
 
         /* DRAG AND DROP */
@@ -422,11 +422,11 @@ namespace P4GMOdel
                     {
                         foreach (var texture in export.Textures)
                         {
-                            TIM2TextureSerializer serializer = new TIM2TextureSerializer();
+                            //TIM2TextureSerializer serializer = new TIM2TextureSerializer();
                             using (Stream s = File.Open(texture.FileName, FileMode.Open))
                             {
-                                Image newImage = serializer.Open(s).GetImage();
-                                newImage.Save(dialog.FileName);
+                                //Image newImage = serializer.Open(s).GetImage();
+                                //newImage.Save(dialog.FileName);
                             }
                         }
 
