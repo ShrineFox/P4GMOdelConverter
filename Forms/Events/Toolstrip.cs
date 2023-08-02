@@ -31,10 +31,10 @@ namespace P4GMOdel
 
         private void Save_Click(object sender, EventArgs e)
         {
-            if (model.Path.ToLower().EndsWith(".mds"))
+            if (model.Path.ToLower().EndsWith(".gms"))
             {
                 File.WriteAllText(model.Path, Model.Serialize(model));
-                MessageBox.Show("MDS file saved!");
+                MessageBox.Show("GMS file saved!");
                 DataChanged(false);
             }
         }
@@ -42,14 +42,14 @@ namespace P4GMOdel
         private void SaveAs_Click(object sender, EventArgs e)
         {
             CommonSaveFileDialog dialog = new CommonSaveFileDialog();
-            dialog.Filters.Add(new CommonFileDialogFilter("GMO Data", "*.mds"));
-            dialog.Title = "Save MDS...";
-            dialog.DefaultFileName = $"{Path.GetFileNameWithoutExtension(model.Path)}.mds";
+            dialog.Filters.Add(new CommonFileDialogFilter("GMO Data", "*.gms"));
+            dialog.Title = "Save GMS...";
+            dialog.DefaultFileName = $"{Path.GetFileNameWithoutExtension(model.Path)}.gms";
             if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
             {
                 File.WriteAllText(dialog.FileName, Model.Serialize(model));
                 model.Path = dialog.FileName;
-                MessageBox.Show("MDS file saved!");
+                MessageBox.Show("GMS file saved!");
                 DataChanged(false);
             }
         }
@@ -71,8 +71,8 @@ namespace P4GMOdel
         private void Open_Click(object sender, EventArgs e)
         {
             CommonOpenFileDialog dialog = new CommonOpenFileDialog();
-            dialog.Filters.Add(new CommonFileDialogFilter("All Types", "*.mds, *.gmo, *.fbx, *.dae, *.smd, *.amd, *.pac"));
-            dialog.Filters.Add(new CommonFileDialogFilter("GMO Data", "*.mds"));
+            dialog.Filters.Add(new CommonFileDialogFilter("All Types", "*.gms, *.gmo, *.fbx, *.dae, *.smd, *.amd, *.pac"));
+            dialog.Filters.Add(new CommonFileDialogFilter("GMO Data", "*.gms"));
             dialog.Filters.Add(new CommonFileDialogFilter("GMO Model", "*.gmo"));
             dialog.Filters.Add(new CommonFileDialogFilter("Assimp Model", "*.fbx, *.dae, *.smd"));
             dialog.Filters.Add(new CommonFileDialogFilter("P4G Model Container", "*.amd"));
@@ -92,7 +92,7 @@ namespace P4GMOdel
             dialog.DefaultFileName = $"{Path.GetFileNameWithoutExtension(model.Path)}.gmo";
             if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
             {
-                Tools.CreateGMO(dialog.FileName, model);
+                CreateGMO(dialog.FileName, model);
                 MessageBox.Show($"Exported model as {Path.GetFileName(dialog.FileName)}!");
             }
         }

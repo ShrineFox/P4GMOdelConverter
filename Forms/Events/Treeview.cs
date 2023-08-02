@@ -112,13 +112,16 @@ namespace P4GMOdel
                 if (lastSelectedTreeNode.ParentNode != null && lastSelectedTreeNode.ParentNode.Text == "Textures")
                 {
                     Texture texture = (Texture)lastSelectedTreeNode.Tag;
-                    using (Stream s = File.Open(texture.FileName, FileMode.Open))
+                    if (File.Exists(texture.FileName))
                     {
-                        //TIM2TextureSerializer serializer = new TIM2TextureSerializer();
-                        Exe.CloseProcess("GMOView"); //Hide model viewer
-                        panel_GMOView.BackgroundImageLayout = ImageLayout.Zoom;
-                        //panel_GMOView.BackgroundImage = serializer.Open(s).GetImage(); //Decode TM2 to viewer
-                        viewerUpdated = false; //Reload model viewer next chance we get
+                        using (Stream s = File.Open(texture.FileName, FileMode.Open))
+                        {
+                            //TIM2TextureSerializer serializer = new TIM2TextureSerializer();
+                            Exe.CloseProcess("GMOView"); //Hide model viewer
+                            panel_GMOView.BackgroundImageLayout = ImageLayout.Zoom;
+                            //panel_GMOView.BackgroundImage = serializer.Open(s).GetImage(); //Decode TM2 to viewer
+                            viewerUpdated = false; //Reload model viewer next chance we get
+                        }
                     }
                 }
                 //Show context menu if right clicked
@@ -375,7 +378,7 @@ namespace P4GMOdel
                     export.Animations = model.Animations;
                     break;
                 default:
-                    //Export individual elements as mds
+                    //Export individual elements as gms
                     switch (lastSelectedTreeNode.ParentNode.Text)
                     {
                         case "Bones":
@@ -401,14 +404,14 @@ namespace P4GMOdel
 
             CommonSaveFileDialog dialog = new CommonSaveFileDialog();
             dialog.Title = "Save Data as...";
-            dialog.Filters.Add(new CommonFileDialogFilter("GMO Data", "*.mds"));
+            dialog.Filters.Add(new CommonFileDialogFilter("GMO Data", "*.gms"));
             if (lastSelectedTreeNode.Text == "Textures" || lastSelectedTreeNode.ParentNode.Text == "Textures")
             {
                 dialog.Filters.Add(new CommonFileDialogFilter("TM2", "*.tm2"));
                 dialog.Filters.Add(new CommonFileDialogFilter("PNG", "*.png"));
                 if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
                 {
-                    if (Path.GetExtension(dialog.FileName).ToLower() == ".mds")
+                    if (Path.GetExtension(dialog.FileName).ToLower() == ".gms")
                         File.WriteAllText(dialog.FileName, Model.Serialize(export));
                     else if (Path.GetExtension(dialog.FileName).ToLower() == ".tm2")
                     {
@@ -436,7 +439,7 @@ namespace P4GMOdel
             }
             else
             {
-                dialog.DefaultFileName = $"{lastSelectedTreeNode.Text}.mds";
+                dialog.DefaultFileName = $"{lastSelectedTreeNode.Text}.gms";
                 if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
                     File.WriteAllText(dialog.FileName, Model.Serialize(export));
                 MessageBox.Show($"Exported element as {Path.GetFileName(dialog.FileName)}!");

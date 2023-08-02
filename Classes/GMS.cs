@@ -139,10 +139,10 @@ namespace P4GMOdel
         {
             List<Texture> import = new List<Texture>();
             List<string> importPaths = new List<string>();
-            //Choose MDS to import from...
+            //Choose GMS to import from...
             CommonOpenFileDialog dialog = new CommonOpenFileDialog();
-            dialog.Filters.Add(new CommonFileDialogFilter("All Types", "*.mds, *.png, *.tm2"));
-            dialog.Filters.Add(new CommonFileDialogFilter("GMO Data", "*.mds"));
+            dialog.Filters.Add(new CommonFileDialogFilter("All Types", "*.gms, *.png, *.tm2"));
+            dialog.Filters.Add(new CommonFileDialogFilter("GMO Data", "*.gms"));
             dialog.Filters.Add(new CommonFileDialogFilter("PNG", "*.png"));
             dialog.Filters.Add(new CommonFileDialogFilter("TIM2", "*.tm2"));
             dialog.Title = "Choose Texture File...";
@@ -191,6 +191,7 @@ namespace P4GMOdel
         public string Path { get; set; } = "";
         public static Model Deserialize(Model model, string[] lines)
         {
+            int z = 0;
             //Organize lines into objects
             for (int i = 0; i < lines.Count(); i++)
             {
@@ -204,8 +205,10 @@ namespace P4GMOdel
                     //Add bone data to bone list
                     Bone bone = new Bone();
                     bone.Name = lines[x].Replace("\tBone \"", "").Replace("\" {", "");
-                        bone.Name = SanitizeBoneName(bone.Name);
+                    bone.Name = SanitizeBoneName(bone.Name);
                     x++;
+
+                    z = 0;
                     while (!lines[x].StartsWith("\t}"))
                     {
                         if (lines[x].StartsWith("\t\tBoundingBox"))
@@ -215,7 +218,7 @@ namespace P4GMOdel
                         if (lines[x].StartsWith("\t\tRotate"))
                             bone.Rotate = lines[x].Replace("\t\tRotateZYX ", "");
                         if (lines[x].StartsWith("\t\tParentBone"))
-                            bone.ParentBone = SanitizeBoneName(lines[x]).Replace("\t\tParentBone ", "").Replace("\t", "").Replace("\"", "");                        }
+                            bone.ParentBone = SanitizeBoneName(lines[x]).Replace("\t\tParentBone ", "").Replace("\t", "").Replace("\"", "");
                         if (lines[x].StartsWith("\t\tScale"))
                             bone.Scale = lines[x].Replace("\t\tScale ", "");
                         if (lines[x].StartsWith("\t\tBlindData"))
@@ -228,15 +231,32 @@ namespace P4GMOdel
                         {
                             string blendOffsets = lines[x].Replace("\t\tBlendOffsets ", "");
                             x++;
+                            z = 0;
                             while (lines[x].StartsWith("\t\t\t"))
                             {
                                 blendOffsets += "\n" + lines[x];
                                 x++;
+
+                                z++;
+                                if (z == 99999)
+                                {
+                                    MessageBox.Show($"Failed to parse BlendOffsets data, got stuck on line: {x}");
+                                    return new Model();
+                                }
                             }
                             bone.BlendOffsets = blendOffsets;
                         }
                         else
                             x++;
+
+                        z++;
+                        if (z == 99999)
+                        {
+                            MessageBox.Show($"Failed to parse Bone data, got stuck on line: {x}");
+                            return new Model();
+                        }
+
+                    }
                     model.Bones.Add(bone);
                 }
                 else if (lines[i].Contains("\tPart"))
@@ -246,6 +266,7 @@ namespace P4GMOdel
                     Part part = new Part();
                     part.Name = lines[x].Replace("\tPart \"", "").Replace("{", "").Replace("\"", "").Trim();
                     x++;
+                    z = 0;
                     while (!lines[x].StartsWith("\t}"))
                     {
                         if (lines[x].Contains("\t\tBoundingBox"))
@@ -258,6 +279,8 @@ namespace P4GMOdel
                             Mesh mesh = new Mesh();
                             mesh.Name = lines[x].Replace("\t\tMesh ", "").Replace("\"", "").Replace("{", "").Trim();
                             x++;
+
+                            z = 0;
                             while (!lines[x].Contains("}"))
                             {
                                 if (lines[x].StartsWith("\t\t\tSetMaterial"))
@@ -271,6 +294,13 @@ namespace P4GMOdel
                                     mesh.DrawArrays.Add(lines[x].Replace("\t\t\tDrawArrays ", ""));
                                 }
                                 x++;
+
+                                z++;
+                                if (z == 99999)
+                                {
+                                    MessageBox.Show($"Failed to parse Mesh data, got stuck on line: {x}");
+                                    return new Model();
+                                }
                             }
                             part.Meshes.Add(mesh);
                         }
@@ -278,10 +308,18 @@ namespace P4GMOdel
                         {
                             string array = lines[x].Replace("\t\tArrays ", "").Replace("VERTEX|NORMAL|TEXCOORD|WEIGHT6 {", "0 {").Replace("VERTEX|NORMAL|TEXCOORD|WEIGHT5 {", "0 {"); //Why does this happen??
                             x++;
+                            z = 0;
                             while (!lines[x].Contains("}"))
                             {
                                 array += "\n" + lines[x];
                                 x++;
+
+                                z++;
+                                if (z == 99999)
+                                {
+                                    MessageBox.Show($"Failed to parse Arrays data, got stuck on line: {x}");
+                                    return new Model();
+                                }
                             }
                             array += "\n\t\t}";
                             part.Arrays.Add(array);
@@ -293,6 +331,13 @@ namespace P4GMOdel
                         }
                         else
                             x++;
+
+                        z++;
+                        if (z == 99999)
+                        {
+                            MessageBox.Show($"Failed to parse Parts data, got stuck on line: {x}");
+                            return new Model();
+                        }
                     }
                     model.Parts.Add(part);
                 }
@@ -301,9 +346,10 @@ namespace P4GMOdel
                     int x = i;
                     //Add material data to material list
                     Material mat = new Material();
-                    mat.Name = lines[x].Replace("\tMaterial", "").Replace("{", "").Replace("\"","").Trim();
+                    mat.Name = lines[x].Replace("\tMaterial", "").Replace("{", "").Replace("\"", "").Trim();
                     x++;
                     List<Layer> layers = new List<Layer>();
+                    z = 0;
                     while (!lines[x].StartsWith("\t}"))
                     {
                         if (lines[x].StartsWith("\t\tRenderState"))
@@ -324,8 +370,9 @@ namespace P4GMOdel
                         {
                             mat.Layers = new List<Layer>();
                             Layer layer = new Layer();
-                            layer.Name = lines[x].Replace("\t\tLayer ", "").Replace("\"","").Replace("{", "").Trim();
+                            layer.Name = lines[x].Replace("\t\tLayer ", "").Replace("\"", "").Replace("{", "").Trim();
                             x++;
+                            z = 0;
                             while (!lines[x].Contains("}"))
                             {
                                 if (lines[x].StartsWith("\t\t\tSetTexture"))
@@ -344,18 +391,40 @@ namespace P4GMOdel
                                 {
                                     string texMatrix = lines[x].Replace("\t\t\tTexMatrix ", "");
                                     x++;
+                                    z = 0;
                                     while (!lines[x].Contains("}"))
                                     {
                                         texMatrix += "\n" + lines[x];
                                         x++;
+
+                                        z++;
+                                        if (z == 99999)
+                                        {
+                                            MessageBox.Show($"Failed to parse TexMatrix data, got stuck on line: {x}");
+                                            return new Model();
+                                        }
                                     }
                                     layer.TexMatrix = texMatrix;
                                 }
                                 x++;
+
+                                z++;
+                                if (z == 99999)
+                                {
+                                    MessageBox.Show($"Failed to parse Layers data, got stuck on line: {x}");
+                                    return new Model();
+                                }
                             }
                             mat.Layers.Add(layer);
                         }
                         x++;
+
+                        z++;
+                        if (z == 99999)
+                        {
+                            MessageBox.Show($"Failed to parse Materials data, got stuck on line: {x}");
+                            return new Model();
+                        }
                     }
                     model.Materials.Add(mat);
                 }
@@ -374,6 +443,7 @@ namespace P4GMOdel
                     anim.Name = lines[i].Replace("\tMotion \"", "").Replace("\" {", "");
 
                     int x = i + 1;
+                    z = 0;
                     while (x < lines.Count() && lines[x] != "\t}")
                     {
                         if (lines[x].StartsWith("\t\tFrameLoop"))
@@ -394,6 +464,13 @@ namespace P4GMOdel
                             fcurves.Add(fcurveLines);
                         }
                         x++;
+
+                        z++;
+                        if (z == 99999)
+                        {
+                            MessageBox.Show($"Failed to parse Motion data, got stuck on line: {x}");
+                            return new Model();
+                        }
                     }
                     anim.Animate = animateLines;
                     anim.FCurve = fcurves;
@@ -411,6 +488,7 @@ namespace P4GMOdel
             model.Name = System.IO.Path.GetFileNameWithoutExtension(model.Path);
             return model;
         }
+
         public static string Serialize(Model model)
         {
             List<string> lines = new List<string>();
@@ -533,15 +611,16 @@ namespace P4GMOdel
         {
             Model import = new Model();
             string importPath = "";
-            //Choose MDS to import from...
+            //Choose GMS to import from...
             CommonOpenFileDialog dialog = new CommonOpenFileDialog();
-            dialog.Filters.Add(new CommonFileDialogFilter("GMO Data", "*.mds"));
-            dialog.Title = "Choose Replacement MDS...";
-            dialog.DefaultFileName = $"{defaultFileName}.mds";
+            dialog.Filters.Add(new CommonFileDialogFilter("GMO Data", "*.gms"));
+            dialog.Title = "Choose Replacement GMS...";
+            dialog.DefaultFileName = $"{defaultFileName}.gms";
             if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
                 importPath = dialog.FileName;
             else
                 return import; // return empty model
+
             //Deserialize imported object
             return Model.Deserialize(import, File.ReadAllLines(importPath));
 
@@ -627,7 +706,7 @@ namespace P4GMOdel
                 if (!texture.FileName.ToLower().Contains(".tm2"))
                 {
                     if (File.Exists(texture.FileName))
-                        Tools.GIMConv(texture.FileName);
+                        GIMConv(texture.FileName);
                     if (!File.Exists(newTexPath + ".tm2") && File.Exists(texture.FileName))
                         File.Move(texture.FileName + ".tm2", newTexPath + ".tm2");
                     texture.FileName = System.IO.Path.Combine(texFolder, new DirectoryInfo(texture.FileName).Name + ".tm2");

@@ -48,15 +48,15 @@ namespace P4GMOdel
             if (model != null && File.Exists(model.Path))
             {
                 int x = 0;
-                //Save temporary mds
-                string tempPath = Tools.GetTemporaryPath(model.Path);
-                File.WriteAllText(tempPath + ".mds", Model.Serialize(model));
-                using (Tools.WaitForFile(tempPath + ".mds", FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
+                //Save temporary gms
+                string tempPath = GetTemporaryPath(model.Path);
+                File.WriteAllText(tempPath + ".gms", Model.Serialize(model));
+                using (FileSys.WaitForFile(tempPath + ".gms", FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
                 //Attempt to generate temporary gmo
-                Tools.GMOTool(tempPath + ".mds", false);
-                using (Tools.WaitForFile($"{tempPath}.mds", FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
+                GMOTool(tempPath + ".gms", false);
+                using (FileSys.WaitForFile($"{tempPath}.gms", FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
                 //Reload model viewer with temporary GMO
-                using (Tools.WaitForFile(tempPath + ".gmo", FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
+                using (FileSys.WaitForFile(tempPath + ".gmo", FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
                 LoadModel(tempPath + ".gmo");
             }
         }

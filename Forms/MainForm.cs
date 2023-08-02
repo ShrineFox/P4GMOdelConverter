@@ -50,7 +50,7 @@ namespace P4GMOdel
             this.Shown += new System.EventHandler(this.Form_Shown);
         }
 
-        Model model;
+        Model model = new Model();
         public static Panel panel_GMOView;
         public static Process process_GMOView;
 
@@ -64,8 +64,8 @@ namespace P4GMOdel
         private void Form_Shown(object sender, EventArgs e)
         {
             // Open file from arguments once form has finished loading
-            //if (!string.IsNullOrEmpty(model.Path))
-                //OpenFile(model.Path);
+            if (!string.IsNullOrEmpty(model.Path) && File.Exists(model.Path))
+                OpenFile(model.Path);
         }
     }
 }

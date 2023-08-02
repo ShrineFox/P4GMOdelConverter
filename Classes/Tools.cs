@@ -2,6 +2,7 @@
 using AtlusFileSystemLibrary;
 using AtlusFileSystemLibrary.Common.IO;
 using AtlusFileSystemLibrary.FileSystems.PAK;
+using DarkUI.Forms;
 using ShrineFox.IO;
 using System;
 using System.Collections.Generic;
@@ -14,12 +15,10 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using TGE.IO;
-using static P4GMOdel.MainForm;
 
 namespace P4GMOdel
 {
-    public class Tools
+    public partial class MainForm : DarkForm
     {
 
         //Extract TM2 textures from GMO
@@ -117,7 +116,7 @@ namespace P4GMOdel
             return -1;
         }
 
-        //Run tool to convert between GMO and MDS
+        //Run tool to convert between GMO and GMS
         public static void GMOTool(string path, bool extract)
         {
             Process cmd = new Process();
@@ -134,25 +133,42 @@ namespace P4GMOdel
                 cmd.WaitForExit();
             }
             else
-                MessageBox.Show($"Error: Could not find .\\Tools\\GMOTool\\GMOTool.exe!");
+                MessageBox.Show($"Error: Could not find executable: .\\Tools\\GMOTool\\GMOTool.exe");
         }
 
-        //Run program to convert FBX to GMO directly
-        public static void GMOConv(string fbx)
+        //Run program to convert model to GMO directly
+        public void GMOConv(string modelFile, bool exportGmo = false)
         {
             Process cmd = new Process();
             cmd.StartInfo.FileName = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Tools\\GMO\\GmoConv.exe";
-            cmd.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
-            cmd.StartInfo.Arguments = $"\"{fbx}\"";
+            //cmd.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+            cmd.StartInfo.Arguments = $"\"{modelFile}\"";
             if (File.Exists(cmd.StartInfo.FileName))
             {
+                string expectedOutFile = Path.Combine(Path.GetDirectoryName(modelFile), Path.GetFileNameWithoutExtension(modelFile));
+                if (exportGmo)
+                    expectedOutFile += ".gmo";
+                else
+                    expectedOutFile += ".gms";
+
+                cmd.StartInfo.Arguments += $" -o {expectedOutFile}";
                 cmd.Start();
-                int x = 0;
-                using (Tools.WaitForFile($"{Path.Combine(Path.GetDirectoryName(fbx), Path.GetFileNameWithoutExtension(fbx))}.gmo", FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
+                using (FileSys.WaitForFile(expectedOutFile)) { }
                 cmd.WaitForExit();
+
+                if (File.Exists(expectedOutFile))
+                {
+                    if (exportGmo)
+                        MessageBox.Show($"GMO Successfully exported to: {expectedOutFile}");
+                    else
+                        ProcessFile(expectedOutFile);
+                }
+                else
+                    MessageBox.Show($"Output file found: {expectedOutFile}" +
+                        $"\n\nFile may not have been generated due to a GMOConv error.");
             }
             else
-                MessageBox.Show($"Error: Could not find .\\Tools\\GMO\\GmoConv.exe!");
+                MessageBox.Show($"Error: Could not find executable: .\\Tools\\GMO\\GmoConv.exe");
 
         }
 
@@ -166,7 +182,7 @@ namespace P4GMOdel
             {
                 cmd.Start();
                 int x = 0;
-                using (WaitForFile($"{texture}.tm2", FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
+                using (FileSys.WaitForFile($"{texture}.tm2", FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
                 cmd.WaitForExit();
             }
             else
@@ -216,7 +232,7 @@ namespace P4GMOdel
                 {
                     cmdProcess.Start();
                     int x = 0;
-                    using (WaitForFile($"{tempPath}.fbx", FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
+                    using (FileSys.WaitForFile($"{tempPath}.fbx", FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
                     cmdProcess.Kill();
                 }
                 else
@@ -249,23 +265,23 @@ namespace P4GMOdel
             return $"{path_NoExt}.fbx";
         }
 
-        //Create GMO from MDS
+        //Create GMO from GMS
         public static void CreateGMO(string output, Model model)
         {
             string tempPath = GetTemporaryPath(model.Path);
-            File.WriteAllText(tempPath + ".mds", Model.Serialize(model));
-            using (WaitForFile(tempPath + ".mds", FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
-            if (File.Exists(tempPath + ".mds"))
+            File.WriteAllText(tempPath + ".gms", Model.Serialize(model));
+            using (FileSys.WaitForFile(tempPath + ".gms", FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
+            if (File.Exists(tempPath + ".gms"))
             {
                 //Create new GMO
-                GMOTool(tempPath + ".mds", false);
-                using (WaitForFile(tempPath + ".gmo", FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
+                GMOTool(tempPath + ".gms", false);
+                using (FileSys.WaitForFile(tempPath + ".gmo", FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
                 if (settings.FixForPC)
                     GMOFixTool(tempPath + ".gmo");
 
                 if (output.ToLower().EndsWith(".amd"))
                 {
-                    using (WaitForFile(tempPath + ".gmo", FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
+                    using (FileSys.WaitForFile(tempPath + ".gmo", FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
                     if (File.Exists(output))
                     {
                         //Replace GMO data in AMD if it already exists
@@ -308,7 +324,7 @@ namespace P4GMOdel
                                             chunk.Data = File.ReadAllBytes(tempPath + ".gmo");
                                     }
                                     amd.Save($"{tempPath}.amd");
-                                    using (WaitForFile(tempPath + ".amd", FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
+                                    using (FileSys.WaitForFile(tempPath + ".amd", FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
                                     hasAMD = true;
                                     pak.AddFile(model.Name + ".AMD", $"{tempPath}.amd", ConflictPolicy.Replace);
                                 }
@@ -320,7 +336,7 @@ namespace P4GMOdel
                             MessageBox.Show("Failed to open PAC for GMO replacement!");
                         //Save new PAC
                         pak.Save(output + "_new");
-                        using (WaitForFile(output + "_new", FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
+                        using (FileSys.WaitForFile(output + "_new", FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
                     }
                     else
                     {
@@ -332,7 +348,7 @@ namespace P4GMOdel
                             AmdChunk chunk = new AmdChunk() { Data = File.ReadAllBytes(tempPath + ".gmo"), Flags = 257, Tag = "MODEL_DATA" };
                             amd.Chunks.Add(chunk);
                             amd.Save($"{tempPath}.amd");
-                            using (WaitForFile(tempPath + ".amd", FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
+                            using (FileSys.WaitForFile(tempPath + ".amd", FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
                             pak.AddFile(model.Name + ".AMD", tempPath + ".amd", ConflictPolicy.Replace);
                         }
                         else
@@ -340,27 +356,16 @@ namespace P4GMOdel
                     }
                     //Save PAC
                     pak.Save(output);
-                    using (WaitForFile(output, FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
+                    using (FileSys.WaitForFile(output, FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
                 }
                 else
                     File.Copy(tempPath + ".gmo", output, true); //Save GMO (overwrite)
             }
             else
             {
-                MessageBox.Show("Failed to create temporary MDS!");
+                MessageBox.Show("Failed to create temporary GMS!");
             }
         }
-
-        List<List<string>> animationPresets = new List<List<string>>() { //null, p4g protag, p4g party, p4g persona, p4g culprit, p3p protag, p3p party, p3p persona, p3p strega
-            new List<string>{ "" },
-            new List<string> { "Idle", "Idle 2", "Run", "Attack", "Attack Critical", "Placeholder 4", "Persona Change", "Persona Summon 1", "Persona Summon 2", "Persona Summon 3", "Persona Summon 4", "Guard", "Dodge", "Low HP", "Damaged", "Miss Attack", "Knocked Down", "Down", "Get Back Up", "Killed", "Revived", "Use Item", "Victory", "Pushed Out of the Way", "Placeholder 23", "Helped Up", "Placeholder 25", "Idle (Duplicate)" },
-            new List<string>{ "Idle (Active)", "Idle 2", "Run", "Attack", "Attack Critical", "Special Attack 1", "Special Attack 2", "Persona Summon 1", "Persona Summon 2", "Persona Summon 3", "Persona Summon 4", "Guard", "Dodge", "Low HP", "Damaged", "Miss Attack", "Knocked Down", "Down", "Get Back Up", "Killed", "Revived", "Use Item", "Victory", "Knock Out of the Way", "Help Up Party Member", "Helped Up", "Yell At Party Member", "Idle (Still)", "Group Summon 1", "Group Summon 2", "Group Summon 3", "Group Summon 4" },
-            new List<string>{ "Physical Attack", "Magic Attack", "Physical Attack", "Magic Attack", "Idle" },
-            new List<string>{ "Idle", "Low HP", "Damaged", "Run", "Attack", "Placeholder 4", "Dialog Animation", "Miss Attack", "Knocked Down", "Down", "Get Back Up", "Killed", "Persona Summon 1", "Persona Summon 2", "Persona Summon 3", "Persona Summon 4", "Dodge", "Idle 2" },
-            new List<string>{ "Idle", "Low HP", "Damaged", "Run", "Attack", "Attack 2 Critical", "Attack 3 Critical", "Miss Attack", "Knocked Down", "Down", "Get Back Up", "Persona Summon 1", "Persona Summon 2", "Persona Summon 3", "Persona Summon 4", "Idle 2", "Use Item", "Dodge", "Revived", "Victory", "Killed", "Fusion Attack", "Guard", "Knock Out of the Way" },
-            new List<string>{ "Physical Attack", "Magic Attack", "Idle", "Magic attack" },
-            new List<string>{ "Idle", "Low HP", "Damaged", "Run", "Attack", "Placeholder 4", "Killed", "Miss Attack", "Knocked Down", "Down", "Get Back Up", "Persona Summon 1", "Persona Summon 2", "Persona Summon 3", "Persona Summon 4", "Idle 2", "Placeholder 15", "Low HP (Duplicate)", "Dodge" }
-        };
 
         public static string GetTemporaryPath(string path)
         {
@@ -370,29 +375,6 @@ namespace P4GMOdel
                 Directory.Delete(tempDir, true);
             Directory.CreateDirectory(tempDir);
             return Path.Combine(tempDir, Path.GetFileNameWithoutExtension(path));
-        }
-
-        public static FileStream WaitForFile(string fullPath, FileMode mode, FileAccess access, FileShare share)
-        {
-            for (int numTries = 0; numTries < 10; numTries++)
-            {
-                FileStream fs = null;
-                try
-                {
-                    fs = new FileStream(fullPath, mode, access, share);
-                    return fs;
-                }
-                catch (IOException)
-                {
-                    if (fs != null)
-                    {
-                        fs.Dispose();
-                    }
-                    Thread.Sleep(200);
-                }
-            }
-
-            return null;
         }
     }
 }

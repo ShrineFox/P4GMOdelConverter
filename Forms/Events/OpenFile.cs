@@ -27,30 +27,33 @@ namespace P4GMOdel
         private void InitializeForm()
         {
             model = new Model();
-            model.Path = null;
+            model.Path = "";
             lastSelectedTreeNode = null;
             this.Text = "P4GMOdel";
+            toolStripMenuItem_Save.Enabled = false;
+            toolStripMenuItem_SaveAs.Enabled = false;
+            toolStripMenuItem_Export.Enabled = false;
         }
 
-        private void ProcessFile(string path)
+        public void ProcessFile(string path)
         {
-            // Get file extension (lowercase)
-            string ext = Path.GetExtension(path).ToLower();
+            string extension = Path.GetExtension(path).ToLower();
 
-            switch (ext)
+            switch (extension)
             {
                 case ".pac":
-                    ProcessFile(ExtractPAC(path));
+                    ExtractPAC(path);
                     break;
                 case ".amd":
-                    ProcessFile(ExtractAMD(path));
+                    ExtractAMD(path);
                     break;
                 case ".dae":
                 case ".smd":
-                    ProcessFile(ConvertToFBX(path));
+                    ConvertToFBX(path);
                     break;
                 case ".fbx":
-                    ConvertToGMS(path);
+                case ".gmo":
+                    GMOConv(path);
                     break;
                 case ".gms":
                     LoadDataIntoEditor(path);
@@ -61,7 +64,7 @@ namespace P4GMOdel
             }
         }
 
-        private string ExtractPAC(string path)
+        private static string ExtractPAC(string path)
         {
             string path_NoExt = FileSys.GetExtensionlessPath(path);
             string outPath = "";
@@ -93,7 +96,7 @@ namespace P4GMOdel
                 if (!extracted)
                     MessageBox.Show("Could not find AMD or GMO model data in PAC archive!");
                 else
-                    using (Tools.WaitForFile(outPath, FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
+                    using (FileSys.WaitForFile(outPath)) { }
             }
             else
                 MessageBox.Show("Failed to open PAC archive!");
@@ -101,7 +104,7 @@ namespace P4GMOdel
             return outPath;
         }
 
-        private string ExtractAMD(string path)
+        private static string ExtractAMD(string path)
         {
             string path_NoExt = FileSys.GetExtensionlessPath(path);
             string outPath = "";
@@ -123,7 +126,7 @@ namespace P4GMOdel
                 if (!extracted)
                     MessageBox.Show("Could not find GMO model data in AMD archive!");
                 else
-                    using (Tools.WaitForFile(outPath, FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
+                    using (FileSys.WaitForFile(outPath)) { }
             }
             else
                 MessageBox.Show("Failed to open AMD archive!");
@@ -131,43 +134,22 @@ namespace P4GMOdel
             return outPath;
         }
 
-        private void ConvertToGMS(string path)
+        private static string ConvertToFBX(string path)
         {
-            Tools.GMOTool(path, true);
-        }
-
-        private void ConvertToGMO(string path)
-        {
-            Tools.GMOConv(model.Path);
-        }
-
-        private string ConvertToFBX(string path)
-        {
-            return Tools.CreateOptimizedFBX(model.Path);
+            return CreateOptimizedFBX(path);
         }
 
         private void LoadDataIntoEditor(string path)
         {
-            if (File.Exists(path))
-            {
-                var gmsLines = File.ReadAllLines(path).ToList();
-                model = Model.Deserialize(model, gmsLines.ToArray());
-                RefreshTreeview();
-                UpdateModelViewer(model);
-                this.Text = "P4GMOdel - " + Path.GetFileName(path);
-                toolStripMenuItem_Save.Enabled = true;
-                toolStripMenuItem_SaveAs.Enabled = true;
-                toolStripMenuItem_Export.Enabled = true;
-            }
-            else
-            {
-                toolStripMenuItem_Save.Enabled = false;
-                toolStripMenuItem_SaveAs.Enabled = false;
-                toolStripMenuItem_Export.Enabled = false;
-                MessageBox.Show("No .MDS file found! One may not have been generated due to a GMOTool error.");
-            }
+            model.Path = path;
+            var gmsLines = File.ReadAllLines(path).ToList();
+            model = Model.Deserialize(model, gmsLines.ToArray());
+            RefreshTreeview();
+            UpdateModelViewer(model);
+            this.Text = "P4GMOdel - " + Path.GetFileName(path);
+            toolStripMenuItem_Save.Enabled = true;
+            toolStripMenuItem_SaveAs.Enabled = true;
+            toolStripMenuItem_Export.Enabled = true;
         }
-
-        
     }
 }
