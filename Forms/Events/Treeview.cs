@@ -238,6 +238,9 @@ namespace P4GMOdel
 
         private void MoveUp_Click(object sender, EventArgs e)
         {
+            if (lastSelectedTreeNode.ParentNode == null)
+                return;
+
             int index = 0;
             switch (lastSelectedTreeNode.ParentNode.Text)
             {
@@ -295,6 +298,9 @@ namespace P4GMOdel
 
         private void MoveDown_Click(object sender, EventArgs e)
         {
+            if (lastSelectedTreeNode.ParentNode == null)
+                return;
+
             int index = 0;
             switch (lastSelectedTreeNode.ParentNode.Text)
             {
@@ -352,6 +358,9 @@ namespace P4GMOdel
 
         private void ExportElement_Click(object sender, EventArgs e)
         {
+            if (lastSelectedTreeNode.ParentNode == null)
+                return;
+
             Model export = new Model();
             //Export model object
             switch (lastSelectedTreeNode.Text)
@@ -498,6 +507,9 @@ namespace P4GMOdel
 
         private void Replace_Click(object sender, EventArgs e)
         {
+            if (lastSelectedTreeNode.ParentNode == null)
+                return;
+
             List<Texture> importTex = new List<Texture>();
             int index = 0;
             if (lastSelectedTreeNode.Text == "Textures")
@@ -590,6 +602,9 @@ namespace P4GMOdel
 
         private void Delete_Click(object sender, EventArgs e)
         {
+            if (lastSelectedTreeNode.ParentNode == null)
+                return;
+
             switch (lastSelectedTreeNode.ParentNode.Text)
             {
                 case "Bones":

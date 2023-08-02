@@ -45,7 +45,7 @@ namespace P4GMOdel
 
         public static void UpdateModelViewer(Model model)
         {
-            if (model != null && File.Exists(model.Path))
+            if (settings.UseModelViewer && model != null && File.Exists(model.Path))
             {
                 int x = 0;
                 //Save temporary gms
