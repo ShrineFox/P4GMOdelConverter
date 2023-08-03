@@ -141,7 +141,7 @@ namespace P4GMOdel
         {
             Process cmd = new Process();
             cmd.StartInfo.FileName = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Dependencies\\GMO\\GmoConv.exe";
-            //cmd.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+            cmd.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             cmd.StartInfo.Arguments = $"\"{modelFile}\"";
             if (File.Exists(cmd.StartInfo.FileName))
             {
@@ -205,8 +205,8 @@ namespace P4GMOdel
 
         }
 
-        //Run model through Noesis for viewing
-        public static void Noesis(string args)
+        // Open model in Noesis for viewing
+        public static void ViewInNoesis(string args)
         {
             Process process = new Process();
             ProcessStartInfo startInfo = new ProcessStartInfo();
@@ -221,21 +221,26 @@ namespace P4GMOdel
         }
 
         //Run model through Noesis for optimizing
-        public static void NoesisOptimize(string path, string args)
+        public void NoesisOptimizeFbx(string path)
         {
             using (var cmdProcess = new Process())
             {
                 string tempPath = GetTemporaryPath(path);
+                string expectedOutFile = $"{tempPath}.fbx";
+
                 cmdProcess.StartInfo.UseShellExecute = true;
                 cmdProcess.StartInfo.WorkingDirectory = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Dependencies\\Noesis";
                 cmdProcess.StartInfo.FileName = @"C:\Windows\System32\cmd.exe";
-                cmdProcess.StartInfo.Arguments = "/k " + $"Noesis.exe ?cmode \"{path}\" \"{tempPath}.fbx\" {args}";
+                cmdProcess.StartInfo.Arguments = "/k " + $"Noesis.exe ?cmode \"{path}\" \"{expectedOutFile}\" {settings.NoesisArgs}";
                 cmdProcess.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
                 if (File.Exists(Path.Combine(cmdProcess.StartInfo.WorkingDirectory, "Noesis.exe")))
                 {
                     cmdProcess.Start();
-                    int x = 0;
-                    using (FileSys.WaitForFile($"{tempPath}.fbx", FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
+                    using (FileSys.WaitForFile(expectedOutFile)) { }
+                    if (File.Exists(expectedOutFile))
+                        ProcessFile(expectedOutFile);
+                    else
+                        MessageBox.Show($"Error: Noesis failed to produce an optimized FBX!");
                     cmdProcess.Kill();
                 }
                 else
@@ -257,15 +262,6 @@ namespace P4GMOdel
             }
             else
                 MessageBox.Show($"Error: Could not find .\\Dependencies\\p4gpc-gmofix\\p4gpc-gmofix.exe!");
-        }
-
-        //Convert model to FBX through Noesis commandline using specified settings
-        public static string CreateOptimizedFBX(string path, string args = "")
-        {
-            string path_NoExt = FileSys.GetExtensionlessPath(path);
-
-            NoesisOptimize(path, args);
-            return $"{path_NoExt}.fbx";
         }
 
         //Create GMO from GMS

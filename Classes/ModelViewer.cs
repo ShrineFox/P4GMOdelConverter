@@ -20,44 +20,45 @@ namespace P4GMOdel
 {
     public partial class MainForm : DarkForm
     {
-        public static void LoadModel(string gmoPath)
+
+        public static void BuildTempModel(Model model)
         {
-            if (settings.UseModelViewer)
+            if (model != null && File.Exists(model.Path))
             {
-                if (MainForm.process_GMOView != null)
-                MainForm.process_GMOView.Close();
+                //Save temporary gms
+                string tempPath = GetTemporaryPath(model.Path);
+                File.WriteAllText(tempPath + ".gms", Model.Serialize(model));
+                using (FileSys.WaitForFile(tempPath + ".gms")) { };
+
+                //Attempt to generate temporary gmo
+                GMOTool(tempPath + ".gms", false);
+                using (FileSys.WaitForFile($"{tempPath}.gms")) { };
+
+                //Reload model viewer with temporary GMO
+                using (FileSys.WaitForFile(tempPath + ".gmo")) { };
+                UpdateModelViewer(tempPath + ".gmo");
+            }
+        }
+
+        public static void UpdateModelViewer(string gmoPath)
+        {
+            if (settings.UseModelViewer && settings.UseGMOView)
+            {
+                if (process_GMOView != null)
+                    process_GMOView.Close();
 
                 string gmoView = ".\\Dependencies\\GMO\\GmoView.exe";
 
                 // Load and dock in form
-                MainForm.process_GMOView = Window.Mount(gmoView, MainForm.panel_GMOView, gmoPath);
+                process_GMOView = Window.Mount(gmoView, panel_GMOView, gmoPath);
 
                 //Improve GMOView appearance
                 RotateModel();
                 ToggleLighting();
-                //ToggleWireframeBG();
                 ToggleAnimatedBG();
                 IncreaseSize();
                 PositionHigher();
                 FixAspectRatio();
-            }
-        }
-
-        public static void UpdateModelViewer(Model model)
-        {
-            if (settings.UseModelViewer && model != null && File.Exists(model.Path))
-            {
-                int x = 0;
-                //Save temporary gms
-                string tempPath = GetTemporaryPath(model.Path);
-                File.WriteAllText(tempPath + ".gms", Model.Serialize(model));
-                using (FileSys.WaitForFile(tempPath + ".gms", FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
-                //Attempt to generate temporary gmo
-                GMOTool(tempPath + ".gms", false);
-                using (FileSys.WaitForFile($"{tempPath}.gms", FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
-                //Reload model viewer with temporary GMO
-                using (FileSys.WaitForFile(tempPath + ".gmo", FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
-                LoadModel(tempPath + ".gmo");
             }
         }
 

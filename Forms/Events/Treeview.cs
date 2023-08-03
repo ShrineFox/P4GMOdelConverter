@@ -106,7 +106,7 @@ namespace P4GMOdel
                     if (dataChanged)
                         RefreshTreeview();
                     if (!viewerUpdated)
-                        UpdateModelViewer(model);
+                        BuildTempModel(model);
                 }
                 //Replace modelviewer with texture view if "Texture" subnode clicked
                 if (lastSelectedTreeNode.ParentNode != null && lastSelectedTreeNode.ParentNode.Text == "Textures")

@@ -19,8 +19,11 @@ namespace P4GMOdel
         public class Settings
         {
             public bool OptimizeForVita { get; set; } = false;
+            public bool OptimizeFbxWithNoesis { get; set; } = false;
+            public string NoesisArgs { get; set; } = "";
             public bool FixForPC { get; set; } = true;
             public bool UseModelViewer { get; set; } = true;
+            public bool UseGMOView { get; set; } = true;
 
             public void Save()
             {
@@ -30,9 +33,7 @@ namespace P4GMOdel
             public void Load()
             {
                 if (File.Exists(".\\settings.yml"))
-                {
                     settings = new DeserializerBuilder().Build().Deserialize<Settings>(File.ReadAllText(".\\settings.yml"));
-                }
             }
         }
     }

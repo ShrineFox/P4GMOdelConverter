@@ -56,8 +56,8 @@ namespace P4GMOdel
         private void OnProcessExit(object sender, EventArgs e)
         {
             // Attempt to close any open GMOView process on exit
-            // TODO: Check if it's actually running first
-            process_GMOView.Close();
+            if (process_GMOView != null)
+                process_GMOView.Close();
         }
 
         private void Form_Shown(object sender, EventArgs e)

@@ -19,14 +19,21 @@ namespace P4GMOdel
             InitializeComponent();
             chk_FixForPC.Checked = settings.FixForPC;
             chk_OptimizeForVita.Checked = settings.OptimizeForVita;
+            chk_OptimizeFbxWithNoesis.Checked = settings.OptimizeFbxWithNoesis;
+            txt_NoesisArgs.Text = settings.NoesisArgs;
             chk_UseModelViewer.Checked = settings.UseModelViewer;
+            if (!settings.UseGMOView)
+                comboBox_ModelViewer.SelectedIndex = 1;
         }
 
         private void Save_Click(object sender, EventArgs e)
         {
             settings.FixForPC = chk_FixForPC.Checked;
             settings.OptimizeForVita = chk_OptimizeForVita.Checked;
+            settings.OptimizeFbxWithNoesis = chk_OptimizeFbxWithNoesis.Checked;
+            settings.NoesisArgs = txt_NoesisArgs.Text;
             settings.UseModelViewer = chk_UseModelViewer.Checked;
+            settings.UseGMOView = (comboBox_ModelViewer.SelectedIndex == 0);
 
             settings.Save();
         }

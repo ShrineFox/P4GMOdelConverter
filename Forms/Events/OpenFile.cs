@@ -20,7 +20,9 @@ namespace P4GMOdel
     {
         private void OpenFile(string path)
         {
+            // Set the default window title and disable controls until data is loaded
             InitializeForm();
+            // Convert the file to GMS in the temp dir and then load data into editor
             ProcessFile(path);
         }
 
@@ -49,9 +51,14 @@ namespace P4GMOdel
                     break;
                 case ".dae":
                 case ".smd":
-                    ConvertToFBX(path);
+                    NoesisOptimizeFbx(path);
                     break;
                 case ".fbx":
+                    if (settings.OptimizeFbxWithNoesis)
+                        NoesisOptimizeFbx(path);
+                    else
+                        GMOConv(path);
+                    break;
                 case ".gmo":
                     GMOConv(path);
                     break;
@@ -60,7 +67,6 @@ namespace P4GMOdel
                     break;
                 default:
                     break;
-
             }
         }
 
@@ -134,18 +140,13 @@ namespace P4GMOdel
             return outPath;
         }
 
-        private static string ConvertToFBX(string path)
-        {
-            return CreateOptimizedFBX(path);
-        }
-
         private void LoadDataIntoEditor(string path)
         {
             model.Path = path;
             var gmsLines = File.ReadAllLines(path).ToList();
             model = Model.Deserialize(model, gmsLines.ToArray());
             RefreshTreeview();
-            UpdateModelViewer(model);
+            BuildTempModel(model);
             this.Text = "P4GMOdel - " + Path.GetFileName(path);
             toolStripMenuItem_Save.Enabled = true;
             toolStripMenuItem_SaveAs.Enabled = true;
