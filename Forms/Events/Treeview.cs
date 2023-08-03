@@ -434,7 +434,6 @@ namespace P4GMOdel
                     {
                         foreach (var texture in export.Textures)
                         {
-                            //TIM2TextureSerializer serializer = new TIM2TextureSerializer();
                             using (Stream s = File.Open(texture.FileName, FileMode.Open))
                             {
                                 //Image newImage = serializer.Open(s).GetImage();

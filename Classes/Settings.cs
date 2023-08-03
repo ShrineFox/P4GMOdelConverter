@@ -1,11 +1,9 @@
 ﻿using DarkUI.Forms;
-using P4GMOdel.Properties;
 using ShrineFox.IO;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net.Configuration;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;

@@ -22,12 +22,12 @@ namespace P4GMOdel
     {
         public static void LoadModel(string gmoPath)
         {
-            if (MainForm.process_GMOView != null)
-                MainForm.process_GMOView.Close();
-
             if (settings.UseModelViewer)
             {
-                string gmoView = ".\\Tools\\GMO\\GmoView.exe";
+                if (MainForm.process_GMOView != null)
+                MainForm.process_GMOView.Close();
+
+                string gmoView = ".\\Dependencies\\GMO\\GmoView.exe";
 
                 // Load and dock in form
                 MainForm.process_GMOView = Window.Mount(gmoView, MainForm.panel_GMOView, gmoPath);

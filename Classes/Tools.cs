@@ -120,7 +120,7 @@ namespace P4GMOdel
         public static void GMOTool(string path, bool extract)
         {
             Process cmd = new Process();
-            cmd.StartInfo.FileName = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Tools\\GMOTool\\GMOTool.exe";
+            cmd.StartInfo.FileName = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Dependencies\\GMOTool\\GMOTool.exe";
             cmd.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             cmd.StartInfo.Arguments = $"\"{path}\"";
             if (extract)
@@ -133,18 +133,21 @@ namespace P4GMOdel
                 cmd.WaitForExit();
             }
             else
-                MessageBox.Show($"Error: Could not find executable: .\\Tools\\GMOTool\\GMOTool.exe");
+                MessageBox.Show($"Error: Could not find executable: .\\Dependencies\\GMOTool\\GMOTool.exe");
         }
 
         //Run program to convert model to GMO directly
         public void GMOConv(string modelFile, bool exportGmo = false)
         {
             Process cmd = new Process();
-            cmd.StartInfo.FileName = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Tools\\GMO\\GmoConv.exe";
+            cmd.StartInfo.FileName = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Dependencies\\GMO\\GmoConv.exe";
             //cmd.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             cmd.StartInfo.Arguments = $"\"{modelFile}\"";
             if (File.Exists(cmd.StartInfo.FileName))
             {
+                if (modelFile.ToLower().EndsWith(".gmo"))
+                    ExtractTextures(modelFile);
+
                 string expectedOutFile = Path.Combine(Path.GetDirectoryName(modelFile), Path.GetFileNameWithoutExtension(modelFile));
                 if (exportGmo)
                     expectedOutFile += ".gmo";
@@ -168,7 +171,7 @@ namespace P4GMOdel
                         $"\n\nFile may not have been generated due to a GMOConv error.");
             }
             else
-                MessageBox.Show($"Error: Could not find executable: .\\Tools\\GMO\\GmoConv.exe");
+                MessageBox.Show($"Error: Could not find executable: .\\Dependencies\\GMO\\GmoConv.exe");
 
         }
 
@@ -176,7 +179,7 @@ namespace P4GMOdel
         public static void GIMConv(string texture)
         {
             Process cmd = new Process();
-            cmd.StartInfo.FileName = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Tools\\GIM\\GimConv.exe";
+            cmd.StartInfo.FileName = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Dependencies\\GIM\\GimConv.exe";
             cmd.StartInfo.Arguments = $"\"{texture}\" -o \"{texture}.tm2\"";
             if (File.Exists(cmd.StartInfo.FileName))
             {
@@ -186,19 +189,19 @@ namespace P4GMOdel
                 cmd.WaitForExit();
             }
             else
-                MessageBox.Show($"Error: Could not find .\\Tools\\GIM\\GIMConv.exe!");
+                MessageBox.Show($"Error: Could not find .\\Dependencies\\GIM\\GIMConv.exe!");
         }
 
         // Run program to view newly generated GMO file
         public static void GMOView(string model)
         {
             Process cmd = new Process();
-            cmd.StartInfo.FileName = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Tools\\GMO\\GmoView.exe";
+            cmd.StartInfo.FileName = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Dependencies\\GMO\\GmoView.exe";
             cmd.StartInfo.Arguments = $"\"{model}\"";
             if (File.Exists(cmd.StartInfo.FileName))
                 cmd.Start();
             else
-                MessageBox.Show($"Error: Could not find .\\Tools\\GMO\\GmoView.exe!");
+                MessageBox.Show($"Error: Could not find .\\Dependencies\\GMO\\GmoView.exe!");
 
         }
 
@@ -207,13 +210,13 @@ namespace P4GMOdel
         {
             Process process = new Process();
             ProcessStartInfo startInfo = new ProcessStartInfo();
-            startInfo.FileName = $"\"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Tools\\Noesis\\Noesis.exe\"";
+            startInfo.FileName = $"\"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Dependencies\\Noesis\\Noesis.exe\"";
             startInfo.Arguments = args;
             process.StartInfo = startInfo;
             if (File.Exists(startInfo.FileName))
                 process.Start();
             else
-                MessageBox.Show($"Error: Could not find .\\Tools\\Noesis\\Noesis.exe!");
+                MessageBox.Show($"Error: Could not find .\\Dependencies\\Noesis\\Noesis.exe!");
 
         }
 
@@ -224,7 +227,7 @@ namespace P4GMOdel
             {
                 string tempPath = GetTemporaryPath(path);
                 cmdProcess.StartInfo.UseShellExecute = true;
-                cmdProcess.StartInfo.WorkingDirectory = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Tools\\Noesis";
+                cmdProcess.StartInfo.WorkingDirectory = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Dependencies\\Noesis";
                 cmdProcess.StartInfo.FileName = @"C:\Windows\System32\cmd.exe";
                 cmdProcess.StartInfo.Arguments = "/k " + $"Noesis.exe ?cmode \"{path}\" \"{tempPath}.fbx\" {args}";
                 cmdProcess.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
@@ -236,7 +239,7 @@ namespace P4GMOdel
                     cmdProcess.Kill();
                 }
                 else
-                    MessageBox.Show($"Error: Could not find .\\Tools\\Noesis\\Noesis.exe!");
+                    MessageBox.Show($"Error: Could not find .\\Dependencies\\Noesis\\Noesis.exe!");
             }
         }
 
@@ -244,7 +247,7 @@ namespace P4GMOdel
         public static void GMOFixTool(string path)
         {
             Process cmd = new Process();
-            cmd.StartInfo.FileName = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Tools\\p4gpc-gmofix\\p4gpc-gmofix.exe";
+            cmd.StartInfo.FileName = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Dependencies\\p4gpc-gmofix\\p4gpc-gmofix.exe";
             cmd.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             cmd.StartInfo.Arguments = $"\"{path}\"";
             if (File.Exists(cmd.StartInfo.FileName))
@@ -253,7 +256,7 @@ namespace P4GMOdel
                 cmd.WaitForExit();
             }
             else
-                MessageBox.Show($"Error: Could not find .\\Tools\\p4gpc-gmofix\\p4gpc-gmofix.exe!");
+                MessageBox.Show($"Error: Could not find .\\Dependencies\\p4gpc-gmofix\\p4gpc-gmofix.exe!");
         }
 
         //Convert model to FBX through Noesis commandline using specified settings
