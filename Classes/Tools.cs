@@ -15,6 +15,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Windows.Shell;
 
 namespace P4GMOdel
 {
@@ -119,149 +120,74 @@ namespace P4GMOdel
         //Run tool to convert between GMO and GMS
         public static void GMOTool(string path, bool extract)
         {
-            Process cmd = new Process();
-            cmd.StartInfo.FileName = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Dependencies\\GMOTool\\GMOTool.exe";
-            cmd.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
-            cmd.StartInfo.Arguments = $"\"{path}\"";
+            string exePath = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Dependencies\\GMOTool\\GMOTool.exe";
+            string args = $"\"{path}\"";
             if (extract)
-                cmd.StartInfo.Arguments += " -E";
+                args += " -E";
             else
-                cmd.StartInfo.Arguments += " -PSV";
-            if (File.Exists(cmd.StartInfo.FileName))
-            {
-                cmd.Start();
-                cmd.WaitForExit();
-            }
-            else
-                MessageBox.Show($"Error: Could not find executable: .\\Dependencies\\GMOTool\\GMOTool.exe");
+                args += " -PSV";
+
+            Exe.Run(exePath, args);
         }
 
         //Run program to convert model to GMO directly
         public void GMOConv(string modelFile, bool exportGmo = false)
         {
-            Process cmd = new Process();
-            cmd.StartInfo.FileName = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Dependencies\\GMO\\GmoConv.exe";
-            cmd.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
-            cmd.StartInfo.Arguments = $"\"{modelFile}\"";
-            if (File.Exists(cmd.StartInfo.FileName))
+            string exePath = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Dependencies\\GMO\\GmoConv.exe";
+            string expectedOutFile = Path.Combine(Path.GetDirectoryName(modelFile), Path.GetFileNameWithoutExtension(modelFile));
+            if (exportGmo)
+                expectedOutFile += ".gmo";
+            else
+                expectedOutFile += ".gms";
+            string args = $"\"{modelFile}\" -o {expectedOutFile}\"";
+
+            if (modelFile.ToLower().EndsWith(".gmo"))
+                ExtractTextures(modelFile);
+
+            Exe.Run(exePath, args);
+
+            if (File.Exists(expectedOutFile))
             {
-                if (modelFile.ToLower().EndsWith(".gmo"))
-                    ExtractTextures(modelFile);
-
-                string expectedOutFile = Path.Combine(Path.GetDirectoryName(modelFile), Path.GetFileNameWithoutExtension(modelFile));
                 if (exportGmo)
-                    expectedOutFile += ".gmo";
+                    MessageBox.Show($"GMO Successfully exported to: {expectedOutFile}");
                 else
-                    expectedOutFile += ".gms";
-
-                cmd.StartInfo.Arguments += $" -o {expectedOutFile}";
-                cmd.Start();
-                using (FileSys.WaitForFile(expectedOutFile)) { }
-                cmd.WaitForExit();
-
-                if (File.Exists(expectedOutFile))
-                {
-                    if (exportGmo)
-                        MessageBox.Show($"GMO Successfully exported to: {expectedOutFile}");
-                    else
-                        ProcessFile(expectedOutFile);
-                }
-                else
-                    MessageBox.Show($"Output file found: {expectedOutFile}" +
-                        $"\n\nFile may not have been generated due to a GMOConv error.");
+                    ProcessFile(expectedOutFile);
             }
             else
-                MessageBox.Show($"Error: Could not find executable: .\\Dependencies\\GMO\\GmoConv.exe");
-
+                MessageBox.Show($"Output file found: {expectedOutFile}" +
+                    $"\n\nFile may not have been generated due to a GMOConv error.");
         }
 
         // Run program to convert referenced textures to TM2
         public static void GIMConv(string texture)
         {
-            Process cmd = new Process();
-            cmd.StartInfo.FileName = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Dependencies\\GIM\\GimConv.exe";
-            cmd.StartInfo.Arguments = $"\"{texture}\" -o \"{texture}.tm2\"";
-            if (File.Exists(cmd.StartInfo.FileName))
-            {
-                cmd.Start();
-                int x = 0;
-                using (FileSys.WaitForFile($"{texture}.tm2", FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { };
-                cmd.WaitForExit();
-            }
-            else
-                MessageBox.Show($"Error: Could not find .\\Dependencies\\GIM\\GIMConv.exe!");
-        }
-
-        // Run program to view newly generated GMO file
-        public static void GMOView(string model)
-        {
-            Process cmd = new Process();
-            cmd.StartInfo.FileName = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Dependencies\\GMO\\GmoView.exe";
-            cmd.StartInfo.Arguments = $"\"{model}\"";
-            if (File.Exists(cmd.StartInfo.FileName))
-                cmd.Start();
-            else
-                MessageBox.Show($"Error: Could not find .\\Dependencies\\GMO\\GmoView.exe!");
-
-        }
-
-        // Open model in Noesis for viewing
-        public static void ViewInNoesis(string args)
-        {
-            Process process = new Process();
-            ProcessStartInfo startInfo = new ProcessStartInfo();
-            startInfo.FileName = $"\"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Dependencies\\Noesis\\Noesis.exe\"";
-            startInfo.Arguments = args;
-            process.StartInfo = startInfo;
-            if (File.Exists(startInfo.FileName))
-                process.Start();
-            else
-                MessageBox.Show($"Error: Could not find .\\Dependencies\\Noesis\\Noesis.exe!");
+            string exePath = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Dependencies\\GIM\\GimConv.exe";
+            string args = $"\"{texture}\" -o \"{texture}.tm2\"";
+            Exe.Run(exePath, args);
 
         }
 
         //Run model through Noesis for optimizing
         public void NoesisOptimizeFbx(string path)
         {
-            using (var cmdProcess = new Process())
-            {
-                string tempPath = GetTemporaryPath(path);
-                string expectedOutFile = $"{tempPath}.fbx";
+            string exePath = $"C:\\Windows\\System32\\cmd.exe";
+            string expectedOutFile = $"{GetTemporaryPath(path)}.fbx";
+            string args = $"/k \"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Dependencies\\Noesis\\Noesis.exe\" ?cmode \"{path}\" \"{expectedOutFile}\" {settings.NoesisArgs}";
 
-                cmdProcess.StartInfo.UseShellExecute = true;
-                cmdProcess.StartInfo.WorkingDirectory = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Dependencies\\Noesis";
-                cmdProcess.StartInfo.FileName = @"C:\Windows\System32\cmd.exe";
-                cmdProcess.StartInfo.Arguments = "/k " + $"Noesis.exe ?cmode \"{path}\" \"{expectedOutFile}\" {settings.NoesisArgs}";
-                cmdProcess.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
-                if (File.Exists(Path.Combine(cmdProcess.StartInfo.WorkingDirectory, "Noesis.exe")))
-                {
-                    cmdProcess.Start();
-                    using (FileSys.WaitForFile(expectedOutFile)) { }
-                    if (File.Exists(expectedOutFile))
-                        ProcessFile(expectedOutFile);
-                    else
-                        MessageBox.Show($"Error: Noesis failed to produce an optimized FBX!");
-                    cmdProcess.Kill();
-                }
-                else
-                    MessageBox.Show($"Error: Could not find .\\Dependencies\\Noesis\\Noesis.exe!");
-            }
+            Exe.Run(exePath, args);
+
+            if (File.Exists(expectedOutFile))
+                ProcessFile(expectedOutFile);
+            else
+                MessageBox.Show($"Error: Noesis failed to produce an optimized FBX!");
         }
 
         //Run TGE's tool to fix GMO files for PC
         public static void GMOFixTool(string path)
         {
-            Process cmd = new Process();
-            cmd.StartInfo.FileName = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Dependencies\\p4gpc-gmofix\\p4gpc-gmofix.exe";
-            cmd.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
-            cmd.StartInfo.Arguments = $"\"{path}\"";
-            if (File.Exists(cmd.StartInfo.FileName))
-            {
-                cmd.Start();
-                cmd.WaitForExit();
-            }
-            else
-                MessageBox.Show($"Error: Could not find .\\Dependencies\\p4gpc-gmofix\\p4gpc-gmofix.exe!");
+            string exePath = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\Dependencies\\p4gpc-gmofix\\p4gpc-gmofix.exe";
+            string args = $"\"{path}\"";
+            Exe.Run(exePath, args);
         }
 
         //Create GMO from GMS

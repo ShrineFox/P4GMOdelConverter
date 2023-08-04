@@ -96,38 +96,32 @@ namespace P4GMOdel
 
         private void TreeView_MouseClick(object sender, MouseEventArgs e)
         {
-            if (lastSelectedTreeNode != null)
+            if (lastSelectedTreeNode == null)
+                return;
+
+            //Update object if changed
+            UpdatePropertyGrid();
+
+            //Replace modelviewer with texture view if "Texture" subnode clicked
+            if (lastSelectedTreeNode.ParentNode != null && lastSelectedTreeNode.ParentNode.Text == "Textures")
             {
-                //Update object if changed
-                UpdatePropertyGrid();
-                //Update modelviewer and treeview if "Model" clicked
-                if (lastSelectedTreeNode.Text == "Model" && (dataChanged || !viewerUpdated))
+                Texture texture = (Texture)lastSelectedTreeNode.Tag;
+                if (File.Exists(texture.FileName))
                 {
-                    if (dataChanged)
-                        RefreshTreeview();
-                    if (!viewerUpdated)
-                        BuildTempModel(model);
-                }
-                //Replace modelviewer with texture view if "Texture" subnode clicked
-                if (lastSelectedTreeNode.ParentNode != null && lastSelectedTreeNode.ParentNode.Text == "Textures")
-                {
-                    Texture texture = (Texture)lastSelectedTreeNode.Tag;
-                    if (File.Exists(texture.FileName))
+                    using (Stream s = File.Open(texture.FileName, FileMode.Open))
                     {
-                        using (Stream s = File.Open(texture.FileName, FileMode.Open))
-                        {
-                            //TIM2TextureSerializer serializer = new TIM2TextureSerializer();
-                            Exe.CloseProcess("GMOView"); //Hide model viewer
-                            panel_GMOView.BackgroundImageLayout = ImageLayout.Zoom;
-                            //panel_GMOView.BackgroundImage = serializer.Open(s).GetImage(); //Decode TM2 to viewer
-                            viewerUpdated = false; //Reload model viewer next chance we get
-                        }
+                        //TIM2TextureSerializer serializer = new TIM2TextureSerializer();
+                        Exe.CloseProcess("GMOView"); //Hide model viewer
+                        panel_ModelViewer.BackgroundImageLayout = ImageLayout.Zoom;
+                        //panel_ModelViewer.BackgroundImage = serializer.Open(s).GetImage(); //Decode TM2 to viewer
+                        viewerUpdated = false; //Reload model viewer next chance we get
                     }
                 }
-                //Show context menu if right clicked
-                if (e.Button.Equals(MouseButtons.Right))
-                    darkContextMenu_RightClick.Show(this, new Point(e.X + ((Control)sender).Left + 4, e.Y + ((Control)sender).Top + 4));
             }
+            //Show context menu if right clicked
+            if (e.Button.Equals(MouseButtons.Right))
+                darkContextMenu_RightClick.Show(this, new Point(e.X + ((Control)sender).Left + 4, e.Y + ((Control)sender).Top + 4));
+            
         }
 
         private void UpdatePropertyGrid()
@@ -164,6 +158,7 @@ namespace P4GMOdel
         private void Refresh(object sender, EventArgs e)
         {
             RefreshTreeview();
+            BuildTempModel(model);
         }
 
         private void PropertyGrid_ValueChanged(object s, PropertyValueChangedEventArgs e)
@@ -217,7 +212,7 @@ namespace P4GMOdel
         private void MainForm_Resize(object sender, EventArgs e)
         {
             //if (process_GMOView != null)
-                //ModelViewer.MoveWindow(process_GMOView.MainWindowHandle, 0, 0, panel_GMOView.Width, panel_GMOView.Height, true);
+                //ModelViewer.MoveWindow(process_GMOView.MainWindowHandle, 0, 0, panel_ModelViewer.Width, panel_ModelViewer.Height, true);
         }
 
         /* DRAG AND DROP */

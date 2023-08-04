@@ -37,8 +37,8 @@ namespace P4GMOdel
             settings.Load();
 
             // Add Model Viewer Panel
-            panel_GMOView = new Panel() { BackColor = Color.FromArgb(255, 60, 63, 65), Dock = DockStyle.Fill };
-            tlp_Main.Controls.Add(panel_GMOView, 1, 1);
+            panel_ModelViewer = new Panel() { BackColor = Color.FromArgb(255, 60, 63, 65), Dock = DockStyle.Fill };
+            tlp_Main.Controls.Add(panel_ModelViewer, 1, 1);
 
             // Close model viewer on program exit
             AppDomain.CurrentDomain.ProcessExit += new EventHandler(OnProcessExit);
@@ -50,14 +50,11 @@ namespace P4GMOdel
         }
 
         Model model = new Model();
-        public static Panel panel_GMOView;
-        public static Process process_GMOView;
+        public static Panel panel_ModelViewer;
 
         private void OnProcessExit(object sender, EventArgs e)
         {
-            // Attempt to close any open GMOView process on exit
-            if (process_GMOView != null)
-                process_GMOView.Close();
+            CloseModelViewers();
         }
 
         private void Form_Shown(object sender, EventArgs e)

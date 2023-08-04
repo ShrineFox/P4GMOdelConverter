@@ -20,8 +20,13 @@ namespace P4GMOdel
 {
     public partial class MainForm : DarkForm
     {
+        private void CloseModelViewers()
+        {
+            Exe.CloseProcess("GmoView", true);
+            Exe.CloseProcess("Noesis", true);
+        }
 
-        public static void BuildTempModel(Model model)
+        public void BuildTempModel(Model model)
         {
             if (model != null && File.Exists(model.Path))
             {
@@ -40,25 +45,39 @@ namespace P4GMOdel
             }
         }
 
-        public static void UpdateModelViewer(string gmoPath)
+        public void UpdateModelViewer(string gmoPath)
         {
-            if (settings.UseModelViewer && settings.UseGMOView)
-            {
-                if (process_GMOView != null)
-                    process_GMOView.Close();
+            CloseModelViewers();
 
+            if (!settings.UseModelViewer)
+                return;
+            
+            if (settings.UseGMOView)
+            {
                 string gmoView = ".\\Dependencies\\GMO\\GmoView.exe";
 
                 // Load and dock in form
-                process_GMOView = Window.Mount(gmoView, panel_GMOView, gmoPath);
+                Process p = Window.Mount(gmoView, panel_ModelViewer, gmoPath);
+                //Exe.Processes.Add(new Tuple<string, IntPtr>(p.ProcessName, p.Handle));
 
-                //Improve GMOView appearance
+                //Improve appearance
+                FixAspectRatio(p.Handle);
                 RotateModel();
                 ToggleLighting();
                 ToggleAnimatedBG();
                 IncreaseSize();
                 PositionHigher();
-                FixAspectRatio();
+            }
+            else
+            {
+                string noesis = ".\\Dependencies\\Noesis\\Noesis.exe";
+
+                // Load and dock in form
+                Process p = Window.Mount(noesis, panel_ModelViewer, gmoPath);
+                //Exe.Processes.Add(new Tuple<string, IntPtr>(p.ProcessName, p.Handle));
+
+                //Improve appearance
+                FixAspectRatio(p.Handle);
             }
         }
 
@@ -83,16 +102,13 @@ namespace P4GMOdel
             Simulate.Events().Click(WindowsInput.Events.KeyCode.F5);
         }
 
-        public static void FixAspectRatio()
+        public static void FixAspectRatio(IntPtr handle)
         {
-            if (MainForm.process_GMOView != null)
-            {
-                ShowWindow(MainForm.process_GMOView.MainWindowHandle, SW_MAXIMIZE);
-                SetForegroundWindow(MainForm.process_GMOView.MainWindowHandle);
-                SetFocus(MainForm.process_GMOView.MainWindowHandle);
-                Simulate.Events().Click(WindowsInput.Events.KeyCode.F8);
-                Simulate.Events().Click(WindowsInput.Events.KeyCode.F8);
-            }
+            ShowWindow(handle, SW_MAXIMIZE);
+            SetForegroundWindow(handle);
+            SetFocus(handle);
+            Simulate.Events().Click(WindowsInput.Events.KeyCode.F8);
+            Simulate.Events().Click(WindowsInput.Events.KeyCode.F8);
         }
 
         public static void IncreaseSize()
